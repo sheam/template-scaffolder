@@ -5,6 +5,11 @@ export function log(str: string, indent = 0, debug=false): void {
     console.log(`${'  '.repeat(indent)}${str}`);
 }
 
+export function logError(str: string): void
+{
+    console.error(str);
+}
+
 export const SCAFFOLD_FOLDER_NAME = 'scaffolding';
 export const CONFIG_FILE_NAME = 'scaffolding.config.js';
 
@@ -14,9 +19,20 @@ export function scaffoldingPath(template: string, filePath = ''): string
 }
 
 export function printValues(variables: any, debug=false): void {
+    function wrapValue(val: unknown): string
+    {
+        if(val === null) return 'null';
+        switch(typeof(val))
+        {
+            case 'undefined': return 'undefined';
+            case 'string': return `'${val}'`;
+            case 'object': return `[${val.toString()}]`
+            default: return val.toString();
+        }
+    }
     Object.keys(variables).forEach((key) => {
         const val = variables[key];
-        log(`${key}='${variables[key]}'`, 1, debug);
+        log(`${key}=${wrapValue(variables[key])}`, 1, debug);
     });
 }
 

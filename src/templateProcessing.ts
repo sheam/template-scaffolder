@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import {IConfig, Variables} from './types.js';
-import {CONFIG_FILE_NAME, log, padString, scaffoldingPath} from './util.js';
+import {CONFIG_FILE_NAME, log, logError, padString, scaffoldingPath} from './util.js';
+import {exec} from 'child_process';
 
 function replaceVariables(text: string, variables: Variables): string {
     return Object.keys(variables).reduce((text, key) => {
@@ -40,26 +41,45 @@ function getTemplateFiles(template: string): string[] {
         .filter(p => p !== CONFIG_FILE_NAME);
 }
 
+function execCommand(command: string): Promise<void>
+{
+    function logLines(prefix: string, text: string, indent: number): void
+    {
+        const lines = text.split(/\n/);
+        lines.forEach(line => log(`${prefix}${line}`, indent));
+    }
+
+    return new Promise((resolve, reject) => {
+        const process = exec(command);
+
+        process.stdout?.on('data', (data) => logLines('[stdout]:', data, 3));
+        process.stderr?.on('data', (data) => logLines('[stderr]:', data, 3));
+        process.on('error', () => logError('failed to run command'));
+        process.on('close', (code) => {
+            log(`command exited with status: ${code}`, 2);
+            resolve();
+        });
+    });
+}
+
 async function createFileFromTemplate(template: string, destinationRootDir: string, variables: Variables, config: IConfig, name: string, file: string, dryRun: boolean): Promise<void> {
     if (!fs.existsSync(destinationRootDir) || !fs.statSync(destinationRootDir).isDirectory())
     {
-        throw new Error(`Destination specified is not a directory: ${destinationRootDir}`);
+        logError(`Destination specified is not a directory: ${destinationRootDir}`);
+        process.exit(-1);
     }
 
     const createNameDir = config.createNameDir || config.createNameDir === undefined;
     const destinationDirPath = createNameDir ? path.join(destinationRootDir, name) : destinationRootDir;
+    const destinationPath = replaceVariables(path.join(destinationDirPath, file), variables);
 
-    if (config.createNameDir)
+    if (fs.existsSync(destinationPath))
     {
-        if (fs.existsSync(destinationDirPath))
-        {
-            throw new Error(`file ${destinationDirPath} already exists, try deleting ${destinationDirPath} any try again`);
-        }
+        logError(`file ${destinationPath} already exists, can't process template.`);
+        process.exit(-1);
     }
 
-    const destinationPath = replaceVariables(path.join(destinationDirPath, file), variables);
     const content = getFileContents(scaffoldingPath(template, file), variables);
-
     if (dryRun)
     {
         log(padString(` ${destinationPath} `));
@@ -69,30 +89,36 @@ async function createFileFromTemplate(template: string, destinationRootDir: stri
     else
     {
         log(`creating ${destinationPath}`, 1);
-        fs.mkdirSync(path.dirname(destinationDirPath), {recursive: true});
+        fs.mkdirSync(path.dirname(destinationPath), {recursive: true});
         fs.writeFileSync(destinationPath, content);
-        if (config.afterFileCreated)
-        {
-            await config.afterFileCreated(path.resolve(destinationPath), variables);
-        }
     }
+
     if (config.afterFileCreated)
     {
-        await config.afterFileCreated(destinationPath, variables);
+        const commands = await config.afterFileCreated(destinationPath, variables);
+        for(const command of commands)
+        {
+            log(`executing ${command}`, 2);
+            if(!dryRun)
+            {
+                await execCommand(command);
+            }
+        }
     }
 }
 
 export async function createTemplates(config: IConfig, variables: Variables, dryRun?: boolean): Promise<void> {
-    if (!variables.TEMPLATE) throw new Error('TEMPLATE must be defined');
-    if (!variables.DESTINATION) throw new Error('DESTINATION must be defined');
-    if (!variables.NAME) throw new Error('NAME must be defined');
+    if (!variables.TEMPLATE) { logError('TEMPLATE must be defined'); process.exit(-1); }
+    if (!variables.DESTINATION) { logError('DESTINATION must be defined'); process.exit(-1); }
+    if (!variables.NAME) { logError('NAME must be defined'); process.exit(-1); }
+
     const template = variables.TEMPLATE;
     const destination = variables.DESTINATION;
     const name = variables.NAME;
     const templateFiles = getTemplateFiles(template);
-    await templateFiles.forEach(createFile);
 
-    async function createFile(templateFile: string): Promise<void> {
+    for(const templateFile of templateFiles)
+    {
         await createFileFromTemplate(template, destination, variables, config, name, templateFile, dryRun || false);
     }
 }

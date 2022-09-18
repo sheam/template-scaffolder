@@ -7,7 +7,7 @@ export interface IConfig
     prompts?: DistinctQuestion[];
     createNameDir?: boolean;
     srcRoot?: string;
-    afterFileCreated?: (createdFilePath: string, variables: any) => Promise<void>;
+    afterFileCreated?: (createdFilePath: string, variables: any) => Promise<string[]>;
 }
 
 export interface ICliArgs

@@ -1,10 +1,13 @@
 import fs from 'fs';
 import * as path from 'path';
 import {IConfig, IRequiredInputs} from './types.js';
-import {CONFIG_FILE_NAME, log, scaffoldingPath} from './util.js';
+import {CONFIG_FILE_NAME, log, logError, scaffoldingPath} from './util.js';
 
 export async function getConfig(initialInputs: IRequiredInputs): Promise<IConfig> {
-    if (!initialInputs.TEMPLATE) throw new Error('template must be supplied');
+    if (!initialInputs.TEMPLATE) {
+        logError('template must be supplied');
+        process.exit(-1);
+    }
 
     const templateConfigFile = scaffoldingPath(initialInputs.TEMPLATE, CONFIG_FILE_NAME);
 

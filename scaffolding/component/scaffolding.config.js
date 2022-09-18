@@ -5,10 +5,12 @@
 //     prompts?: DistinctQuestion[];
 //     createNameDir?: boolean;
 //     srcRoot?: string;
-//     afterFileCreated?: (createdFilePath: string, variables: any) => Promise<void>;
+//     afterFileCreated?: (createdFilePath: string, variables: any) => Promise<string[]>;
 // }
 async function afterCreate(path) {
-    console.log(`>>> created file ${path}`);
+    return [
+        `git status ${path}`,
+    ];
 }
 
 export default function (name) {

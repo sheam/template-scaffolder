@@ -85,13 +85,18 @@ use this *async* function.
 It will execute after each file is created, supplying the path and object
 containing the variables value. The path will be relative.
 
+The function _must return a `Promise<string[]>`_.
+The array of strings returned by the promise will be treated as an array
+of external commands to be run.
+
 An example would be adding the created file to _git_, a _project file_, 
 run a formatter on the file, etc.
 
-The function _must return a `Promise`_.
-
-**Note:** In the case of a _dry run_, the file will not actually be created,
+**Note 1:** In the case of a _dry run_, the file will not actually be created,
 so you may want to guard against this in your function.
+
+**Note 2:** The commands that run will not be interactive and should not
+expect user input.;
 
 ### `prompts` _(optional)_
 If your template requires variable values to be entered by the user,
@@ -133,8 +138,9 @@ The following is a sample configuration file for a React project.
 //     afterFileCreated?: (createdFilePath: string, variables: any) => Promise<void>;
 // }
 
-function addToGit(path) {
-    console.log(`>>> Added ${path} to git`);
+async function addToGit(path) {
+    console.log(`>>> Adding ${path} to git`);
+    return [`git add ${path}`];
 }
 
 export default function (name, variables) {

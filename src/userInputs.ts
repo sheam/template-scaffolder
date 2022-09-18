@@ -1,7 +1,7 @@
 import fs from 'fs';
 import inquirer, {DistinctChoice, DistinctQuestion} from 'inquirer';
 import {ICliArgs, IConfig, IRequiredInputs} from './types.js';
-import {scaffoldingPath} from './util.js';
+import {logError, scaffoldingPath} from './util.js';
 
 // @ts-ignore
 const inquirerFuzzyPathModule = await import('inquirer-fuzzy-path');
@@ -30,8 +30,8 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IRequiredIn
         DESTINATION: undefined,
     };
 
-    if(!result.TEMPLATE) throw new Error('template must be defined on command line or in user input');
-    if(!result.NAME) throw new Error('template must be defined on command line or in user input');
+    if(!result.TEMPLATE) { logError('template must be defined on command line or in user input'); process.exit(-1); }
+    if(!result.NAME) { logError('template must be defined on command line or in user input'); process.exit(-1); }
 
     return result;
 }
