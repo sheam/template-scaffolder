@@ -1,11 +1,26 @@
-const name = process.env.NAME;
+// IConfig
+// {
+//     variables?: any,
+//     destinations?: string[];
+//     prompts?: DistinctQuestion[];
+//     createNameDir?: boolean;
+//     srcRoot?: string;
+//     afterFileCreated?: (createdFilePath: string) => Promise<void>;
+// }
 
-module.exports = {
-    variables: {
-        Component: name,
-        TestId: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
-        OtherVar: '',
-    },
-    prompts: [],
-    destinations: ['src/path/components', 'src/path/tables'],
-}
+export default function (name) {
+    return {
+        variables: {
+            Component: name,
+            TestId: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
+        },
+        prompts: [
+            {
+                name: 'somevar',
+                message: 'Enter a value for SomeVar:',
+            }
+        ],
+        destinations: ['src/path/components', 'src/path/tables'],
+        srcRoot: './src'
+    };
+};

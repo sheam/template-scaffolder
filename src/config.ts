@@ -1,29 +1,12 @@
-import * as fs from 'fs';
+import fs from 'fs';
 import * as path from 'path';
+import {IConfig, IRequiredInputs} from './types.js';
+import {CONFIG_FILE_NAME, log, scaffoldingPath} from './util.js';
 
-const SCAFFOLD_FOLDER_NAME = 'scaffolding';
-const CONFIG_FILE_NAME = 'scaffolding.config.js';
+export async function getConfig(initialInputs: IRequiredInputs): Promise<IConfig> {
+    if (!initialInputs.TEMPLATE) throw new Error('template must be supplied');
 
-export type Variables = { [key: string]: string|number };
-export interface IConfig
-{
-    variables?: any,
-    destinations?: string[];
-    prompts?: any[];
-    createNameDir?: boolean;
-}
-
-export function scaffoldingPath(template: string, filePath = ''): string {
-    return path.join(SCAFFOLD_FOLDER_NAME, template, filePath).replaceAll('\\', '/');
-}
-
-export function log(str: string, indent = 0): void {
-    console.log(`${'  '.repeat(indent)}${str}`);
-}
-
-export function getConfig(template: string): IConfig
-{
-    const templateConfigFile = scaffoldingPath(template, CONFIG_FILE_NAME);
+    const templateConfigFile = scaffoldingPath(initialInputs.TEMPLATE, CONFIG_FILE_NAME);
 
     log(`getting template configuration from ${templateConfigFile}`);
     if (!fs.existsSync(templateConfigFile))
@@ -32,17 +15,9 @@ export function getConfig(template: string): IConfig
         return {};
     }
 
-    const modulePath = path.relative(path.dirname(require.main?.filename||'./'), templateConfigFile);
-    const config = require(modulePath);
+    const modulePath = 'file://' + path.join(process.cwd(), templateConfigFile);
+    log(`modulePath ${modulePath}, cwd=${process.cwd()}`, 1, true);
 
-    log('using template variables:', 1);
-    Object.keys(config.variables).forEach((key) => {
-        const val = config.variables[key];
-        if(typeof(val) !== 'string' && typeof(val) !== 'number') {
-            throw new Error(`variable ${key} is not of type string or number`);
-        }
-        log(`${key}='${config.variables[key]}'`, 2);
-    });
-
-    return config;
+    const module = await import(modulePath);
+    return module.default(initialInputs.NAME);
 }
