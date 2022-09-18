@@ -1,11 +1,14 @@
 {
-  "name": "brewninja.scaffolder",
+  "name": "simple-code-templates",
   "version": "1.0.0",
   "description": "multi-file scaffolding for any type of project",
-  "exports": "./index.js",
+  "exports": "./dist/index.mjs",
   "type": "module",
   "engines": {
     "node": ">=14.16"
+  },
+  "bin": {
+    "scaffolder": "./dist/index.mjs"
   },
   "scripts": {
     "compile": "tsc",

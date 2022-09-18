@@ -1,8 +1,12 @@
+#!/usr/bin/env node
+
 import {getArgs} from './cli.js';
 import {getConfig} from './config.js';
 import {createTemplates} from './templateProcessing.js';
 import {getInitialInputs, getOtherInputs} from './userInputs.js';
-import {log, printValues} from './util.js';
+import {log, printValues, verifyScaffoldingFolder} from './util.js';
+
+verifyScaffoldingFolder();
 
 const args = getArgs();
 const initialValues = await getInitialInputs(args);

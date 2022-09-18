@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 
 export function log(str: string, indent = 0, debug=false): void {
@@ -12,6 +13,32 @@ export function logError(str: string): void
 
 export const SCAFFOLD_FOLDER_NAME = 'scaffolding';
 export const CONFIG_FILE_NAME = 'scaffolding.config.js';
+
+export function verifyScaffoldingFolder(): void
+{
+    let error = false;
+    if(fs.existsSync(SCAFFOLD_FOLDER_NAME))
+    {
+
+        const templates = fs.readdirSync(scaffoldingPath(''));
+        if(templates.length <= 0)
+        {
+            logError(`No templates exist in ${path.resolve(SCAFFOLD_FOLDER_NAME)}`);
+            error = true;
+        }
+    }
+    else
+    {
+        logError(`Scaffolding folder does not exist at ${path.resolve(SCAFFOLD_FOLDER_NAME)}`);
+        error = true;
+    }
+
+    if(error)
+    {
+        log('Please create a scaffolding folder and at least one template before running again.');
+        process.exit(-1);
+    }
+}
 
 export function scaffoldingPath(template: string, filePath = ''): string
 {

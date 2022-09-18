@@ -9,7 +9,7 @@
 // }
 async function afterCreate(path) {
     return [
-        `git status ${path}`,
+        `gitjjj status ${path}`,
     ];
 }
 
