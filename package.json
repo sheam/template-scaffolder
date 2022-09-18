@@ -11,7 +11,8 @@
     "compile": "tsc",
     "compile-watch": "tsc --watch",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config=jest.config.mjs src",
-    "test-run": "cross-env DEBUG=TRUE node dist/index.mjs --dryRun=true",
+    "test-run-dry": "cross-env DEBUG=TRUE node dist/index.mjs  src/testdir/dir1/subdir1 --name=MyComponent --template=component --dryRun=true",
+    "test-run": "cross-env DEBUG=TRUE node dist/index.mjs src/testdir/dir1/subdir1 --name=MyComponent --template=component",
     "clean": "npx rimraf --rf dist"
   },
   "keywords": [

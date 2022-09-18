@@ -94,7 +94,7 @@ export async function getOtherInputs(config: IConfig, cliValues: ICliArgs): Prom
 
     const result = await inquirer.prompt(questions);
 
-    result.DESTINATION = result.destination || result.destinationSelection;
+    result.DESTINATION = result.destination || result.destinationSelection || cliValues.destination;
     delete result.destinationSelection;
     delete result.destination;
 

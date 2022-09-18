@@ -40,54 +40,55 @@ function getTemplateFiles(template: string): string[] {
         .filter(p => p !== CONFIG_FILE_NAME);
 }
 
-async function createFileFromTemplate(template: string, destinationDir: string, config: IConfig, name: string, file: string, dryRun: boolean): Promise<void> {
-    if (!fs.existsSync(destinationDir) || !fs.statSync(destinationDir).isDirectory())
+async function createFileFromTemplate(template: string, destinationRootDir: string, config: IConfig, name: string, file: string, dryRun: boolean): Promise<void> {
+    if (!fs.existsSync(destinationRootDir) || !fs.statSync(destinationRootDir).isDirectory())
     {
-        throw new Error(`Destination specified is not a directory: ${destinationDir}`);
+        throw new Error(`Destination specified is not a directory: ${destinationRootDir}`);
     }
 
-    const destinationPath = replaceVariables(path.join(destinationDir, name, file), config);
-    if (fs.existsSync(destinationPath))
+    const createNameDir = config.createNameDir || config.createNameDir === undefined;
+    const destinationDirPath = createNameDir ? path.join(destinationRootDir, name) : destinationRootDir;
+
+    if (config.createNameDir)
     {
-        throw new Error(`file ${destinationPath} already exists, try deleting ${path.join(
-            destinationDir,
-            name,
-        )} any try again`);
+        if (fs.existsSync(destinationDirPath))
+        {
+            throw new Error(`file ${destinationDirPath} already exists, try deleting ${destinationDirPath} any try again`);
+        }
     }
 
+    const destinationPath = replaceVariables(path.join(destinationDirPath, file), config);
     const content = getFileContents(scaffoldingPath(template, file), config);
 
     if (dryRun)
     {
-        log(padString(` ${file} `));
+        log(padString(` ${destinationPath} `));
         log(content);
         log('-'.repeat(80));
     }
     else
     {
         log(`creating ${destinationPath}`, 1);
-        fs.mkdirSync(path.dirname(destinationPath), {recursive: true});
+        fs.mkdirSync(path.dirname(destinationDirPath), {recursive: true});
         fs.writeFileSync(destinationPath, content);
-        if(config.afterFileCreated)
+        if (config.afterFileCreated)
         {
             await config.afterFileCreated(path.resolve(destinationPath));
         }
     }
 }
 
-export async function createTemplates(config: IConfig, variables: Variables, dryRun?: boolean): Promise<void>
-{
-    if(!variables.TEMPLATE) throw new Error('TEMPLATE must be defined');
-    if(!variables.DESTINATION) throw new Error('DESTINATION must be defined');
-    if(!variables.NAME) throw new Error('NAME must be defined');
+export async function createTemplates(config: IConfig, variables: Variables, dryRun?: boolean): Promise<void> {
+    if (!variables.TEMPLATE) throw new Error('TEMPLATE must be defined');
+    if (!variables.DESTINATION) throw new Error('DESTINATION must be defined');
+    if (!variables.NAME) throw new Error('NAME must be defined');
     const template = variables.TEMPLATE;
     const destination = variables.DESTINATION;
     const name = variables.NAME;
     const templateFiles = getTemplateFiles(template);
     await templateFiles.forEach(createFile);
 
-    async function createFile(templateFile: string): Promise<void>
-    {
-        await createFileFromTemplate(template, destination, config, name, templateFile, dryRun||false);
+    async function createFile(templateFile: string): Promise<void> {
+        await createFileFromTemplate(template, destination, config, name, templateFile, dryRun || false);
     }
 }
