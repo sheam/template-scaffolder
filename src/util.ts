@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import {ITemplateDescriptor} from './types.js';
 
 export function log(str: string, indent = 0, debug=false): void {
     if(debug && !process.env.DEBUG) return;
@@ -45,7 +46,7 @@ export function scaffoldingPath(template: string, filePath = ''): string
     return path.join(SCAFFOLD_FOLDER_NAME, template, filePath).replaceAll('\\', '/');
 }
 
-export function printValues(variables: any, debug=false): void {
+export function printValues(variables: any, debug=false, indent: number = 0): void {
     function wrapValue(val: unknown): string
     {
         if(val === null) return 'null';
@@ -59,7 +60,15 @@ export function printValues(variables: any, debug=false): void {
     }
     Object.keys(variables).forEach((key) => {
         const val = variables[key];
-        log(`${key}=${wrapValue(variables[key])}`, 1, debug);
+        if(val && typeof(val) === 'object')
+        {
+            log(`${key}:`, indent);
+            printValues(val, debug, indent+1);
+        }
+        else
+        {
+            log(`${key}=${wrapValue(variables[key])}`, indent, debug);
+        }
     });
 }
 

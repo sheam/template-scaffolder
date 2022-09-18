@@ -14,38 +14,18 @@ Access to environment variables, users prompts, and scripting.
    the scaffolder when it is run.
 5. (optional) Add a script to your `package.json` file to run the scaffolder.
 
-# Command Line
-The structure of running the **scaffolder** is as follows:
-```bash
-scaffolder [destinationDirectory] [--template=<templateName>] [--name=<NAME>] [--dryRun]
-```
-## Arguments
-All arguments to the command line are optional.
-If you do not supply the arguments on the command line, 
-you will be prompted for their values.
-
-### Destination Directory
-Directory which is the root of where generated files will be placed.
-If you specify this value on the command line, _it must be the first argument_.
-If it is not specified, the user will be prompted input a value.
-
-### template
-Name of the template to use for generating files. This will be the name of a
-sub-folder in the **scaffolding** directory.
-If it is not specified, the user will be prompted input a value.
-
-### name
-Value for the NAME variable.
-If it is not specified, the user will be prompted input a value.
-
-### dryRun
-If this flag is specified, no files or directories will be created.
-The contents of what would have been written will be dumped to the console.
-
 # Config files
 There will be one of these for each template.
 It is a javascript file with a default export that is a function
 that takes the `name` parameter and returns a `IConfig` object.
+
+The defaults will work for most people, so you can have a template
+with the following default config: `scaffolding.config.js`;
+```javascript
+export default function (name) {
+    return {};
+}
+```
 
 Because this is a regular javascript file, you have access to
 `process.env`, and any other javascript functions.
@@ -162,6 +142,34 @@ export default function (name, variables) {
     };
 };
 ```
+
+# Command Line
+The structure of running the **scaffolder** is as follows:
+```bash
+scaffolder [destinationDirectory] [--template=<templateName>] [--name=<NAME>] [--dryRun]
+```
+## Arguments
+All arguments to the command line are optional.
+If you do not supply the arguments on the command line,
+you will be prompted for their values.
+
+### Destination Directory
+Directory which is the root of where generated files will be placed.
+If you specify this value on the command line, _it must be the first argument_.
+If it is not specified, the user will be prompted input a value.
+
+### template
+Name of the template to use for generating files. This will be the name of a
+sub-folder in the **scaffolding** directory.
+If it is not specified, the user will be prompted input a value.
+
+### name
+Value for the NAME variable.
+If it is not specified, the user will be prompted input a value.
+
+### dryRun
+If this flag is specified, no files or directories will be created.
+The contents of what would have been written will be dumped to the console.
 
 # Making A Template
 Variable substitution occurs on file and directory names,

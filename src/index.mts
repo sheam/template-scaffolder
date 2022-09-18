@@ -3,7 +3,7 @@
 import {getArgs} from './cli.js';
 import {getConfig} from './config.js';
 import {createTemplates} from './templateProcessing.js';
-import {getInitialInputs, getOtherInputs} from './userInputs.js';
+import {getInitialInputs, finalizeInputs} from './userInputs.js';
 import {log, printValues, verifyScaffoldingFolder} from './util.js';
 
 verifyScaffoldingFolder();
@@ -11,21 +11,11 @@ verifyScaffoldingFolder();
 const args = getArgs();
 const initialValues = await getInitialInputs(args);
 const config = await getConfig(initialValues);
-const otherInputs = await getOtherInputs(config, args);
-const variables = Object.assign({}, initialValues, config.variables, otherInputs);
+const finalizedInputs = await finalizeInputs(config, args, initialValues);
 
-log('initialValues', 0, true);
-printValues(initialValues, true);
-
-log('config.variables', 0, true);
-printValues(config.variables, true);
-
-log('other inputs', 0, true);
-printValues(otherInputs, true);
-
-log('Using template variables:');
-printValues(variables, true);
+log('finalized variables', 0, true);
+printValues(finalizedInputs, true, 1);
 
 log('Creating files:');
-await createTemplates(config, variables, args.dryRun);
+await createTemplates(finalizedInputs, args.dryRun);
 

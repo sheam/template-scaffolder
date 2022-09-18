@@ -1,13 +1,14 @@
 import fs from 'fs';
 import inquirer, {DistinctChoice, DistinctQuestion} from 'inquirer';
-import {ICliArgs, IConfig, IRequiredInputs} from './types.js';
-import {logError, scaffoldingPath} from './util.js';
+import {getTemplateDescriptors} from './config.js';
+import {ICliArgs, IConfigFile, IInitialInputs, IFinalizedInputs, ITemplateDescriptor} from './types.js';
+import {logError} from './util.js';
 
 // @ts-ignore
 const inquirerFuzzyPathModule = await import('inquirer-fuzzy-path');
 inquirer.registerPrompt('fuzzypath', inquirerFuzzyPathModule.default);
 
-export async function getInitialInputs(cliValues: ICliArgs): Promise<IRequiredInputs> {
+export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInputs> {
     const questions: DistinctQuestion[] = [];
 
     if (!cliValues.name)
@@ -15,30 +16,70 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IRequiredIn
         questions.push({name: 'name', type: 'input', message: 'Enter the name:'});
     }
 
-    if (!cliValues.template)
+    const templates = await getTemplateDescriptors();
+    let templateDescriptor: ITemplateDescriptor|undefined = undefined;
+    if (cliValues.template)
     {
-        const templates = fs.readdirSync(scaffoldingPath(''))
-            .map<DistinctChoice>(x => ({value: x, title: x}));
+        templateDescriptor = templates.find(td => td.name === cliValues.template) ||
+            templates.find(td => td.dir === cliValues.template);
 
-        questions.push({name: 'template', type: 'list', choices: templates, message: 'Select a template:'});
+        if(!templateDescriptor)
+        {
+            logError(`Could not find template ${cliValues.template}`);
+            process.exit(-1);
+        }
+    }
+    else
+    {
+        const getTitle = (td: ITemplateDescriptor) => {
+          let s = td.name || td.dir;
+          if(!td.description) return s;
+          return `${s} - ${td.description.substring(0, 50)}`
+        };
+        const templateChoices = templates.map<DistinctChoice>(td => ({value: td.dir, name: getTitle(td)}));
+        questions.push({name: 'template', type: 'list', choices: templateChoices, message: 'Select a template:'});
     }
 
     const userInputs = questions.length > 0 ? await inquirer.prompt(questions) : {};
-    const result: IRequiredInputs = {
-        NAME: userInputs.name || cliValues.name,
-        TEMPLATE: userInputs.template || cliValues.template,
-        DESTINATION: undefined,
+
+    if(userInputs.template)
+    {
+        templateDescriptor = templates.find(td => td.dir === userInputs.template) ||
+            templates.find(td => td.dir === userInputs.template);
+    }
+
+    if(!templateDescriptor)
+    {
+        throw new Error(`Missing template ${cliValues.template}`);
+    }
+
+    const result: IInitialInputs = {
+        instanceName: userInputs.name || cliValues.name,
+        template: templateDescriptor,
     };
 
-    if(!result.TEMPLATE) { logError('template must be defined on command line or in user input'); process.exit(-1); }
-    if(!result.NAME) { logError('template must be defined on command line or in user input'); process.exit(-1); }
+    if(!result.template) throw new Error('template must be defined on command line or in user input');
+    if(!result.instanceName) throw new Error('n must be defined on command line or in user input');
 
     return result;
 }
 
-export async function getOtherInputs(config: IConfig, cliValues: ICliArgs): Promise<any> {
+export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, requiredInputs: IInitialInputs): Promise<IFinalizedInputs> {
 
     const questions: DistinctQuestion[] = [];
+
+    let srcRoot = '';
+    if (!config.srcRoot)
+    {
+        if (fs.existsSync('./src'))
+        {
+            srcRoot = './src';
+        }
+        else
+        {
+            srcRoot = process.cwd();
+        }
+    }
 
     if (!cliValues.destination)
     {
@@ -51,6 +92,7 @@ export async function getOtherInputs(config: IConfig, cliValues: ICliArgs): Prom
         {
             const destinationChoices = config.destinations.filter(p => dirValidator(p))
                 .map<DistinctChoice>(x => ({value: x, title: x}));
+
             destinationChoices.push({value: '__other__', name: 'Other'});
             questions.push({
                                name: 'destinationSelection',
@@ -64,11 +106,8 @@ export async function getOtherInputs(config: IConfig, cliValues: ICliArgs): Prom
         function shouldExcludeDir(dir: string): boolean {
             const containsMatches = ['node_modules'];
             const rxMatches = [/^\.\w/, /\/\.\w/, /\\\.\w/];
-            return containsMatches.findIndex(s => dir.indexOf(s) >= 0) >=
-                0 ||
-                rxMatches.findIndex(rx => rx.test(dir)) >=
-                0;
-
+            return containsMatches.findIndex(s => dir.indexOf(s) >= 0) >= 0 ||
+                rxMatches.findIndex(rx => rx.test(dir)) >= 0;
         }
 
         function shouldGetManualDestination(prev: { destinationSelection: string }): boolean {
@@ -79,7 +118,7 @@ export async function getOtherInputs(config: IConfig, cliValues: ICliArgs): Prom
             name: 'destination',
             message: 'Enter a destination directory:',
             type: 'fuzzypath',
-            rootPath: config.srcRoot,
+            rootPath: srcRoot,
             itemType: 'directory',
             excludePath: shouldExcludeDir,
             when: shouldGetManualDestination,
@@ -87,16 +126,33 @@ export async function getOtherInputs(config: IConfig, cliValues: ICliArgs): Prom
         questions.push(fuzzyPathQuestion as any);
     }
 
-    if (config.prompts?.length)
+    if(typeof(config.prompts) === 'function')
+    {
+        config.prompts(requiredInputs.instanceName).forEach(p => questions.push(p));
+    }
+
+    if(Array.isArray(config.prompts))
     {
         config.prompts.forEach(p => questions.push(p));
     }
 
-    const result = await inquirer.prompt(questions);
+    const answers = await inquirer.prompt(questions);
 
-    result.DESTINATION = result.destination || result.destinationSelection || cliValues.destination;
-    delete result.destinationSelection;
-    delete result.destination;
+    const destination = answers.destination || answers.destinationSelection || cliValues.destination;
+    delete answers.destinationSelection;
+    delete answers.destination;
 
-    return result;
+    const configVariables = typeof(config.variables) === 'function' ?
+        config.variables(requiredInputs.instanceName) :
+        (config.variables||{});
+
+    return {
+        destination,
+        srcRoot,
+        afterFileCreated: config.afterFileCreated,
+        createNameDir: config.createNameDir === true || config.createNameDir === undefined,
+        template: requiredInputs.template,
+        instanceName: requiredInputs.instanceName,
+        variables:  Object.assign({ NAME: requiredInputs.instanceName }, answers, configVariables)
+    };
 }
