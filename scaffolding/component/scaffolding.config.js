@@ -5,8 +5,11 @@
 //     prompts?: DistinctQuestion[];
 //     createNameDir?: boolean;
 //     srcRoot?: string;
-//     afterFileCreated?: (createdFilePath: string) => Promise<void>;
+//     afterFileCreated?: (createdFilePath: string, variables: any) => Promise<void>;
 // }
+async function afterCreate(path) {
+    console.log(`>>> created file ${path}`);
+}
 
 export default function (name) {
     return {
@@ -22,5 +25,6 @@ export default function (name) {
         // ],
         destinations: ['src/path/components', 'src/path/tables'],
         srcRoot: './src',
+        afterFileCreated: afterCreate,
     };
 };

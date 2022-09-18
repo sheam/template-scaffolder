@@ -79,7 +79,7 @@ export async function getOtherInputs(config: IConfig, cliValues: ICliArgs): Prom
             name: 'destination',
             message: 'Enter a destination directory:',
             type: 'fuzzypath',
-            rootPath: config.srcRoot || process.cwd() || './src',
+            rootPath: config.srcRoot,
             itemType: 'directory',
             excludePath: shouldExcludeDir,
             when: shouldGetManualDestination,

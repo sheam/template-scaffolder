@@ -19,5 +19,19 @@ export async function getConfig(initialInputs: IRequiredInputs): Promise<IConfig
     log(`modulePath ${modulePath}, cwd=${process.cwd()}`, 1, true);
 
     const module = await import(modulePath);
-    return module.default(initialInputs.NAME);
+    const config = module.default(initialInputs.NAME);
+
+    if(!config.srcRoot)
+    {
+        if(fs.existsSync('./src'))
+        {
+            config.srcRoot = './src';
+        }
+        else
+        {
+            config.srcRoot = process.cwd();
+        }
+    }
+
+    return config;
 }

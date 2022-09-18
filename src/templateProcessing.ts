@@ -3,17 +3,17 @@ import path from 'path';
 import {IConfig, Variables} from './types.js';
 import {CONFIG_FILE_NAME, log, padString, scaffoldingPath} from './util.js';
 
-function replaceVariables(text: string, config: IConfig): string {
-    return Object.keys(config.variables).reduce((text, key) => {
-        const value = config.variables[key];
+function replaceVariables(text: string, variables: Variables): string {
+    return Object.keys(variables).reduce((text, key) => {
+        const value = variables[key];
         const target = `$${key}$`;
         return text.replaceAll(target, value.toString());
     }, text);
 }
 
-function getFileContents(path: string, config: IConfig): string {
+function getFileContents(path: string, variables: Variables): string {
     const fileText = fs.readFileSync(path, 'utf-8');
-    return replaceVariables(fileText, config);
+    return replaceVariables(fileText, variables);
 }
 
 function getTemplateFiles(template: string): string[] {
@@ -40,7 +40,7 @@ function getTemplateFiles(template: string): string[] {
         .filter(p => p !== CONFIG_FILE_NAME);
 }
 
-async function createFileFromTemplate(template: string, destinationRootDir: string, config: IConfig, name: string, file: string, dryRun: boolean): Promise<void> {
+async function createFileFromTemplate(template: string, destinationRootDir: string, variables: Variables, config: IConfig, name: string, file: string, dryRun: boolean): Promise<void> {
     if (!fs.existsSync(destinationRootDir) || !fs.statSync(destinationRootDir).isDirectory())
     {
         throw new Error(`Destination specified is not a directory: ${destinationRootDir}`);
@@ -57,8 +57,8 @@ async function createFileFromTemplate(template: string, destinationRootDir: stri
         }
     }
 
-    const destinationPath = replaceVariables(path.join(destinationDirPath, file), config);
-    const content = getFileContents(scaffoldingPath(template, file), config);
+    const destinationPath = replaceVariables(path.join(destinationDirPath, file), variables);
+    const content = getFileContents(scaffoldingPath(template, file), variables);
 
     if (dryRun)
     {
@@ -73,8 +73,12 @@ async function createFileFromTemplate(template: string, destinationRootDir: stri
         fs.writeFileSync(destinationPath, content);
         if (config.afterFileCreated)
         {
-            await config.afterFileCreated(path.resolve(destinationPath));
+            await config.afterFileCreated(path.resolve(destinationPath), variables);
         }
+    }
+    if (config.afterFileCreated)
+    {
+        await config.afterFileCreated(destinationPath, variables);
     }
 }
 
@@ -89,6 +93,6 @@ export async function createTemplates(config: IConfig, variables: Variables, dry
     await templateFiles.forEach(createFile);
 
     async function createFile(templateFile: string): Promise<void> {
-        await createFileFromTemplate(template, destination, config, name, templateFile, dryRun || false);
+        await createFileFromTemplate(template, destination, variables, config, name, templateFile, dryRun || false);
     }
 }
