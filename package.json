@@ -1,6 +1,6 @@
 {
   "name": "template-scaffolder",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "multi-file scaffolding for any type of project",
   "type": "module",
   "engines": {
