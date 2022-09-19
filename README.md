@@ -5,22 +5,29 @@ Quickly create multiple files based on simple templates.
 Access to environment variables, users prompts, and scripting.
 
 # Getting Started
-1. Create a `scaffolding` directory in the root of your project.
-2. Create a sub-folder in the in your _scaffolding_ folder for each template.
-3. In the template folder add a `scaffolding.config.mjs` file with a default
-   export that returns a `IConfigFile` object.
-4. Add 1 or more files to the _template_ folder. 
-   The template files can contain variables in their path (dir & file) 
-   that will be replaced by the scaffolder when it is run.
-5. (optional) Add a script to your `package.json` file to run the scaffolder:
+1. `npm install template-scaffolder`
+2. Create a `scaffolding` directory in the root of your project.
+3. Create a sub-folder in the in your _scaffolding_ folder for your (first) template.
+4. In the template folder add a `scaffolding.config.mjs` file with
+   a simple default configuration of `export default {}` as the contents.
+5. Add 1 or more files to the _template_ folder.
+6. (optional) Add a script to your `package.json` file to run the scaffolder:
     `"scaffold": "npx scaffolder" `
+7. Fine tune your configuration, templates, and npm scripts by reading below.
 
-# Config files
-There will be one of these for each template.
-It is a javascript esm module file, and must have an export default
-object with the schema defined as:
+# Table of Contents
+* [Configuration files](#configuration-files)
+* [Command Line Options](#command-line)
+* [Creating a Template](#making-a-template)
+* [Sample Project](#sample-project)
+
+# Configuration Files
+Each template must have exactly one `scaffolding.config.mjs` file
+in the root.
+It is a javascript esm module file. 
+The typescript schema for this file is:
 ```typescript
-export interface IConfigFile
+interface IConfigFile
 {
    name?: string;
    description?: string;
@@ -58,7 +65,7 @@ Simple example:
 ```javascript
 export default {
     variables: {
-        CREATED_BY: process.env.USERNAME,
+       CREATED_BY: process.env.USERNAME,
        CREATED_ON: new Date().toString(),
     }
 }
@@ -118,15 +125,29 @@ so you may want to guard against this in your function if it expects it to exist
 The commands that run will not be interactive and should not
 expect user input.
 
+```javascript
+export default {
+    afterFileCreated: (path) => {
+        console.log(`adding ${path} to git`);
+        return [`git add ${path}`, `git status ${path}`];
+    }
+}
+```
+
 You can return an empty array, if all the processing you
 require occurs in your function.
 
+
 ### `prompts` _(optional)_
 If your template requires variable values to be entered by the user,
-you may prompt the user. This is an array of `DistinctQuestion` objects,
-or a function that returns an array of `DistinctQuersion` objects,
-as defined by the Inquirer user prompter. The function form is handy
-if you need access to the instance name.
+you may prompt the user. The prompts field is an array of 
+`DistinctQuestion` objects, or a function that returns an array of 
+`DistinctQuersion` objects, as defined by the Inquirer user prompter. 
+The function form is handy if you need access to the instance name.
+
+Answers to prompts will be placed available in templates as variables
+where the `name` property will be the variable name,
+and the user response will be the value.
 
 For a simple question, you will just need two values: 
 ```javascript
@@ -139,12 +160,15 @@ export default {
     ]
 }
 ```
+The above will provide the `MYVAR` replacement in your templates now.
+
 You can offer multiple choice like this:
 ```javascript
 export default {
    prompts: [
       {
-         message: 'Enter a value for My Var:',
+         name: 'OPTION',
+         message: 'Select an option:',
          type: 'list',
          choices: [ 'option 1', 'option 2' ],
       }
@@ -189,44 +213,6 @@ If template is using with a value for NAME of 'TheName', the result would be:
 ```
 
 **Note:** macros do not work when transforming file paths.
-
-## Sample `scaffolding.config.mjs` File
-The following is a sample configuration file for a React project.
-```javascript
-// export interface IConfigFile
-// {
-//    name?: string;
-//    description?: string;
-//    variables?: Object | ((instanceName: string) => any),
-//    destinations?: string[];
-//    prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
-//    createNameDir?: boolean;
-//    srcRoot?: string;
-//    afterFileCreated?: (createdFilePath: string, variables: TemplateVariables) => Promise<string[]>;
-// }
-
-async function addToGit(path) {
-    console.log(`>>> Adding ${path} to git`);
-    return [`git add ${path}`];
-}
-
-export default {
-        variables: (name) => ({
-            Component: name,
-            TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
-        }),
-        prompts: [
-            {
-                name: 'PROPNAME',
-                message: 'Enter name of first prop:',
-            }
-        ],
-        destinations: ['src/common/components', 'src/pages'],
-        createNameDir: true,
-        srcRoot: './src',
-        afterFileCreated: addToGit,
-}
-```
 
 # Command Line
 The structure of running the **scaffolder** is as follows:

@@ -1,6 +1,6 @@
 {
-  "name": "simple-code-templates",
-  "version": "1.0.1",
+  "name": "template-scaffolder",
+  "version": "0.9.0",
   "description": "multi-file scaffolding for any type of project",
   "type": "module",
   "engines": {

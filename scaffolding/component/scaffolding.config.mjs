@@ -14,5 +14,8 @@ export default {
     macros: {
         repeatString: (str, n) => `${str} `.repeat(n).trimEnd()
     },
+    afterFileCreated: (path) => {
+        console.log(`>>>>>>>>>>>> ${path}`);
+    },
     destinations: ['src/testdir/dir1/subdir1'],
 }
