@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import {CONFIG_FILE_NAME} from './constants.js';
 import {IFinalizedInputs, TemplateVariables} from './types.js';
-import {CONFIG_FILE_NAME, log, logError, padString, scaffoldingPath} from './util.js';
+import {log, logError, padString, scaffoldingPath} from './util.js';
 import {exec} from 'child_process';
 
 function replaceVariables(text: string, variables: TemplateVariables): string {

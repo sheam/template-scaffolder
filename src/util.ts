@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import {ITemplateDescriptor} from './types.js';
+import {SCAFFOLD_FOLDER_NAME} from './constants.js';
 
 export function log(str: string, indent = 0, debug=false): void {
     if(debug && !process.env.DEBUG) return;
@@ -11,9 +11,6 @@ export function logError(str: string): void
 {
     console.error(str);
 }
-
-export const SCAFFOLD_FOLDER_NAME = 'scaffolding';
-export const CONFIG_FILE_NAME = 'scaffolding.config.js';
 
 export function verifyScaffoldingFolder(): void
 {

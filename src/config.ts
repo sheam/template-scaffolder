@@ -1,7 +1,8 @@
 import fs from 'fs';
 import * as path from 'path';
+import {CONFIG_FILE_NAME} from './constants.js';
 import {IConfigFile, IInitialInputs, ITemplateDescriptor} from './types.js';
-import {CONFIG_FILE_NAME, log, scaffoldingPath} from './util.js';
+import {log, scaffoldingPath} from './util.js';
 
 export async function getTemplateDescriptors(): Promise<ITemplateDescriptor[]> {
     const result: ITemplateDescriptor[] = [];

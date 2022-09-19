@@ -7,7 +7,7 @@ Access to environment variables, users prompts, and scripting.
 # Getting Started
 1. Create a `scaffolding` directory in the root of your project.
 2. Create a sub-folder in the in your _scaffolding_ folder for each template.
-3. In the template folder add a `scaffolding.config.js` file with a default
+3. In the template folder add a `scaffolding.config.mjs` file with a default
    export that returns a `IConfig` object.
 4. Add 1 or more files to the _template_ folder. 
    The template files can contain `$VARIABLE$` that will be replaced by
@@ -16,14 +16,29 @@ Access to environment variables, users prompts, and scripting.
 
 # Config files
 There will be one of these for each template.
-It is a javascript file with a default export that is a function
-that takes the `name` parameter and returns a `IConfig` object.
+It is a javascript esm module file, and must have an export default
+object with the schema defined as:
+```typescript
+export interface IConfigFile
+{
+    name?: string;
+    description?: string;
+    variables?: Object | ((instanceName: string) => any),
+    destinations?: string[];
+    prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
+    createNameDir?: boolean;
+    srcRoot?: string;
+    afterFileCreated?: (createdFilePath: string) => Promise<string[]>;
+}
+```
+
+**Note:** reference to _'instance name'_ is referring to the _name_ that the user
+enters when running the scaffolder. This is not the same as the name of the template.
 
 The defaults will work for most people, so you can have a template
-with the following default config: `scaffolding.config.js`;
+with the following default config: `scaffolding.config.mjs`;
 ```javascript
-export default function (name) {
-    return {};
+export default {
 }
 ```
 
@@ -34,13 +49,32 @@ Because this is a regular javascript file, you have access to
 All fields are optional.
 
 ### `variables` _(optional)_
-Either an object or a function that takes the instance name returns an object.
+A hash of keys (variable names) and values that you  would like to
+use in your template files.
 
-`{ VARIABLE: 'VALUE' }` or `(instanceName) => ({ VARIABLE: 'VALUE' })`
+Simple example:
+```javascript
+export default {
+    variables: {
+        CREATED_BY: process.env.USERNAME,
+       CREATED_ON: new Date().toString(),
+    }
+}
+```
+This can also be a function that returns the object giving
+access to the instance name which the user has supplied.
+```javascript
+export default {
+    variables: (instanceName) => ({
+       COMPONENT_NAME: instanceName,
+       TEST_ID: instanceName.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
+    })
+}
+```
 
-The keys of the object will be the variable name, 
-and the value is the replacement value when encountered in template.
-If it is omitted, only the `$NAME$` replacement will happen.
+In your templates you will always have access to the _instance name_
+as `NAME`, you do not need to define it in your variables.
+
 
 ### `destinations` _(optional)_
 An array of string which should be used as a root destination for the
@@ -73,14 +107,18 @@ The function _must return a `Promise<string[]>`_.
 The array of strings returned by the promise will be treated as an array
 of external commands to be run.
 
-An example would be adding the created file to _git_, a _project file_, 
-run a formatter on the file, etc.
+An example would be adding the created file to _git_,
+running a formatter on the file,
+or adding the new file to your IDE's project file, etc.
 
-**Note 1:** In the case of a _dry run_, the file will not actually be created,
-so you may want to guard against this in your function.
+In the case of a _dry run_, the file will not actually be created,
+so you may want to guard against this in your function if it expects it to exist.
 
-**Note 2:** The commands that run will not be interactive and should not
-expect user input.;
+The commands that run will not be interactive and should not
+expect user input.
+
+You can return an empty array, if all the processing you
+require occurs in your function.
 
 ### `prompts` _(optional)_
 If your template requires variable values to be entered by the user,
@@ -91,18 +129,25 @@ if you need access to the instance name.
 
 For a simple question, you will just need two values: 
 ```javascript
-{ 
-  name: 'MYVAR',
-  message: 'Enter a value for My Var:'
+export default {
+    prompts: [
+       {
+          name: 'MYVAR',
+          message: 'Enter a value for My Var:'
+       }
+    ]
 }
 ```
 You can offer multiple choice like this:
 ```javascript
-{
-    name: 'MYVAR',
-    message: 'Enter a value for My Var:',
-    type: 'list',
-    choices: [ 'option 1', 'option 2' ],
+export default {
+   prompts: [
+      {
+         message: 'Enter a value for My Var:',
+         type: 'list',
+         choices: [ 'option 1', 'option 2' ],
+      }
+   ]
 }
 ```
 There are a lot of advanced questions types, including conditional questions 
@@ -111,7 +156,7 @@ question prompts are supported, visit
 [Inquirer documentation](https://github.com/SBoudrias/Inquirer.js#questions).
 Note that the only plugin supported is **inquirer-fuzzy-path**.
 
-## Sample `scaffolding.config.js` File
+## Sample `scaffolding.config.mjs` File
 The following is a sample configuration file for a React project.
 ```javascript
 // export interface IConfigFile
@@ -170,20 +215,20 @@ sub-folder in the **scaffolding** directory.
 If it is not specified, the user will be prompted input a value.
 
 ### name
-Value for the NAME variable.
+Value for the instance NAME variable.
 If it is not specified, the user will be prompted input a value.
 
 ### dryRun
 If this flag is specified, no files or directories will be created.
 The contents of what would have been written will be dumped to the console.
 
-# Making A Template
+# Making a Template
 Variable substitution occurs on file and directory names,
 and on the file contents. A variable name must be surrounded by `$`.
-**e.g.,** if you had a variable named `MYVAR`, in your wherever `$MYVAR$`
+**e.g.,** if you had a variable named `MYVAR`, in your templates or paths, wherever `$MYVAR$`
 is encountered, it will be replaced with the value of `MYVAR`.
 1. Create a folder in the **scaffolding** directory.
-2. Create a `scaffolding.config.js` file, and configure it as above.
+2. Create a `scaffolding.config.mjs` file, and configure it as above.
 3. Add files and directories that you will want generated 
    when executing the template.
 
@@ -210,7 +255,7 @@ and srcRoot was `src`.
 Within your template, all variable names surround by `$` will be replaced
 with the value of the variable as entered by the user.
 
-## Sample Template
+# Sample Project
 The following is a directory structure for a React project.
 It supplies two templates: **component** and **page**.
 
@@ -223,11 +268,25 @@ It supplies two templates: **component** and **page**.
       $NAME$.tsx
       helpers.tsx
       styles.ts
-      scaffolding.config.js
+      scaffolding.config.mjs
     - page
       $NAME$.tsx
-      scaffolding.config.js
+      scaffolding.config.mjs
   - src
     - common
       - components 
+```
+
+Let's look at the _component_ template.
+
+## scaffolding/component/scaffolding.config.mjs
+```javascript
+export default {
+    name: 'React Component',
+    description: 'for common components',
+    variables: (name) => ({
+        TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
+    }),
+   prompts: ()
+}
 ```
