@@ -10,7 +10,7 @@
     "scaffolder": "./dist/index.mjs"
   },
   "scripts": {
-    "publish": "npm run build && npm run patch-version && npm publish",
+    "publish-to-npm": "npm run build && npm run patch-version && npm publish",
     "patch-version": "npm version patch -m \"updating version for publish\"",
     "build": "npm run clean && npm run compile && npm run types",
     "types": "tsc --emitDeclarationOnly -d src/types.ts  -outDir dist",
