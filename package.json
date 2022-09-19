@@ -1,7 +1,7 @@
 {
   "name": "template-scaffolder",
   "version": "0.9.5",
-  "description": "multi-file scaffolding for any type of project",
+  "description": "multi-file scaffolding with velocity template for any type of project",
   "type": "module",
   "engines": {
     "node": ">=14.16"
