@@ -1,6 +1,6 @@
 {
   "name": "template-scaffolder",
-  "version": "0.9.1",
+  "version": "0.9.0",
   "description": "multi-file scaffolding for any type of project",
   "type": "module",
   "engines": {
@@ -10,6 +10,8 @@
     "scaffolder": "./dist/index.mjs"
   },
   "scripts": {
+    "publish": "npm run build && npm run version && npm publish",
+    "version": "npm version patch -m 'updating version for publish'",
     "build": "npm run clean && npm run compile && npm run types",
     "types": "tsc --emitDeclarationOnly -d src/types.ts  -outDir dist",
     "compile": "tsc",
