@@ -1,8 +1,7 @@
 {
   "name": "simple-code-templates",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "multi-file scaffolding for any type of project",
-  "exports": "./dist/index.mjs",
   "type": "module",
   "engines": {
     "node": ">=14.16"
@@ -11,19 +10,18 @@
     "scaffolder": "./dist/index.mjs"
   },
   "scripts": {
+    "build": "npm run clean && npm run compile && npm run types",
+    "types": "tsc --emitDeclarationOnly -d src/types.ts  -outDir dist",
     "compile": "tsc",
     "compile-watch": "tsc --watch",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config=jest.config.mjs src",
-    "test-run-dry": "node dist/index.mjs  src/testdir/dir1/subdir1 --name=MyComponent --template=component --dryRun",
-    "test-run-interactive-dry": "cross-env DEBUG=TRUE node dist/index.mjs --dryRun --name=MyComponent",
-    "test-run": "node dist/index.mjs  src/testdir/dir1/subdir1 --name=MyComponent --template=component",
+    "test-run": "node dist/index.mjs  src/testdir/dir1/subdir1 --name=MyComponent --template=component --dryRun",
     "clean": "npx rimraf --rf dist"
   },
   "keywords": [
     "scaffolding"
   ],
   "author": "Shea Martin",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "devDependencies": {
     "@types/inquirer": "^9.0.1",
     "@types/inquirer-fuzzy-path": "^2.3.5",
