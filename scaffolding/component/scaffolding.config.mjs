@@ -1,25 +1,18 @@
-// IConfig
-// {
-//     variables?: any,
-//     destinations?: string[];
-//     prompts?: DistinctQuestion[];
-//     createNameDir?: boolean;
-//     srcRoot?: string;
-//     afterFileCreated?: (createdFilePath: string, variables: any) => Promise<string[]>;
-// }
-
 export default {
     name: 'React Component',
     description: 'Used for creating a react component',
     variables: (name) => ({
-        Component: name,
-        TestId: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
+        COMPONENT: name,
+        TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
     }),
     prompts: (_name) => ([
         {
-            name: 'somevar',
-            message: 'Enter a value for SomeVar:',
+            name: 'SOME_VAL',
+            message: 'Enter a value for SOME_VAL:',
         }
     ]),
+    macros: {
+        repeatString: (str, n) => `${str} `.repeat(n).trimEnd()
+    },
     destinations: ['src/testdir/dir1/subdir1'],
 }

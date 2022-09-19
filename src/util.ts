@@ -59,7 +59,7 @@ export function printValues(variables: any, debug=false, indent: number = 0): vo
         const val = variables[key];
         if(val && typeof(val) === 'object')
         {
-            log(`${key}:`, indent);
+            log(`${key}:`, indent, debug);
             printValues(val, debug, indent+1);
         }
         else

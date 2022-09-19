@@ -13,8 +13,8 @@ const initialValues = await getInitialInputs(args);
 const config = await getConfig(initialValues);
 const finalizedInputs = await finalizeInputs(config, args, initialValues);
 
-log('finalized variables', 0, true);
-printValues(finalizedInputs, true, 1);
+log('Using configuration:', 0, !args.dryRun);
+printValues(finalizedInputs, !args.dryRun, 1);
 
 log('Creating files:');
 await createTemplates(finalizedInputs, args.dryRun);

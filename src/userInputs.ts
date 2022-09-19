@@ -152,6 +152,7 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
         createNameDir: config.createNameDir === true || config.createNameDir === undefined,
         template: requiredInputs.template,
         instanceName: requiredInputs.instanceName,
-        variables:  Object.assign({ NAME: requiredInputs.instanceName }, answers, configVariables)
+        variables:  Object.assign({ NAME: requiredInputs.instanceName }, answers, configVariables),
+        macros: config.macros,
     };
 }

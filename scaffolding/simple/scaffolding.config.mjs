@@ -12,4 +12,7 @@ export default {
     name: 'Simple',
     description: 'for testing velocity templates',
     destinations: ['src/testdir/dir1/subdir1'],
+    macros: {
+        sayHello: (person) => `Well hello there ${person}!!!`
+    }
 }

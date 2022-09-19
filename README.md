@@ -21,14 +21,15 @@ object with the schema defined as:
 ```typescript
 export interface IConfigFile
 {
-    name?: string;
-    description?: string;
-    variables?: Object | ((instanceName: string) => any),
-    destinations?: string[];
-    prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
-    createNameDir?: boolean;
-    srcRoot?: string;
-    afterFileCreated?: (createdFilePath: string) => Promise<string[]>;
+   name?: string;
+   description?: string;
+   variables?: Object | ((instanceName: string) => any),
+   prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
+   macros?: object;
+   destinations?: string[];
+   createNameDir?: boolean;
+   srcRoot?: string;
+   afterFileCreated?: (createdFilePath: string) => Promise<string[]>;
 }
 ```
 

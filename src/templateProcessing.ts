@@ -8,13 +8,32 @@ import {exec} from 'child_process';
 const velocityModule = await import('velocityjs');
 const velocity = velocityModule.default;
 
-function replaceVariables(text: string, variables: TemplateVariables): string {
-   return velocity.render(text, variables);
+function replaceVariables(text: string, variables: TemplateVariables, macros?: object): string {
+    return velocity.render(text, variables, macros);
 }
 
-function getFileContents(path: string, variables: TemplateVariables): string {
+function getFileContents(path: string, variables: TemplateVariables, macros: object|undefined): string {
     const fileText = fs.readFileSync(path, 'utf-8');
-    return replaceVariables(fileText, variables);
+    try
+    {
+        return replaceVariables(fileText, variables, macros);
+    }
+    catch (parseError: any) {
+        logError(`error processing template '${path}':\n${parseError.message}`);
+        process.exit(-1);
+    }
+}
+
+function getDestinationPath(rawPath: string, variables: TemplateVariables): string
+{
+    try
+    {
+        return replaceVariables(rawPath.replaceAll('\\', '/'), variables);
+    }
+    catch (parseError: any) {
+        logError(`error transforming destination file path '${rawPath}':\n${parseError.message}`);
+        process.exit(-1);
+    }
 }
 
 function getTemplateFiles(template: string): string[] {
@@ -72,7 +91,8 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
     const destinationDirPath = processConfig.createNameDir ?
         path.join(processConfig.destination, processConfig.instanceName) :
         processConfig.destination;
-    const destinationPath = replaceVariables(path.join(destinationDirPath, file), processConfig.variables);
+
+    const destinationPath = getDestinationPath(path.join(destinationDirPath, file), processConfig.variables);
 
     if (fs.existsSync(destinationPath))
     {
@@ -80,7 +100,11 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
         process.exit(-1);
     }
 
-    const content = getFileContents(scaffoldingPath(processConfig.template.dir, file), processConfig.variables);
+    const content = getFileContents(
+        scaffoldingPath(processConfig.template.dir, file),
+        processConfig.variables,
+        processConfig.macros);
+
     if (dryRun)
     {
         log(padString(` ${destinationPath} `));

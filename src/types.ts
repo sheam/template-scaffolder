@@ -9,8 +9,9 @@ export interface IConfigFile
     name?: string;
     description?: string;
     variables?: Object | ((instanceName: string) => any),
-    destinations?: string[];
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
+    macros?: object;
+    destinations?: string[];
     createNameDir?: boolean;
     srcRoot?: string;
     afterFileCreated?: (createdFilePath: string) => Promise<string[]>;
@@ -30,8 +31,9 @@ export interface IFinalizedInputs
     destination: string;
     variables: TemplateVariables;
     srcRoot: string;
-    afterFileCreated?: IConfigFile['afterFileCreated'];
+    afterFileCreated: IConfigFile['afterFileCreated'];
     createNameDir: boolean;
+    macros: object|undefined;
 }
 
 export interface ICliArgs
