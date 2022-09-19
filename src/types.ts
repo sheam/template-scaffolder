@@ -13,7 +13,7 @@ export interface IConfigFile
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
     createNameDir?: boolean;
     srcRoot?: string;
-    afterFileCreated?: (createdFilePath: string, variables: TemplateVariables) => Promise<string[]>;
+    afterFileCreated?: (createdFilePath: string) => Promise<string[]>;
 }
 
 export interface ITemplateDescriptor

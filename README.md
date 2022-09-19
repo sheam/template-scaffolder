@@ -34,7 +34,11 @@ Because this is a regular javascript file, you have access to
 All fields are optional.
 
 ### `variables` _(optional)_
-An object where the key is the variable name, 
+Either an object or a function that takes the instance name returns an object.
+
+`{ VARIABLE: 'VALUE' }` or `(instanceName) => ({ VARIABLE: 'VALUE' })`
+
+The keys of the object will be the variable name, 
 and the value is the replacement value when encountered in template.
 If it is omitted, only the `$NAME$` replacement will happen.
 
@@ -81,7 +85,9 @@ expect user input.;
 ### `prompts` _(optional)_
 If your template requires variable values to be entered by the user,
 you may prompt the user. This is an array of `DistinctQuestion` objects,
-as defined by the Inquirer user prompter.
+or a function that returns an array of `DistinctQuersion` objects,
+as defined by the Inquirer user prompter. The function form is handy
+if you need access to the instance name.
 
 For a simple question, you will just need two values: 
 ```javascript
@@ -108,14 +114,16 @@ Note that the only plugin supported is **inquirer-fuzzy-path**.
 ## Sample `scaffolding.config.js` File
 The following is a sample configuration file for a React project.
 ```javascript
-// IConfig
+// export interface IConfigFile
 // {
-//     variables?: any,
-//     destinations?: string[];
-//     prompts?: DistinctQuestion[];
-//     createNameDir?: boolean;
-//     srcRoot?: string;
-//     afterFileCreated?: (createdFilePath: string, variables: any) => Promise<void>;
+//    name?: string;
+//    description?: string;
+//    variables?: Object | ((instanceName: string) => any),
+//    destinations?: string[];
+//    prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
+//    createNameDir?: boolean;
+//    srcRoot?: string;
+//    afterFileCreated?: (createdFilePath: string, variables: TemplateVariables) => Promise<string[]>;
 // }
 
 async function addToGit(path) {
@@ -123,12 +131,11 @@ async function addToGit(path) {
     return [`git add ${path}`];
 }
 
-export default function (name, variables) {
-    return {
-        variables: {
+export default {
+        variables: (name) => ({
             Component: name,
             TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
-        },
+        }),
         prompts: [
             {
                 name: 'PROPNAME',
@@ -139,8 +146,7 @@ export default function (name, variables) {
         createNameDir: true,
         srcRoot: './src',
         afterFileCreated: addToGit,
-    };
-};
+}
 ```
 
 # Command Line
