@@ -8,11 +8,12 @@ Access to environment variables, users prompts, and scripting.
 1. Create a `scaffolding` directory in the root of your project.
 2. Create a sub-folder in the in your _scaffolding_ folder for each template.
 3. In the template folder add a `scaffolding.config.mjs` file with a default
-   export that returns a `IConfig` object.
+   export that returns a `IConfigFile` object.
 4. Add 1 or more files to the _template_ folder. 
-   The template files can contain `$VARIABLE$` that will be replaced by
-   the scaffolder when it is run.
-5. (optional) Add a script to your `package.json` file to run the scaffolder.
+   The template files can contain variables in their path (dir & file) 
+   that will be replaced by the scaffolder when it is run.
+5. (optional) Add a script to your `package.json` file to run the scaffolder:
+    `"scaffold": "npx scaffolder" `
 
 # Config files
 There will be one of these for each template.
@@ -75,7 +76,6 @@ export default {
 
 In your templates you will always have access to the _instance name_
 as `NAME`, you do not need to define it in your variables.
-
 
 ### `destinations` _(optional)_
 An array of string which should be used as a root destination for the
@@ -157,6 +157,39 @@ question prompts are supported, visit
 [Inquirer documentation](https://github.com/SBoudrias/Inquirer.js#questions).
 Note that the only plugin supported is **inquirer-fuzzy-path**.
 
+### `macros` _(optional)_
+An object containing 1 or more functions that return a string.
+These functions can be called as macros from your templates.
+They can take arguments as well.
+Config:
+```javascript
+export default {
+    macros: {
+       repeat: (str) => `${str}-${str}`,
+       truncate: (str, len) => ((str||'').substring(0,len))
+    }
+}
+```
+
+In an HTML file template:
+```html
+<p>
+    This is a paragraph.
+    #repeat('this is a paragraph that is long', 11)
+    Name 2x: #repeat(${NAME})
+</p>
+```
+If template is using with a value for NAME of 'TheName', the result would be:
+```html
+<p>
+    This is a paragraph.
+    this is a p
+    Name 2x: TheName-TheName
+</p>
+```
+
+**Note:** macros do not work when transforming file paths.
+
 ## Sample `scaffolding.config.mjs` File
 The following is a sample configuration file for a React project.
 ```javascript
@@ -224,10 +257,7 @@ If this flag is specified, no files or directories will be created.
 The contents of what would have been written will be dumped to the console.
 
 # Making a Template
-Variable substitution occurs on file and directory names,
-and on the file contents. A variable name must be surrounded by `$`.
-**e.g.,** if you had a variable named `MYVAR`, in your templates or paths, wherever `$MYVAR$`
-is encountered, it will be replaced with the value of `MYVAR`.
+
 1. Create a folder in the **scaffolding** directory.
 2. Create a `scaffolding.config.mjs` file, and configure it as above.
 3. Add files and directories that you will want generated 
@@ -239,22 +269,35 @@ is encountered, it will be replaced with the value of `MYVAR`.
 The _scaffolder_ will generate directories to match what is in the template dir.
 The name of the directories can contain variable names that will be substituted.
 
-**e.g.,** a template file with the path `component/$SUB_COMPONENT$/index.tsx`  
-will result in a file created with a path of 
-`src/MySubComponent/index.tsx`, assuming you had a variable named 
-`SUB_COMPONENT`, and the template folder was `component`, and srcRoot was `src`.
+**e.g.,** 
+* a template file with the path `component/${SUB_COMPONENT}/index.tsx`
+* Enter 'MySubComponent' when prompted for SUB_COMPONENT
+* Enter 'MyComponent' when prompted for NAME
+* Generated file will have path: `MyComponent/MySubComponent/index.tsx`
 
 ### Template Files
 File names may contain variable names that will be substituted.
 
-**e.g.,** a template file with the path `component/$NAME$.tsx` will result in
-a file created with the path of `src/MyComponent.tsx`, assuming you had 
-a variable named `SUB_COMPONENT`, and the template folder was `component`, 
-and srcRoot was `src`.
+**e.g.,**
+* a template file with the path `component/${NAME}.tsx`
+* Enter 'MyComponent' when prompted for NAME
+* Generated file will have path: `src/MyComponent/MyComponent.tsx`
 
 ### File Contents
-Within your template, all variable names surround by `$` will be replaced
-with the value of the variable as entered by the user.
+Files can be of any type, and have any content.
+Variable substitution, and calling macros is all done via the 
+[Apache 'Velocity Template Language'](https://velocity.apache.org/)
+(VTL) syntax. 
+
+#### VTL Tips
+* In for a simple variable replacement use `${NAME}`.
+* Use backslash `\ ` to escape the transformation: 
+  `\${NAME}` will not get transformed.
+* [Conditionals](https://velocity.apache.org/engine/1.7/user-guide.html#if-elseif-else) 
+  such as `if/else` can be handy.
+* Macros are called as `#myMacro()`.
+* VTL is very powerful. To fully take advantage of it, the 
+[Velocity Template User Guide](https://velocity.apache.org/engine/1.7/user-guide.html).
 
 # Sample Project
 The following is a directory structure for a React project.
@@ -265,17 +308,17 @@ It supplies two templates: **component** and **page**.
   - scaffolding
     - component
       - __tests__
-        - $NAME$.test.tsx
-      $NAME$.tsx
-      helpers.tsx
+        - ${NAME}.test.tsx
+      ${NAME}.tsx
       styles.ts
       scaffolding.config.mjs
     - page
-      $NAME$.tsx
+      ${NAME}.tsx
       scaffolding.config.mjs
   - src
     - common
       - components 
+    - pages
 ```
 
 Let's look at the _component_ template.
@@ -288,6 +331,97 @@ export default {
     variables: (name) => ({
         TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
     }),
-   prompts: ()
+   destinations: [ 'src/components' ], //suggest most common name first
+   srcRoot: './src', //default value,
+   afterFileCreated: (path, variables) => {
+        console.log(`adding ${path} to git`);
+        return [ `git add ${path}` ];
+   },
 }
 ```
+
+## scaffolding/component/${NAME}.tsx
+```javascript
+import * as React from 'react';
+import {ReactElement} from 'react';
+import {use${NAME}Styles} from './styles';
+
+interface I${NAME}Props
+{
+}
+
+export const ${NAME} = ({}: I${NAME}Props): ReactElement => {
+
+    use${NAME}Styles();
+
+    const someVar = 'Need to escape this';
+    
+    return (
+        <div data-testid="${TEST_ID}">
+            {`The name variable is \${someVar}`}
+        </div>
+    );
+};
+```
+
+## scaffolding/component/__tests__/${NAME}.test.tsx
+```javascript
+import * as React from 'react';
+import {render} from '@testing-library/react';
+import '@testing-library/jest-dom';
+import {${NAME}} from '../${NAME}';
+
+describe('<${NAME} />', () => {
+    it('should render without blowing up', () => {
+        const result = render(<${NAME} />);
+        expect(result.getByTestId('${TEST_ID}')).toBeInTheDocument();
+    });
+});
+```
+
+## scaffolding/component/styles.ts
+```javascript
+import {createUseStyles} from 'react-jss';
+import {ITheme} from '@models';
+
+export const use${NAME}Styles = (createUseStyles((theme: ITheme) => {
+    return ({});
+}));
+```
+
+## scaffolding/page/scaffolding.config.mjs
+```javascript
+export default {
+    prompts: () => ([
+        {
+            name: 'TITLE',
+            message: 'Enter page heading'
+        }
+    ]),
+    macros: {
+        truncate: (str, n) => ((str || '').substring(0, n))
+    },
+}
+```
+
+## scaffolding/page/${NAME}.tsx
+```javascript
+import * as React from 'react';
+import {ReactElement} from 'react';
+
+export const ${NAME} = (): ReactElement => {
+
+    return (
+        <div>
+            <h1>
+                Title: #truncate(${TITLE}, 40)
+            </h1>
+            <p>
+                This is page content.
+            </p>
+        </div>
+    );
+};
+```
+
+
