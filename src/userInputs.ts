@@ -4,7 +4,6 @@ import {getTemplateDescriptors} from './config.js';
 import {ICliArgs, IConfigFile, IInitialInputs, IFinalizedInputs, ITemplateDescriptor} from './types.js';
 import {logError} from './util.js';
 
-// @ts-ignore
 const inquirerFuzzyPathModule = await import('inquirer-fuzzy-path');
 inquirer.registerPrompt('fuzzypath', inquirerFuzzyPathModule.default);
 

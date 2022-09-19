@@ -1072,7 +1072,7 @@ cross-spawn@^7.0.1, cross-spawn@^7.0.3:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-debug@^4.1.0, debug@^4.1.1:
+debug@^4.1.0, debug@^4.1.1, debug@^4.3.3:
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
   integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
@@ -2596,6 +2596,13 @@ v8-to-istanbul@^9.0.1:
     "@jridgewell/trace-mapping" "^0.3.12"
     "@types/istanbul-lib-coverage" "^2.0.1"
     convert-source-map "^1.6.0"
+
+velocityjs@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/velocityjs/-/velocityjs-2.0.6.tgz#fbd5ec5bc6e75a889f73c1d67baddd4e0af7b35a"
+  integrity sha512-QMYLeYLBX6eqekCin3OPmDAHapaUx3foNFE264ml1/yxRZ8TUUlI1+u6rtN4E8tKNqwzpRPeNgJtjLbgRNK4fw==
+  dependencies:
+    debug "^4.3.3"
 
 walker@^1.0.8:
   version "1.0.8"

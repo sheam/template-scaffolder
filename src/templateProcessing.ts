@@ -5,12 +5,11 @@ import {IFinalizedInputs, TemplateVariables} from './types.js';
 import {log, logError, padString, scaffoldingPath} from './util.js';
 import {exec} from 'child_process';
 
+const velocityModule = await import('velocityjs');
+const velocity = velocityModule.default;
+
 function replaceVariables(text: string, variables: TemplateVariables): string {
-    return Object.keys(variables).reduce((text, key) => {
-        const value = variables[key];
-        const target = `$${key}$`;
-        return text.replaceAll(target, value.toString());
-    }, text);
+   return velocity.render(text, variables);
 }
 
 function getFileContents(path: string, variables: TemplateVariables): string {
