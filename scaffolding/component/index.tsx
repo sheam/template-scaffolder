@@ -6,6 +6,8 @@ interface I${COMPONENT}Props
 {
 }
 
+// Scaffolded using the "$TEMPLATE_NAME" (version $TEMPLATE_VERSION) template by $USERNAME
+
 // #repeatString('test', 3)
 // #repeatString(${NAME}, 4)
 // SOME_VAL is ${SOME_VAL}

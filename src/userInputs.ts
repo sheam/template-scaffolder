@@ -150,6 +150,13 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
         config.variables(requiredInputs.instanceName) :
         (config.variables||{});
 
+    const builtInVariables = {
+        NAME: requiredInputs.instanceName,
+        TEMPLATE_NAME: config.name || requiredInputs.template.name,
+        TEMPLATE_VERSION: config.version || '1.0',
+        USERNAME: process.env.USERNAME,
+    };
+
     return {
         destination,
         srcRoot,
@@ -157,7 +164,7 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
         createNameDir: config.createNameDir === true || config.createNameDir === undefined,
         template: requiredInputs.template,
         instanceName: requiredInputs.instanceName,
-        variables:  Object.assign({ NAME: requiredInputs.instanceName }, answers, configVariables),
+        variables:  Object.assign(builtInVariables, answers, configVariables),
         macros: config.macros,
     };
 }

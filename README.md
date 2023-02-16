@@ -81,8 +81,13 @@ export default {
 }
 ```
 
-In your templates you will always have access to the _instance name_
-as `NAME`, you do not need to define it in your variables.
+#### Built in Variables
+The following variables are available without defining them.
+All built in variables except NAME can be overwritten using the _variables_ section.
+- NAME - the values for _name_ as entered on command line or through prompts.
+- TEMPLATE_NAME - the name of the template as it appears in the `name` fields of the config file.
+- TEMPLATE_VERSION - the version of the template of the as it appears in the `version` fields of the config file.
+- USERNAME - name of the user running the scaffolder according to the `USERNAME` environment variable.
 
 ### `destinations` _(optional)_
 An array of string which should be used as a root destination for the
@@ -330,7 +335,7 @@ export default {
 ```
 
 ## scaffolding/component/${NAME}.tsx
-```javascript
+```tsx
 import * as React from 'react';
 import {ReactElement} from 'react';
 import {use${NAME}Styles} from './styles';
@@ -354,7 +359,7 @@ export const ${NAME} = ({}: I${NAME}Props): ReactElement => {
 ```
 
 ## scaffolding/component/__tests__/${NAME}.test.tsx
-```javascript
+```tsx
 import * as React from 'react';
 import {render} from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -369,7 +374,7 @@ describe('<${NAME} />', () => {
 ```
 
 ## scaffolding/component/styles.ts
-```javascript
+```typescript
 import {createUseStyles} from 'react-jss';
 import {ITheme} from '@models';
 
@@ -394,7 +399,7 @@ export default {
 ```
 
 ## scaffolding/page/${NAME}.tsx
-```javascript
+```tsx
 import * as React from 'react';
 import {ReactElement} from 'react';
 

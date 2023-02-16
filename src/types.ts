@@ -8,6 +8,7 @@ export interface IConfigFile
 {
     name?: string;
     description?: string;
+    version?: string;
     variables?: Object | ((instanceName: string) => any),
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
     macros?: object;
