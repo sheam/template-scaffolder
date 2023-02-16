@@ -17,5 +17,6 @@ export default {
     afterFileCreated: (path) => {
         console.log(`>>>>>>>>>>>> ${path}`);
     },
-    destinations: ['src/testdir/dir1/subdir1'],
+    srcRoot: './src',
+    // destinations: ['src/testdir/dir1/subdir1'],
 }

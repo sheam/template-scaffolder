@@ -142,8 +142,11 @@ require occurs in your function.
 If your template requires variable values to be entered by the user,
 you may prompt the user. The prompts field is an array of 
 `DistinctQuestion` objects, or a function that returns an array of 
-`DistinctQuersion` objects, as defined by the Inquirer user prompter. 
+`DistinctQuestion` objects, as defined by the Inquirer user prompter. 
 The function form is handy if you need access to the instance name.
+
+You can read more about what a `DistincQuestion` is by looking at the
+(3rd party) **inquirer** documentation [here](https://github.com/SBoudrias/Inquirer.js#questions).
 
 Answers to prompts will be placed available in templates as variables
 where the `name` property will be the variable name,

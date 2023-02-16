@@ -68,7 +68,11 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
     const questions: DistinctQuestion[] = [];
 
     let srcRoot = '';
-    if (!config.srcRoot)
+    if (config.srcRoot)
+    {
+        srcRoot = config.srcRoot;
+    }
+    else
     {
         if (fs.existsSync('./src'))
         {
@@ -113,9 +117,10 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
             return prev.destinationSelection === '__other__' || prev.destinationSelection === undefined;
         }
 
+        console.log(`srcRoot=[${srcRoot}]`);
         const fuzzyPathQuestion = {
             name: 'destination',
-            message: 'Enter a destination directory:',
+            message: `Enter a destination directory:`,
             type: 'fuzzypath',
             rootPath: srcRoot,
             itemType: 'directory',
