@@ -84,14 +84,25 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
         }
     }
 
-    if (!cliValues.destination)
+
+    let hardCodedDestination = '';
+    if (typeof(config.destinations) === 'string') {
+        if (fs.existsSync(config.destinations) && fs.statSync(config.destinations).isDirectory()) {
+            hardCodedDestination = config.destinations;
+        } else {
+            throw new Error(`destination '${config.destinations}' is not a valid directory`);
+        }
+    }
+
+    if (!cliValues.destination && !hardCodedDestination)
     {
         function dirValidator(path: string): boolean | string {
             if (fs.existsSync(path) && fs.statSync(path).isDirectory()) return true;
-            return `${path} is not a valid directory`;
+            console.log(`destination path '${path}' is not a valid directory`);
+            return false;
         }
 
-        if (config.destinations?.length)
+        if (Array.isArray(config.destinations))
         {
             const destinationChoices = config.destinations.filter(p => dirValidator(p))
                 .map<DistinctChoice>(x => ({value: x, title: x}));
@@ -142,7 +153,7 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
 
     const answers = await inquirer.prompt(questions);
 
-    const destination = answers.destination || answers.destinationSelection || cliValues.destination;
+    const destination = answers.destination || answers.destinationSelection || cliValues.destination || hardCodedDestination;
     delete answers.destinationSelection;
     delete answers.destination;
 

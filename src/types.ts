@@ -9,10 +9,10 @@ export interface IConfigFile
     name?: string;
     description?: string;
     version?: string;
-    variables?: Object | ((instanceName: string) => any),
+    variables?: object | ((instanceName: string) => any),
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
     macros?: object;
-    destinations?: string[];
+    destinations?: string[]|string;
     createNameDir?: boolean;
     srcRoot?: string;
     afterFileCreated?: (createdFilePath: string) => Promise<string[]>;
