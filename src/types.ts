@@ -15,7 +15,7 @@ export interface IConfigFile
     destinations?: string[]|string;
     createNameDir?: boolean;
     srcRoot?: string;
-    afterFileCreated?: (createdFilePath: string) => Promise<string[]>;
+    afterFileCreated?: (createdFilePath: string, dryRun: boolean, variablesHash: TemplateVariables) => Promise<string[]>;
 }
 
 export interface ITemplateDescriptor

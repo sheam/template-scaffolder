@@ -123,12 +123,9 @@ Use this value if you need something other than the defaults.
 ### `afterFileCreated` _(optional)_
 If you need some special processing after a file has been scaffolded, you can
 use this *async* function.
-It will execute after each file is created, supplying the path and object
-containing the variables value. The path will be relative.
+It will execute after each file is created.
 
-The function _must return a `Promise<string[]>`_.
-The array of strings returned by the promise will be treated as an array
-of external commands to be run.
+You can optionally return a list of 1 or more commands to run as well.
 
 An example would be adding the created file to _git_,
 running a formatter on the file,
@@ -142,15 +139,15 @@ expect user input.
 
 ```javascript
 export default {
-    afterFileCreated: (path) => {
-        console.log(`adding ${path} to git`);
-        return [`git add ${path}`, `git status ${path}`];
+    afterFileCreated: async (path, dryRun, variables) => {
+        console.log(`${variables.NAME} adding ${path} to git`);
+        if(dryRun) return null;
+        return [`git add ${path}`, `npx prettier --write ${path}`];
     }
 }
 ```
 
-You can return an empty array, if all the processing you
-require occurs in your function.
+You can return null if all the processing you require occurs in your function.
 
 
 ### `prompts` _(optional)_

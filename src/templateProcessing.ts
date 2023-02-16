@@ -120,7 +120,7 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
 
     if (processConfig.afterFileCreated)
     {
-        const commands = await processConfig.afterFileCreated(destinationPath);
+        const commands = await processConfig.afterFileCreated(destinationPath, dryRun, processConfig.variables);
         if(Array.isArray(commands))
         {
             for (const command of commands)

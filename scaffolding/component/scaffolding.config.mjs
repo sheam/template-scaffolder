@@ -14,8 +14,8 @@ export default {
     macros: {
         repeatString: (str, n) => `${str} `.repeat(n).trimEnd()
     },
-    afterFileCreated: (path) => {
-        console.log(`>>>>>>>>>>>> ${path}`);
+    afterFileCreated: (path, _dryRun, variables) => {
+        console.log(`>>>>>>>>>>>> '${variables.NAME}' template created ${path}`);
     },
     srcRoot: './src',
     destinations: './src/testdir',
