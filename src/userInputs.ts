@@ -177,5 +177,6 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
         instanceName: requiredInputs.instanceName,
         variables:  Object.assign(builtInVariables, answers, configVariables),
         macros: config.macros,
+        stripLines: config.stripLines,
     };
 }

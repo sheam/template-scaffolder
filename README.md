@@ -34,11 +34,12 @@ export interface IConfigFile
     version?: string;
     variables?: object | ((instanceName: string) => any),
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
+    c?: Array<string|RegExp>;
     macros?: object;
-    destinations?: string[]|string;
+    destinations?: Array<string>|string;
     createNameDir?: boolean;
     srcRoot?: string;
-    afterFileCreated?: (createdFilePath: string) => Promise<string[]>;
+    afterFileCreated?: (createdFilePath: string, dryRun: boolean, variablesHash: TemplateVariables) => Promise<string[]>;
 }
 ```
 
@@ -119,6 +120,13 @@ if one exists. If you do not have a `src` directory, then the current
 working directory will be used.
 
 Use this value if you need something other than the defaults.
+
+### `stripLines`
+Use for removing lines from the template before processing.
+A list of strings or regex patterns used to test each line.
+Lines that match any pattern will be removed before processing variables and macros.
+If a pattern is a string, the test will determine if the line starts with that string (ignoring whitespace).
+For regex patterns, `test()` will be called on the line to determine a match.
 
 ### `afterFileCreated` _(optional)_
 If you need some special processing after a file has been scaffolded, you can

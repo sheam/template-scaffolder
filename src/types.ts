@@ -11,8 +11,9 @@ export interface IConfigFile
     version?: string;
     variables?: object | ((instanceName: string) => any),
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
+    c?: Array<string|RegExp>;
     macros?: object;
-    destinations?: string[]|string;
+    destinations?: Array<string>|string;
     createNameDir?: boolean;
     srcRoot?: string;
     afterFileCreated?: (createdFilePath: string, dryRun: boolean, variablesHash: TemplateVariables) => Promise<string[]>;
@@ -33,6 +34,7 @@ export interface IFinalizedInputs
     variables: TemplateVariables;
     srcRoot: string;
     afterFileCreated: IConfigFile['afterFileCreated'];
+    stripLines: Array<string|RegExp>|undefined;
     createNameDir: boolean;
     macros: object|undefined;
 }

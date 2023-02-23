@@ -12,11 +12,33 @@ function replaceVariables(text: string, variables: TemplateVariables, macros?: o
     return velocity.render(text, variables, macros);
 }
 
-function getFileContents(path: string, variables: TemplateVariables, macros: object|undefined): string {
-    const fileText = fs.readFileSync(path, 'utf-8');
+function stripLines(text: string, patterns: Array<string|RegExp>|undefined): string {
+    if (patterns === undefined || patterns.length === 0) {
+        return text;
+    }
+    const shouldKeep = (line: string): boolean => {
+        for(const pattern of patterns) {
+            if(typeof(pattern) === 'string') {
+                if(line.trimStart().startsWith(pattern)) {
+                    return false;
+                }
+            } else if(pattern.test(line))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return text.split('\n').filter(shouldKeep).join('\n');
+}
+
+function getFileContents(path: string, variables: TemplateVariables, macros: object|undefined, stripPatterns: Array<string|RegExp>|undefined): string {
     try
     {
-        return replaceVariables(fileText, variables, macros);
+        const fileText = fs.readFileSync(path, 'utf-8');
+        const stripped = stripLines(fileText, stripPatterns);
+        return replaceVariables(stripped, variables, macros);
     }
     catch (parseError: any) {
         logError(`error processing template '${path}':\n${parseError.message}`);
@@ -103,7 +125,8 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
     const content = getFileContents(
         scaffoldingPath(processConfig.template.dir, file),
         processConfig.variables,
-        processConfig.macros);
+        processConfig.macros,
+        processConfig.stripLines);
 
     if (dryRun)
     {

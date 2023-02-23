@@ -17,6 +17,10 @@ export default {
     afterFileCreated: (path, _dryRun, variables) => {
         console.log(`>>>>>>>>>>>> '${variables.NAME}' template created ${path}`);
     },
+    stripLines: [
+        '// TEMPLATE:', //template comments
+        /\/\/.*\bSTRIP\b/,
+    ],
     srcRoot: './src',
     destinations: './src/testdir',
     // destinations: ['src/testdir/dir1/subdir1'],
