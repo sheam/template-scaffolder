@@ -11,7 +11,7 @@ export interface IConfigFile
     version?: string;
     variables?: object | ((instanceName: string) => any),
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
-    c?: Array<string|RegExp>;
+    stripLines: Array<string|RegExp>|undefined;
     macros?: object;
     destinations?: Array<string>|string;
     createNameDir?: boolean;
