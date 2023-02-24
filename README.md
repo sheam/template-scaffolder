@@ -69,6 +69,7 @@ export default {
     variables: {
        CREATED_BY: process.env.USERNAME,
        CREATED_ON: new Date().toString(),
+       SOMETHING: 'this is really something',
     }
 }
 ```
@@ -76,9 +77,9 @@ This can also be a function that returns the object giving
 access to the instance name which the user has supplied.
 ```javascript
 export default {
-    variables: (instanceName) => ({
-       COMPONENT_NAME: instanceName,
-       TEST_ID: instanceName.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
+    variables: (name) => ({
+       COMPONENT_NAME: name,
+       TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
     })
 }
 ```
@@ -89,7 +90,8 @@ All built in variables except NAME can be overwritten using the _variables_ sect
 - NAME - the values for _name_ as entered on command line or through prompts.
 - TEMPLATE_NAME - the name of the template as it appears in the `name` fields of the config file.
 - TEMPLATE_VERSION - the version of the template of the as it appears in the `version` fields of the config file.
-- USERNAME - name of the user running the scaffolder according to the `USERNAME` environment variable.
+- USERNAME - name of the user running the scaffolder. 
+  (Uses git, and then falls back to the `USERNAME` environment variable).
 
 ### `destinations` _(optional)_
 The root folder where generated files will be created.
@@ -156,7 +158,6 @@ export default {
 ```
 
 You can return null if all the processing you require occurs in your function.
-
 
 ### `prompts` _(optional)_
 If your template requires variable values to be entered by the user,
@@ -299,14 +300,18 @@ Variable substitution, and calling macros is all done via the
 (VTL) syntax. 
 
 #### VTL Tips
-* In for a simple variable replacement use `${NAME}`.
+* In for a simple variable replacement use `${NAME}` or `$NAME`.
 * Use backslash `\ ` to escape the transformation: 
   `\${NAME}` will not get transformed.
 * [Conditionals](https://velocity.apache.org/engine/1.7/user-guide.html#if-elseif-else) 
   such as `if/else` can be handy.
-* Macros are called as `#myMacro()`.
+* Macros are called as `#myMacro()`. You can define your own macros.
 * VTL is very powerful. To fully take advantage of it, the 
 [Velocity Template User Guide](https://velocity.apache.org/engine/1.7/user-guide.html).
+* The `#include()` macro is a custom implementation. 
+  The line which this appears in will be replaced by the contents of the referenced file.
+  The referenced file _must reside in_ the **_includes** folder.
+  The includes are recursive.
 
 # Sample Project
 The following is a directory structure for a React project.
@@ -315,6 +320,10 @@ It supplies two templates: **component** and **page**.
 ```text
 - projectRoot
   - scaffolding
+    - _templateHelpers
+      - index.mjs
+    - _includes
+      - fileHeader.txt
     - component
       - __tests__
         - ${NAME}.test.tsx
@@ -330,15 +339,18 @@ It supplies two templates: **component** and **page**.
     - pages
 ```
 
+## Component template
 Let's look at the _component_ template.
 
-## scaffolding/component/scaffolding.config.mjs
+### scaffolding/component/scaffolding.config.mjs
 ```javascript
+import {capitalize} from "../_templateHelpers/index.mjs";
 export default {
     name: 'React Component',
     description: 'for common components',
     variables: (name) => ({
         TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
+        PROPS_INTERFACE: `I${name}Props`
     }),
    destinations: [ 'src/components' ], //suggest most common name first
    srcRoot: './src', //default value,
@@ -346,20 +358,29 @@ export default {
         console.log(`adding ${path} to git`);
         return [ `git add ${path}` ];
    },
+   macros: {
+        capitalize,
+   }
 }
 ```
 
-## scaffolding/component/${NAME}.tsx
+### scaffolding/component/${NAME}.tsx
+There are two things to note about this file.
+First, it is _including_ a file using the `#include()` directive.
+Second, it is using a macro (`#capitalize()`).
 ```tsx
+// #include(fileHeader.txt)
 import * as React from 'react';
 import {ReactElement} from 'react';
 import {use${NAME}Styles} from './styles';
 
-interface I${NAME}Props
+// testing macro #capitalize('word')
+
+interface $PROPS_INTERFACE
 {
 }
 
-export const ${NAME} = ({}: I${NAME}Props): ReactElement => {
+export const $NAME = ({}: $PROPS_INTERFACE): ReactElement => {
 
     use${NAME}Styles();
 
@@ -373,7 +394,7 @@ export const ${NAME} = ({}: I${NAME}Props): ReactElement => {
 };
 ```
 
-## scaffolding/component/__tests__/${NAME}.test.tsx
+### scaffolding/component/__tests__/${NAME}.test.tsx
 ```tsx
 import * as React from 'react';
 import {render} from '@testing-library/react';
@@ -388,7 +409,7 @@ describe('<${NAME} />', () => {
 });
 ```
 
-## scaffolding/component/styles.ts
+### scaffolding/component/styles.ts
 ```typescript
 import {createUseStyles} from 'react-jss';
 import {ITheme} from '@models';
@@ -398,8 +419,12 @@ export const use${NAME}Styles = (createUseStyles((theme: ITheme) => {
 }));
 ```
 
-## scaffolding/page/scaffolding.config.mjs
+## Page Template
+This is the page template.
+
+### scaffolding/page/scaffolding.config.mjs
 ```javascript
+import {capitalize} from "../_templateHelpers/index.mjs";
 export default {
     prompts: () => ([
         {
@@ -413,7 +438,7 @@ export default {
 }
 ```
 
-## scaffolding/page/${NAME}.tsx
+### scaffolding/page/${NAME}.tsx
 ```tsx
 import * as React from 'react';
 import {ReactElement} from 'react';
@@ -431,6 +456,22 @@ export const ${NAME} = (): ReactElement => {
         </div>
     );
 };
+```
+
+### scaffolding/_includes/fileHeader.txt
+Files in the `_includes` folder can be references made by other templates using the
+`#include()` directive in the template.
+```js
+/**
+ * This is a standar file header that I will include.
+ */
+```
+
+### scaffolding/_templateHelpers/index.mjs
+You may find that a number of your templates have duplicated sections.
+A tip is to create one (or more) helper files to eliminate the duplicate config in your templates.
+```js
+export const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 ```
 
 

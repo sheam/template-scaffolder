@@ -1,4 +1,4 @@
-// TEMPLATE: the @ts-ignore comment will be removed in output
+// #include('fileHeader.ts')
 // @ts-ignore STRIP
 import * as React from 'react';
 import {ReactElement} from 'react';

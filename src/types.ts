@@ -4,6 +4,8 @@ export type TemplateVariables = {
     [key: string]: string | number;
 };
 
+export type PatternList = Array<string|RegExp>|undefined;
+
 export interface IConfigFile
 {
     name?: string;
@@ -11,7 +13,7 @@ export interface IConfigFile
     version?: string;
     variables?: object | ((instanceName: string) => any),
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
-    stripLines: Array<string|RegExp>|undefined;
+    stripLines: PatternList;
     macros?: object;
     destinations?: Array<string>|string;
     createNameDir?: boolean;
@@ -36,7 +38,7 @@ export interface IFinalizedInputs
     afterFileCreated: IConfigFile['afterFileCreated'];
     stripLines: Array<string|RegExp>|undefined;
     createNameDir: boolean;
-    macros: object|undefined;
+    macros: object;
 }
 
 export interface ICliArgs

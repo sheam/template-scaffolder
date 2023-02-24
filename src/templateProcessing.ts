@@ -1,47 +1,28 @@
 import fs from 'fs';
 import path from 'path';
-import {CONFIG_FILE_NAME} from './constants.js';
-import {IFinalizedInputs, TemplateVariables} from './types.js';
-import {log, logError, padString, scaffoldingPath} from './util.js';
-import {exec} from 'child_process';
+import {CONFIG_FILE_NAME, INCLUDES_FOLDER_NAME, SCAFFOLD_FOLDER_NAME} from './constants.js';
+import {IFinalizedInputs, PatternList, TemplateVariables} from './types.js';
+import {execCommand, log, logError, padString, scaffoldingPath} from './util.js';
 
 const velocityModule = await import('velocityjs');
 const velocity = velocityModule.default;
 
-function replaceVariables(text: string, variables: TemplateVariables, macros?: object): string {
+function processTemplate(text: string, variables: TemplateVariables, macros?: object): string {
     return velocity.render(text, variables, macros);
 }
 
-function stripLines(text: string, patterns: Array<string|RegExp>|undefined): string {
-    if (patterns === undefined || patterns.length === 0) {
-        return text;
-    }
-    const shouldKeep = (line: string): boolean => {
-        for(const pattern of patterns) {
-            if(typeof(pattern) === 'string') {
-                if(line.trimStart().startsWith(pattern)) {
-                    return false;
-                }
-            } else if(pattern.test(line))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    return text.split('\n').filter(shouldKeep).join('\n');
-}
-
-function getFileContents(path: string, variables: TemplateVariables, macros: object|undefined, stripPatterns: Array<string|RegExp>|undefined): string {
+function getFileContents(path: string, variables: TemplateVariables, macros: object, stripPatterns: PatternList): string {
+    const processedFiles = new Array<string>();
     try
     {
-        const fileText = fs.readFileSync(path, 'utf-8');
-        const stripped = stripLines(fileText, stripPatterns);
-        return replaceVariables(stripped, variables, macros);
+        const fileLines = getFileLines(path, stripPatterns, processedFiles);
+        return processTemplate(fileLines.join('\n'), variables, macros);
     }
-    catch (parseError: any) {
-        logError(`error processing template '${path}':\n${parseError.message}`);
+    catch (error: any) {
+        let message = `Error processing template file '${path}':`;
+            message += `\n  message: ${error.message}`;
+            message += `\n  files: ${processedFiles.join(' -> ')}`;
+        logError(message);
         process.exit(-1);
     }
 }
@@ -50,7 +31,7 @@ function getDestinationPath(rawPath: string, variables: TemplateVariables): stri
 {
     try
     {
-        return replaceVariables(rawPath.replaceAll('\\', '/'), variables);
+        return processTemplate(rawPath.replaceAll('\\', '/'), variables);
     }
     catch (parseError: any) {
         logError(`error transforming destination file path '${rawPath}':\n${parseError.message}`);
@@ -82,7 +63,7 @@ function getTemplateFiles(template: string): string[] {
         .filter(p => p !== CONFIG_FILE_NAME);
 }
 
-function execCommand(command: string): Promise<void>
+async function runAfterCreateCommand(command: string): Promise<void>
 {
     function logLines(prefix: string, text: string, indent: number): void
     {
@@ -90,17 +71,13 @@ function execCommand(command: string): Promise<void>
         lines.forEach(line => log(`${prefix}${line}`, indent));
     }
 
-    return new Promise((resolve, _reject) => {
-        const process = exec(command);
+    const code = await execCommand(
+        command,
+        ((text) => logLines('[stdout]:', text, 3)),
+        ((text) => logLines('[stderr]:', text, 3))
+    );
 
-        process.stdout?.on('data', (data) => logLines('[stdout]:', data, 3));
-        process.stderr?.on('data', (data) => logLines('[stderr]:', data, 3));
-        process.on('error', () => logError('failed to run command'));
-        process.on('close', (code) => {
-            log(`command exited with status: ${code}`, 2);
-            resolve();
-        });
-    });
+    log(`command exited with status: ${code}`, 2);
 }
 
 async function createFileFromTemplate(processConfig: IFinalizedInputs, file: string, dryRun: boolean): Promise<void> {
@@ -130,9 +107,9 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
 
     if (dryRun)
     {
-        log(padString(` ${destinationPath} `));
+        log(padString(` ${destinationPath} `, '⌄'));
         log(content);
-        log('-'.repeat(80));
+        log('⌃'.repeat(80) + '\n\n');
     }
     else
     {
@@ -151,7 +128,7 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
                 log(`executing ${command}`, 2);
                 if (!dryRun)
                 {
-                    await execCommand(command);
+                    await runAfterCreateCommand(command);
                 }
             }
         }
@@ -165,4 +142,40 @@ export async function createTemplates(processConfig: IFinalizedInputs, dryRun?: 
     {
         await createFileFromTemplate(processConfig, templateFile, dryRun || false);
     }
+}
+
+function getFileLines(filePath: string, stripLines: PatternList = [], processedFiles: string[]): string[] {
+    const shouldKeep = (line: string): boolean => {
+        for (const pattern of stripLines) {
+            if (typeof (pattern) === 'string') {
+                if (line.trimStart().startsWith(pattern)) {
+                    return false;
+                }
+            } else if (pattern.test(line)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    processedFiles.push(filePath);
+    const resultLines = new Array<string>();
+    const fileText = fs.readFileSync(filePath, 'utf-8');
+    const lines = fileText.split('\n').filter(shouldKeep);
+    for(const line of lines) {
+        const matchResult = line.matchAll(/#include\(['"]?([^'")]+)['"]?\)/ig);
+        const matches = Array.from(matchResult);
+        if(matches.length > 0)
+        {
+            for(const match of matches)
+            {
+                const includePath = path.join(SCAFFOLD_FOLDER_NAME, INCLUDES_FOLDER_NAME, match[1]);
+                const lines = getFileLines(includePath, stripLines, processedFiles);
+                lines.forEach(l => resultLines.push(l));
+            }
+        } else {
+            resultLines.push(line);
+        }
+    }
+    return resultLines;
 }
