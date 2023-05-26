@@ -93,7 +93,7 @@ export default {
     variables: (name, inputs) => ({
        COMPONENT_NAME: name,
        TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
-       FAV_COLOUR: inputs.FAV_COLOUR,
+       FAV_SHIRT_COLOUR: inputs.FAV_COLOUR,
     })
 }
 ```
