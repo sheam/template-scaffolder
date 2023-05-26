@@ -11,7 +11,7 @@ export interface IConfigFile
     name?: string;
     description?: string;
     version?: string;
-    variables?: object | ((instanceName: string) => any),
+    variables?: object | ((instanceName: string, initialInputs: any) => any),
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
     stripLines: PatternList;
     macros?: object;

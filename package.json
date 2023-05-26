@@ -17,7 +17,7 @@
     "types": "tsc --emitDeclarationOnly -d src/types.ts  -outDir dist",
     "compile": "tsc",
     "compile-watch": "tsc --watch",
-    "test-run": "npm run compile && node dist/index.mjs --name=MyComponent --template=component --dryRun",
+    "test-run": "npm run compile && node dist/index.mjs --name=TestWrapper --template=conversion --dryRun",
     "clean": "npx rimraf --rf dist"
   },
   "keywords": [

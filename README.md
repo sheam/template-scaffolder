@@ -32,9 +32,9 @@ export interface IConfigFile
     name?: string;
     description?: string;
     version?: string;
-    variables?: object | ((instanceName: string) => any),
+    variables?: object | ((instanceName: string, initialInputs: any) => any),
     prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
-    c?: Array<string|RegExp>;
+    stripLines: PatternList;
     macros?: object;
     destinations?: Array<string>|string;
     createNameDir?: boolean;
@@ -59,7 +59,17 @@ Because this is a regular javascript file, you have access to
 ## Configuration options
 All fields are optional.
 
-### `variables` _(optional)_
+* [variables](#variables)
+* [destinations](#destinations)
+* [createNameDir](#createNameDir)
+* [srcRoot](#srcRoot)
+* [stripLines](#stripLines)
+* [afterFileCreated](#afterFileCreated)
+* [prompts](#prompts)
+* [macros](#macros)
+
+### variables
+
 A hash of keys (variable names) and values that you  would like to
 use in your template files.
 
@@ -75,11 +85,15 @@ export default {
 ```
 This can also be a function that returns the object giving
 access to the instance name which the user has supplied.
+In the function you will have access to the `name` that the user
+has provided, as well as values from prompts in the `input` object parameter.
 ```javascript
 export default {
-    variables: (name) => ({
+    prompts: [ { name: 'FAV_COLOUR', message: 'Enter favourite color' } ],
+    variables: (name, inputs) => ({
        COMPONENT_NAME: name,
        TEST_ID: name.replace(/([a-z])([A-Z])/, '$1-$2').toLowerCase(),
+       FAV_COLOUR: inputs.FAV_COLOUR,
     })
 }
 ```
@@ -93,7 +107,8 @@ All built in variables except NAME can be overwritten using the _variables_ sect
 - USERNAME - name of the user running the scaffolder. 
   (Uses git, and then falls back to the `USERNAME` environment variable).
 
-### `destinations` _(optional)_
+### destinations
+
 The root folder where generated files will be created.
 
 If no value is supplied, the user will be prompted to select a directory under
@@ -108,13 +123,17 @@ be allowed to select **Other**, and enter their own directory.
 If a single string is supplied, this value will be used for the destination,
 and the user will not be prompted for a value.
 
-### `createNameDir`  _(defaults to `true`)_
+### createNameDir
+_(defaults to `true`)_
+
 By default, the scaffolder will create a directory at the root of the
 destination folder named by the value you enter for the `NAME` variable.
 The template files will be placed in this created directory.
 If you do not want this to happen, set this value to `false`.
 
-### `srcRoot` _(defaults to `./src` or `process.cwd()`)
+### srcRoot
+_(defaults to `./src` or `process.cwd()`)_
+
 When the user is being prompted to enter a destination directory,
 only directories under the **srcRoot** directory will be available.
 By default, the `src` directory in the root of your project will be used 
@@ -123,14 +142,16 @@ working directory will be used.
 
 Use this value if you need something other than the defaults.
 
-### `stripLines`
+### stripLines
+
 Use for removing lines from the template before processing.
 A list of strings or regex patterns used to test each line.
 Lines that match any pattern will be removed before processing variables and macros.
 If a pattern is a string, the test will determine if the line starts with that string (ignoring whitespace).
 For regex patterns, `test()` will be called on the line to determine a match.
 
-### `afterFileCreated` _(optional)_
+### afterFileCreated
+
 If you need some special processing after a file has been scaffolded, you can
 use this *async* function.
 It will execute after each file is created.
@@ -159,7 +180,7 @@ export default {
 
 You can return null if all the processing you require occurs in your function.
 
-### `prompts` _(optional)_
+### prompts
 If your template requires variable values to be entered by the user,
 you may prompt the user. The prompts field is an array of 
 `DistinctQuestion` objects, or a function that returns an array of 
@@ -205,7 +226,7 @@ question prompts are supported, visit
 [Inquirer documentation](https://github.com/SBoudrias/Inquirer.js#questions).
 Note that the only plugin supported is **inquirer-fuzzy-path**.
 
-### `macros` _(optional)_
+### macros
 An object containing 1 or more functions that return a string.
 These functions can be called as macros from your templates.
 They can take arguments as well.

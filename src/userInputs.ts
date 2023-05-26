@@ -113,11 +113,11 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
     delete answers.destinationSelection;
     delete answers.destination;
 
-    const configVariables = typeof(config.variables) === 'function' ?
-        config.variables(requiredInputs.instanceName) :
-        (config.variables||{});
-
     const builtIns = await getBuiltIns(config, requiredInputs);
+
+    const configVariables = typeof(config.variables) === 'function' ?
+        config.variables(requiredInputs.instanceName, Object.assign({}, builtIns, answers)) :
+        (config.variables||{});
 
     return {
         destination,
@@ -126,7 +126,7 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
         createNameDir: config.createNameDir === true || config.createNameDir === undefined,
         template: requiredInputs.template,
         instanceName: requiredInputs.instanceName,
-        variables:  Object.assign(builtIns.variables, answers, configVariables),
+        variables:  Object.assign({}, builtIns.variables, answers, configVariables),
         macros: Object.assign(config.macros||{},builtIns.macros),
         stripLines: config.stripLines,
     };
