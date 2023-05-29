@@ -33,6 +33,7 @@ export interface IFinalizedInputs
     instanceName: string;
     template: ITemplateDescriptor;
     destination: string;
+    overwrite: boolean;
     variables: TemplateVariables;
     srcRoot: string;
     afterFileCreated: IConfigFile['afterFileCreated'];
@@ -47,6 +48,7 @@ export interface ICliArgs
     name?: string;
     destination?: string;
     dryRun?: boolean;
+    overwrite?: boolean;
 }
 
 export interface IInitialInputs

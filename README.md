@@ -187,7 +187,7 @@ you may prompt the user. The prompts field is an array of
 `DistinctQuestion` objects, as defined by the Inquirer user prompter. 
 The function form is handy if you need access to the instance name.
 
-You can read more about what a `DistincQuestion` is by looking at the
+You can read more about what a `DistinctQuestion` is by looking at the
 (3rd party) **inquirer** documentation [here](https://github.com/SBoudrias/Inquirer.js#questions).
 
 Answers to prompts will be placed available in templates as variables
@@ -286,6 +286,10 @@ If it is not specified, the user will be prompted input a value.
 ### dryRun
 If this flag is specified, no files or directories will be created.
 The contents of what would have been written will be dumped to the console.
+
+### overwrite
+By default, the scaffolder will error out if an output file already exists.
+This flag will cause the file to be overwritten.
 
 # Making a Template
 

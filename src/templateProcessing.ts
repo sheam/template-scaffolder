@@ -93,9 +93,9 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
 
     const destinationPath = getDestinationPath(path.join(destinationDirPath, file), processConfig.variables);
 
-    if (fs.existsSync(destinationPath))
+    if (!processConfig.overwrite && fs.existsSync(destinationPath))
     {
-        logError(`file ${destinationPath} already exists, can't process template.`);
+        logError(`file ${destinationPath} already exists, can't process template. Remove file, or use 'overwrite' option.`);
         process.exit(-1);
     }
 

@@ -129,6 +129,7 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
         variables:  Object.assign({}, builtIns.variables, answers, configVariables),
         macros: Object.assign(config.macros||{},builtIns.macros),
         stripLines: config.stripLines,
+        overwrite: cliValues.overwrite === true,
     };
 }
 
