@@ -288,7 +288,7 @@ If this flag is specified, no files or directories will be created.
 The contents of what would have been written will be dumped to the console.
 
 ### overwrite
-By default, the scaffolder will error out if an output file already exists.
+By default, the scaffolder will skip the output file if it already exists.
 This flag will cause the file to be overwritten.
 
 # Making a Template
