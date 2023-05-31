@@ -67,6 +67,7 @@ All fields are optional.
 * [afterFileCreated](#afterFileCreated)
 * [prompts](#prompts)
 * [macros](#macros)
+* [overwrite](#overwrite)
 
 ### variables
 
