@@ -15,8 +15,8 @@ const finalizedInputs = await finalizeInputs(config, args, initialValues);
 
 
 // log('Using configuration:', 0, !args.dryRun);
-console.log(JSON.stringify(finalizedInputs, undefined, 4));
-printValues(finalizedInputs, !args.dryRun, 1);
+// console.log(JSON.stringify(finalizedInputs, undefined, 4));
+printValues(finalizedInputs, args.dryRun, 1);
 
 log('Creating files:');
 await createTemplates(finalizedInputs, args.dryRun);
