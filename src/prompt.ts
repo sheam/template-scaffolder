@@ -56,9 +56,6 @@ export async function prompt<TResult extends object>(questions: Question[]): Pro
 type SearchQuestionImplementation = Required<Pick<ISearchQuestion, 'source'>> & ISearchQuestion;
 
 function getSearchQuestion(q: ISearchQuestion):  SearchQuestionImplementation {
-    if(!q.source && !q.choices || q.source && q.choices) {
-        throw new Error(`Search question '${q.message}' must either 'source' or 'choices', but not both.`);
-    }
     if(q.source) {
         return q as SearchQuestionImplementation;
     }

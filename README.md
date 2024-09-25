@@ -24,7 +24,10 @@ Access to environment variables, users prompts, and scripting.
 # Configuration Files
 Each template must have exactly one `scaffolding.config.mjs` file
 in the root.
-It is a javascript esm module file. 
+It is a javascript esm module file.
+
+**Note**: although there are references to types, and the tool is written in typescript, config files are only supported in javascript currently. A future version will support typescript config files.
+
 The typescript schema for this file is:
 ```typescript
 export interface IConfigFile
@@ -184,8 +187,8 @@ You can return null if all the processing you require occurs in your function.
 ### prompts
 If your template requires variable values to be entered by the user,
 you may prompt the user. The prompts field is an array of 
-`DistinctQuestion` objects, or a function that returns an array of 
-`DistinctQuestion` objects, as defined by the Inquirer user prompter. 
+Question objects, or a function that returns an list of
+Question objects, as defined by the Inquirer user prompter. 
 The function form is handy if you need access to the instance name.
 
 You can read more about what a `DistinctQuestion` is by looking at the
@@ -206,27 +209,116 @@ export default {
     ]
 }
 ```
-The above will provide the `MYVAR` replacement in your templates now.
 
-You can offer multiple choice like this:
-```javascript
-export default {
-   prompts: [
-      {
-         name: 'OPTION',
-         message: 'Select an option:',
-         type: 'list',
-         choices: [ 'option 1', 'option 2' ],
-      }
-   ]
+There are many types of questions you can prompt the user for:
+
+#### All questions
+All questions have the following fields:
+```typescript
+interface IQuestionBase {
+    type?: 'fuzzypath' | 'path' | 'select' | 'list' | 'search' | 'confirm' | 'separator' | 'number' | 'input' | undefined;
+
+    /**
+     * The name of the field to store the resulting answer in.
+     */
+    name: string;
+
+    /**
+     * The message prompting the user.
+     */
+    message: string;
+
+    /**
+     * The default value for the answer.
+     */
+    default?: string | number | boolean;
+
+    /**
+     * True if the user must enter a value for the question.
+     */
+    required?: boolean;
+
+    /**
+     * Can we skip answering this question?
+     * You can examine the previous answers and determine if you would like to answer this questions.
+     * If the question is skipped, the answer value will be undefined.
+     * @param previousAnswers
+     * @return false if the question should be skipped.
+     */
+    when?: <TAnswerObject extends object>(previousAnswers: TAnswerObject) => boolean;
 }
 ```
-There are a lot of advanced questions types, including conditional questions 
-that are supported. To see the complete documentation on what type of
-question prompts are supported, visit
-[Inquirer documentation](https://github.com/SBoudrias/Inquirer.js#questions).
-Note that the only plugin supported is **inquirer-fuzzy-path**.
 
+#### Simple Input
+```typescript
+interface IInputQuestion extends IQuestionBase {
+    type?: 'input';
+    default?: string;
+}
+```
+
+#### Confirmation questions
+```typescript
+interface IConfirmQuestion extends IQuestionBase {
+    type: 'confirm';
+    default?: boolean;
+}
+```
+
+#### Number questions
+```typescript
+interface INumberQuestion extends IQuestionBase {
+    type: 'number';
+    default?: number;
+}
+```
+
+#### Select questions
+select from a list
+```typescript
+interface ISelectQuestion extends IQuestionBase {
+    type: 'select' | 'list',
+    choices: IChoice[];
+    default?: string;
+}
+```
+
+#### Search questions
+search for a option to select, or through a set of given choices
+```typescript
+export interface ISearchQuestion extends IQuestionBase {
+    type: 'search',
+    source?: (input: string | undefined) => Promise<IChoice[]>;
+    choices?: IChoice[];
+    default?: string;
+}
+```
+
+#### Select a file or directory
+A file selector with fuzzy search
+```typescript
+export interface IPathSelectQuestion extends IQuestionBase {
+    type: 'fuzzypath' | 'path';
+    itemType?: 'file' | 'directory';
+    allowManualInput?: boolean;
+    rootPath?: string;
+    maxDepth?: number;
+    excludePath?: (pathInfo: IPathInfo) => boolean;
+    default?: string;
+}
+```
+
+#### Supporting types
+```typescript
+export interface IChoice {
+    value: string
+    name?: string;
+    description?: string
+    disabled?: boolean;
+}
+```
+
+ 
 ### macros
 An object containing 1 or more functions that return a string.
 These functions can be called as macros from your templates.
@@ -499,5 +591,4 @@ A tip is to create one (or more) helper files to eliminate the duplicate config 
 ```js
 export const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 ```
-
 

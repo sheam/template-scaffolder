@@ -70,11 +70,35 @@ export interface IPathInfo {
 
 interface IQuestionBase {
     type?: 'fuzzypath' | 'path' | 'select' | 'list' | 'search' | 'confirm' | 'separator' | 'number' | 'input' | undefined;
+
+    /**
+     * The name of the field to store the resulting answer in.
+     */
     name: string;
+
+    /**
+     * The message prompting the user.
+     */
     message: string;
+
+    /**
+     * The default value for the answer.
+     */
     default?: string | number | boolean;
+
+    /**
+     * True if the user must enter a value for the question.
+     */
     required?: boolean;
-    when?: <TAnswerObject extends object>(previousAnswer: TAnswerObject) => boolean;
+
+    /**
+     * Can we skip answering this question?
+     * You can examine the previous answers and determine if you would like to answer this questions.
+     * If the question is skipped, the answer value will be undefined.
+     * @param previousAnswers
+     * @return false if the question should be skipped.
+     */
+    when?: <TAnswerObject extends object>(previousAnswers: TAnswerObject) => boolean;
 }
 
 interface IConfirmQuestion extends IQuestionBase {
@@ -112,7 +136,15 @@ export interface ISearchQuestion extends IQuestionBase {
 }
 
 export function isSearchQuestion(q: IQuestionBase): q is ISearchQuestion {
-    return (q as ISearchQuestion).type === 'search';
+    const x = q as ISearchQuestion;
+    if(x.type !== 'search') {
+        return false;
+    }
+    if(!x.source && !x.choices || x.source && x.choices) {
+        console.warn(`Search question '${q.message}' must either 'source' or 'choices', but not both.`);
+        return false;
+    }
+    return true;
 }
 
 interface ISelectQuestion extends IQuestionBase {
@@ -122,7 +154,15 @@ interface ISelectQuestion extends IQuestionBase {
 }
 
 export function isSelectQuestion(q: IQuestionBase): q is ISelectQuestion {
-    return (q as ISelectQuestion).type === 'select' || (q as ISelectQuestion).type === 'list';
+    const x = q as ISelectQuestion;
+    if(x.type !== 'select') {
+        return false;
+    }
+    if(!Array.isArray(x.choices)) {
+        console.warn(`SelectQuestion '${q.message}' must have a 'choices' property with a list of options.`);
+        return false;
+    }
+    return true;
 }
 
 export interface IPathSelectQuestion extends IQuestionBase {
@@ -136,7 +176,15 @@ export interface IPathSelectQuestion extends IQuestionBase {
 }
 
 export function isPathSelectQuestion(q: IQuestionBase): q is IPathSelectQuestion {
-    return (q as IPathSelectQuestion).type === 'path' || (q as IPathSelectQuestion).type === 'fuzzypath';
+    const x = q as IPathSelectQuestion;
+    if(x.type !== 'path' && x.type !== 'fuzzypath') {
+        return false;
+    }
+    if(x.excludePath && typeof x.excludePath !== 'function') {
+        console.warn(`The 'excludePath' of PathSelectQuestion for question '${q.message}' is not a function`);
+        return false;
+    }
+    return true;
 }
 
 export type Question =
