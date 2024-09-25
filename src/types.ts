@@ -155,7 +155,7 @@ interface ISelectQuestion extends IQuestionBase {
 
 export function isSelectQuestion(q: IQuestionBase): q is ISelectQuestion {
     const x = q as ISelectQuestion;
-    if(x.type !== 'select') {
+    if(x.type !== 'select' && x.type !== 'list') {
         return false;
     }
     if(!Array.isArray(x.choices)) {
