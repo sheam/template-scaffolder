@@ -9,10 +9,16 @@ export default {
         TEST_ID: camelCaseToKebabCase(name),
     }),
     prompts: (_name) => ([
-        // {
-        //     name: 'SOME_VAL',
-        //     message: 'Enter a value for SOME_VAL:',
-        // }
+        {
+            name: 'SOME_VAL',
+            message: 'Enter a value for SOME_VAL:',
+            type: 'search',
+            source: (input) => {
+                const options = [ 'one', 'two', 'three', 'four', 'five' ];
+                return options.filter(x => x.toLowerCase().includes(input.toLowerCase())).map(x => ({value: x}));
+            },
+            required: true,
+        }
     ]),
     macros: {
         repeatString: (str, n) => `${str} `.repeat(n).trimEnd()

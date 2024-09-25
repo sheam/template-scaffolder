@@ -1,13 +1,12 @@
 import fs from 'fs';
-import inquirer, {DistinctChoice, DistinctQuestion} from 'inquirer';
 import {getTemplateDescriptors} from './config.js';
 import {ICliArgs, IConfigFile, IInitialInputs, IFinalizedInputs, ITemplateDescriptor} from './types.js';
 import {logError} from './util.js';
 import {DEFAULT_SRC_ROOT} from "./constants.js";
 import {getBuiltIns} from "./builtIns.js";
 
-const inquirerFuzzyPathModule = await import('inquirer-fuzzy-path');
-inquirer.registerPrompt('fuzzypath', inquirerFuzzyPathModule.default);
+// const inquirerFuzzyPathModule = await import('inquirer-fuzzy-path');
+// inquirer.registerPrompt('fuzzypath', inquirerFuzzyPathModule.default);
 
 /**
  * Setup config based on command line values.
@@ -15,7 +14,7 @@ inquirer.registerPrompt('fuzzypath', inquirerFuzzyPathModule.default);
  * @param cliValues values acquired from the command line.
  */
 export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInputs> {
-    const questions: DistinctQuestion[] = [];
+    const questions: any[] = [];
 
     if (!cliValues.name)
     {
@@ -42,7 +41,7 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInp
           if(!td.description) return s;
           return `${s} - ${td.description.substring(0, 50)}`
         };
-        const templateChoices = templates.map<DistinctChoice>(td => ({value: td.dir, name: getTitle(td)}));
+        const templateChoices = templates.map(td => ({value: td.dir, name: getTitle(td)}));
         questions.push({name: 'template', type: 'list', choices: templateChoices, message: 'Select a template:'});
     }
 
@@ -81,7 +80,7 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInp
 export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, requiredInputs: IInitialInputs): Promise<IFinalizedInputs> {
 
     const srcRoot = getSrcRoot(config);
-    const questions: DistinctQuestion[] = [];
+    const questions: any[] = [];
 
     let hardCodedDestination = '';
     if (typeof(config.destinations) === 'string') {

@@ -1,4 +1,3 @@
-import {DistinctQuestion} from 'inquirer';
 
 export type TemplateVariables = {
     [key: string]: string | number;
@@ -12,7 +11,7 @@ export interface IConfigFile
     description?: string;
     version?: string;
     variables?: object | ((instanceName: string, initialInputs: any) => any),
-    prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
+    prompts?: unknown[] | ((instanceName: string) => unknown[]);
     stripLines: PatternList;
     macros?: object;
     destinations?: Array<string>|string;
@@ -55,4 +54,17 @@ export interface IInitialInputs
 {
     instanceName: string;
     template: ITemplateDescriptor;
+}
+
+export interface IChoice {
+    value: string
+    name?: string;
+    description?: string
+    disabled?: boolean;
+}
+
+export interface IPathInfo {
+    path: string;
+    name: string;
+    isDir: boolean;
 }
