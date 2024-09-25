@@ -15,6 +15,9 @@ export default {
             type: 'search',
             source: (input) => {
                 const options = [ 'one', 'two', 'three', 'four', 'five' ];
+                if(!input) {
+                    return options.map(x => ({value: x}))
+                }
                 return options.filter(x => x.toLowerCase().includes(input.toLowerCase())).map(x => ({value: x}));
             },
             required: true,
@@ -31,6 +34,6 @@ export default {
         /\/\/.*\bSTRIP\b/,
     ],
     srcRoot: './src',
-    destinations: './src/testdir',
+    // destinations: './src/testdir',
     // destinations: ['src/testdir/dir1/subdir1'],
 }

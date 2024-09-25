@@ -1,26 +1,34 @@
-import {Question, prompt, getPathQuestion} from "./prompt.js";
-import {IChoice} from "./types.js";
+import {prompt, getPathQuestion} from "./prompt.js";
+import {IChoice, Question} from "./types.js";
 
 const questions: Question[] = [
-    {
-        type: 'path',
-        name: 'file',
-        message: 'please select a file',
-        // rootPath: 'src',
-        rootPath: 'C:/Users/sheam/source/repos/BrewNinja/StrangeBrewWeb/StrangeBrew.App/src',
-        // maxDepth: 2,
-        itemType: 'file',
-        excludePath: x => x.isDir && x.name === 'node_modules' || x.name.startsWith('.'),
-    },
     // {
-    //     type: 'select',
-    //     name: 'color',ind
-    //     message: 'What is your color?',
-    //     choices: [
-    //         { value: 'red' },
-    //         { value: 'blue' },
-    //     ]
+    //     type: 'path',
+    //     name: 'file',
+    //     message: 'please select a file',
+    //     // rootPath: 'src',
+    //     rootPath: 'C:/Users/sheam/source/repos/BrewNinja/StrangeBrewWeb/StrangeBrew.App/src',
+    //     // maxDepth: 2,
+    //     itemType: 'file',
+    //     allowManualInput: true,
+    //     excludePath: x => x.isDir && x.name === 'node_modules' || x.name.startsWith('.'),
     // },
+    {
+        type: 'confirm',
+        name: 'needColor',
+        message: 'Pick a color? ',
+        required: true,
+    },
+    {
+        type: 'select',
+        name: 'color',
+        message: 'What is your color?',
+        choices: [
+            { value: 'red' },
+            { value: 'blue' },
+        ],
+        when: (answers: any): boolean => answers.needColor === true,
+    },
     // {
     //     name: 'name',
     //     message: 'What is your name?'

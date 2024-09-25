@@ -1,80 +1,33 @@
 import {confirm, input, number, search, select} from '@inquirer/prompts';
 import {readdir, stat} from "node:fs/promises";
 import path from "path";
-import {IChoice, IPathInfo} from "./types.js";
+import {
+    IChoice,
+    IPathInfo,
+    IPathSelectQuestion,
+    isConfirmQuestion,
+    ISearchQuestion,
+    isInputQuestion,
+    isNumberQuestion,
+    isPathSelectQuestion,
+    isSearchQuestion,
+    isSelectQuestion,
+    Question
+} from "./types.js";
+
+const MANUAL_ENTRY_VALUE = '__manual_entry__';
 
 // @ts-ignore
 Array.prototype.findLastIndex = function(predicate) { for (let i = this.length - 1; i >= 0; i--) { if (predicate(this[i], i, this)) { return i; } } return -1; };
 
-interface IQuestionBase {
-    type?: 'fuzzypath' | 'path' | 'select' | 'search' | 'confirm' | 'separator' | 'number' | 'input' | undefined;
-    name: string;
-    message: string;
-    default?: string | number | boolean;
-}
-
-interface IConfirmQuestion extends IQuestionBase {
-    type: 'confirm';
-    default?: boolean;
-}
-
-function isConfirmQuestion(q: IQuestionBase): q is IConfirmQuestion {
-    return (q as IConfirmQuestion).type === 'confirm';
-}
-
-interface IInputQuestion extends IQuestionBase {
-    type?: 'input';
-    default?: string;
-}
-function isInputQuestion(q: IQuestionBase): q is IInputQuestion {
-    return (q as IInputQuestion).type === 'input' || (q as IInputQuestion).type === undefined;
-}
-
-interface INumberQuestion extends IQuestionBase {
-    type: 'number';
-    default?: number;
-}
-function isNumberQuestion(q: IQuestionBase): q is INumberQuestion {
-    return (q as INumberQuestion).type === 'number';
-}
-
-interface ISearchQuestion extends IQuestionBase {
-    type: 'search',
-    source?: (input: string|undefined) => Promise<IChoice[]>;
-    choices?: IChoice[];
-    default?: string;
-}
-function isSearchQuestion(q: IQuestionBase): q is ISearchQuestion {
-    return (q as ISearchQuestion).type === 'search';
-}
-
-interface ISelectQuestion extends IQuestionBase {
-    type: 'select',
-    choices: IChoice[];
-    default?: string;
-}
-function isSelectQuestion(q: IQuestionBase): q is ISelectQuestion {
-    return (q as ISelectQuestion).type === 'select';
-}
-
-interface IPathSelectQuestion extends IQuestionBase {
-    type: 'fuzzypath' | 'path';
-    itemType?: 'file' | 'directory';
-    suggestOnly?: boolean;
-    rootPath?: string;
-    maxDepth?: number;
-    excludePath?: (pathInfo: IPathInfo) => boolean;
-    default?: string;
-}
-function isPathSelectQuestion(q: IQuestionBase): q is IPathSelectQuestion {
-    return (q as IPathSelectQuestion).type === 'path' || (q as IPathSelectQuestion).type === 'fuzzypath';
-}
-
-export type Question = ISelectQuestion | IInputQuestion | INumberQuestion | ISearchQuestion | IConfirmQuestion | IPathSelectQuestion;
-
 export async function prompt<TResult extends object>(questions: Question[]): Promise<TResult> {
     const answers = new Array<(string|number|boolean|undefined)[]>();
     for(const question of questions) {
+        if(question.when) {
+            if(!question.when(Object.fromEntries(answers) as TResult)) {
+                continue;
+            }
+        }
         if(isInputQuestion(question)) {
             answers.push([question.name, await input(question)]);
         } else if(isConfirmQuestion(question)) {
@@ -87,7 +40,12 @@ export async function prompt<TResult extends object>(questions: Question[]): Pro
             answers.push([question.name, await search(getSearchQuestion(question))]);
         } else if(isPathSelectQuestion(question)) {
             const pathQuestion = await getPathQuestion(question);
-            answers.push([question.name, await search(pathQuestion)]);
+            const answer = await search(pathQuestion);
+            if(answer === MANUAL_ENTRY_VALUE) {
+                answers.push([question.name, await input({ ...question, message: 'enter path' })]);
+            } else {
+                answers.push([question.name, answer]);
+            }
         } else {
             throw new Error(`Unsupported question type: ${JSON.stringify(question)}`);
         }
@@ -132,12 +90,16 @@ export async function getPathQuestion(q: IPathSelectQuestion): Promise<SearchQue
         name: q.name,
         message: q.message,
         default: q.default,
-        source: (input) => searchPathEntryChoices(input, pathEntries),
+        source: (input) => searchPathEntryChoices(input, pathEntries, q.allowManualInput === true),
     };
 }
 
-async function searchPathEntryChoices(input: string|undefined, fileEntries: IPathInfo[]): Promise<IChoice[]> {
-    return searchPathEntries(input, fileEntries).map(x => ({name: x.path, value: x.path}));
+async function searchPathEntryChoices(input: string|undefined, fileEntries: IPathInfo[], allowManual: boolean): Promise<IChoice[]> {
+    const entries = searchPathEntries(input, fileEntries).map(x => ({name: x.path, value: x.path}));
+    if(allowManual) {
+        entries.push({name: 'manual path entry', value: MANUAL_ENTRY_VALUE});
+    }
+    return entries;
 }
 
 export function searchPathEntries(input: string|undefined, fileEntries: IPathInfo[]): IPathInfo[] {

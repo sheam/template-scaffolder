@@ -1,12 +1,24 @@
 import fs from 'fs';
 import {getTemplateDescriptors} from './config.js';
-import {ICliArgs, IConfigFile, IInitialInputs, IFinalizedInputs, ITemplateDescriptor} from './types.js';
+import {
+    ICliArgs,
+    IConfigFile,
+    IInitialInputs,
+    IFinalizedInputs,
+    ITemplateDescriptor,
+    Question,
+    IChoice,
+} from './types.js';
 import {logError} from './util.js';
 import {DEFAULT_SRC_ROOT} from "./constants.js";
 import {getBuiltIns} from "./builtIns.js";
+import {prompt} from "./prompt.js";
 
-// const inquirerFuzzyPathModule = await import('inquirer-fuzzy-path');
-// inquirer.registerPrompt('fuzzypath', inquirerFuzzyPathModule.default);
+interface IInitialPromptResult {
+    template?: string;
+    name?: string;
+    destination?: string;
+}
 
 /**
  * Setup config based on command line values.
@@ -14,11 +26,11 @@ import {getBuiltIns} from "./builtIns.js";
  * @param cliValues values acquired from the command line.
  */
 export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInputs> {
-    const questions: any[] = [];
+    const questions: Question[] = [];
 
     if (!cliValues.name)
     {
-        questions.push({name: 'name', type: 'input', message: 'Enter the name:'});
+        questions.push({name: 'name', type: 'input', message: 'Enter the name: ', required: true});
     }
 
     const templates = await getTemplateDescriptors();
@@ -42,10 +54,10 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInp
           return `${s} - ${td.description.substring(0, 50)}`
         };
         const templateChoices = templates.map(td => ({value: td.dir, name: getTitle(td)}));
-        questions.push({name: 'template', type: 'list', choices: templateChoices, message: 'Select a template:'});
+        questions.push({name: 'template', type: 'select', choices: templateChoices, message: 'Select a template: ', required: true});
     }
 
-    const userInputs = questions.length > 0 ? await inquirer.prompt(questions) : {};
+    const userInputs = questions.length > 0 ? await prompt<IInitialPromptResult>(questions) : {} as IInitialPromptResult;
 
     if(userInputs.template)
     {
@@ -59,7 +71,7 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInp
     }
 
     const result: IInitialInputs = {
-        instanceName: userInputs.name || cliValues.name,
+        instanceName: userInputs.template || cliValues.name || '',
         template: templateDescriptor,
     };
 
@@ -80,7 +92,7 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInp
 export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, requiredInputs: IInitialInputs): Promise<IFinalizedInputs> {
 
     const srcRoot = getSrcRoot(config);
-    const questions: any[] = [];
+    const questions: Question[] = [];
 
     let hardCodedDestination = '';
     if (typeof(config.destinations) === 'string') {
@@ -106,11 +118,9 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
         config.prompts.forEach(p => questions.push(p));
     }
 
-    const answers = await inquirer.prompt(questions);
+    const answers = await prompt<IInitialPromptResult>(questions);
 
-    const destination = answers.destination || answers.destinationSelection || cliValues.destination || hardCodedDestination;
-    delete answers.destinationSelection;
-    delete answers.destination;
+    const destination = answers.destination || cliValues.destination || hardCodedDestination;
 
     const builtIns = await getBuiltIns(config, requiredInputs);
 
@@ -135,7 +145,7 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
 /**
  * Add a prompt to get destination directory to existing question list.
  */
-function addDestinationPrompt(srcRoot: string, destinations: string[]|string|undefined, questions: DistinctQuestion[]): void
+function addDestinationPrompt(srcRoot: string, destinations: string[]|string|undefined, questions: Question[]): void
 {
     function dirValidator(path: string): boolean | string {
         if (fs.existsSync(path) && fs.statSync(path).isDirectory()) return true;
@@ -143,43 +153,32 @@ function addDestinationPrompt(srcRoot: string, destinations: string[]|string|und
         return false;
     }
 
-    function shouldExcludeDir(dir: string): boolean {
-        const containsMatches = ['node_modules'];
-        const rxMatches = [/^\.\w/, /\/\.\w/, /\\\.\w/];
-        return containsMatches.findIndex(s => dir.indexOf(s) >= 0) >= 0 ||
-            rxMatches.findIndex(rx => rx.test(dir)) >= 0;
-    }
-
-    function shouldGetManualDestination(prev: { destinationSelection: string }): boolean {
-        return prev.destinationSelection === '__other__' || prev.destinationSelection === undefined;
-    }
-
     if (Array.isArray(destinations))
     {
         const destinationChoices = destinations.filter(p => dirValidator(p))
-            .map<DistinctChoice>(x => ({value: x, title: x}));
+            .map<IChoice>(x => ({value: x, title: x}));
 
         destinationChoices.push({value: '__other__', name: 'Other'});
         questions.push({
-            name: 'destinationSelection',
+            name: 'destination',
             message: 'Select a destination directory:',
-            prefix: 'DIR',
             choices: destinationChoices,
-            type: 'list',
+            type: 'select',
+            required: true,
+        });
+    } else {
+        // console.log(`srcRoot=[${srcRoot}]`);
+        questions.push({
+            name: 'destination',
+            message: `Enter a destination directory:`,
+            type: 'path',
+            rootPath: srcRoot,
+            itemType: 'directory',
+            allowManualInput: true,
+            required: true,
+            excludePath: pathInfo => pathInfo.isDir && pathInfo.name === 'node_modules' || pathInfo.name.startsWith('.'),
         });
     }
-
-    console.log(`srcRoot=[${srcRoot}]`);
-    const fuzzyPathQuestion = {
-        name: 'destination',
-        message: `Enter a destination directory:`,
-        type: 'fuzzypath',
-        rootPath: srcRoot,
-        itemType: 'directory',
-        excludePath: shouldExcludeDir,
-        when: shouldGetManualDestination,
-    };
-    questions.push(fuzzyPathQuestion as any);
 }
 
 function getSrcRoot(config: IConfigFile): string
