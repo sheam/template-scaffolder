@@ -71,7 +71,7 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInp
     }
 
     const result: IInitialInputs = {
-        instanceName: userInputs.template || cliValues.name || '',
+        instanceName: userInputs.name || cliValues.name || '',
         template: templateDescriptor,
     };
 
