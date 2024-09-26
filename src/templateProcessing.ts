@@ -1,5 +1,5 @@
 import path from 'path';
-import {CONFIG_FILE_NAME, INCLUDES_FOLDER_NAME, SCAFFOLD_FOLDER_NAME} from './constants.js';
+import {CONFIG_FILE_NAME_NO_EXT, INCLUDES_FOLDER_NAME, SCAFFOLD_FOLDER_NAME} from './constants.js';
 import {IFinalizedInputs, PatternList, TemplateVariables} from './types.js';
 import {execCommand, log, logError, padString, scaffoldingPath} from './util.js';
 import {readdir, stat, readFile, mkdir, writeFile} from "node:fs/promises";
@@ -62,7 +62,7 @@ async function getTemplateFiles(template: string): Promise<string[]> {
 
     const templateDir = scaffoldingPath(template);
     const dirs = await readDirRecursive(scaffoldingPath(template));
-    return dirs.map(p => p.substring(templateDir.length + 1)).filter(p => p !== CONFIG_FILE_NAME);
+    return dirs.map(p => p.substring(templateDir.length + 1)).filter(p => p.startsWith(CONFIG_FILE_NAME_NO_EXT));
 }
 
 async function runAfterCreateCommand(command: string): Promise<void>
