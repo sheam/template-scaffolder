@@ -3,10 +3,11 @@ import {camelCaseToKebabCase, camelCaseToTitleWords} from "../_templateHelpers/i
 export default {
     name: 'React Component',
     description: 'Used for creating a react component',
-    variables: (name) => ({
+    variables: (name, inputs) => ({
         COMPONENT: name,
         STORY_TITLE: camelCaseToTitleWords(name),
         TEST_ID: camelCaseToKebabCase(name),
+        OTHER_VAL: inputs.SOME_VAL.toLowerCase(),
     }),
     prompts: (_name) => ([
         {

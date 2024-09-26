@@ -1,8 +1,9 @@
-import fs from 'fs';
 import path from 'path';
 import {CONFIG_FILE_NAME, INCLUDES_FOLDER_NAME, SCAFFOLD_FOLDER_NAME} from './constants.js';
 import {IFinalizedInputs, PatternList, TemplateVariables} from './types.js';
 import {execCommand, log, logError, padString, scaffoldingPath} from './util.js';
+import {readdir, stat, readFile, mkdir, writeFile} from "node:fs/promises";
+import {existsSync} from "fs";
 
 const velocityModule = await import('velocityjs');
 const velocity = velocityModule.default;
@@ -11,11 +12,11 @@ function processTemplate(text: string, variables: TemplateVariables, macros?: ob
     return velocity.render(text, variables, macros);
 }
 
-function getFileContents(path: string, variables: TemplateVariables, macros: object, stripPatterns: PatternList): string {
+async function getFileContents(path: string, variables: TemplateVariables, macros: object, stripPatterns: PatternList): Promise<string> {
     const processedFiles = new Array<string>();
     try
     {
-        const fileLines = getFileLines(path, stripPatterns, processedFiles);
+        const fileLines = await getFileLines(path, stripPatterns, processedFiles);
         return processTemplate(fileLines.join('\n'), variables, macros);
     }
     catch (error: any) {
@@ -39,28 +40,29 @@ function getDestinationPath(rawPath: string, variables: TemplateVariables): stri
     }
 }
 
-function getTemplateFiles(template: string): string[] {
-    function readDirRecursive(dir: string): string[] {
+async function getTemplateFiles(template: string): Promise<string[]> {
+    async function readDirRecursive(dir: string): Promise<string[]> {
         const files = new Array<string>();
-        fs.readdirSync(dir).forEach(file => {
+        const dirs = await readdir(dir);
+        for(const file of dirs) {
             const fullPath = path.join(dir, file);
-            if (fs.statSync(fullPath).isDirectory())
+            const fstat = await stat(fullPath);
+            if (fstat.isDirectory())
             {
-                const subFiles = readDirRecursive(fullPath);
+                const subFiles = await readDirRecursive(fullPath);
                 subFiles.forEach(x => files.push(x));
             }
             else
             {
                 files.push(fullPath);
             }
-        });
+        }
         return files;
     }
 
     const templateDir = scaffoldingPath(template);
-    return readDirRecursive(scaffoldingPath(template))
-        .map(p => p.substring(templateDir.length + 1))
-        .filter(p => p !== CONFIG_FILE_NAME);
+    const dirs = await readDirRecursive(scaffoldingPath(template));
+    return dirs.map(p => p.substring(templateDir.length + 1)).filter(p => p !== CONFIG_FILE_NAME);
 }
 
 async function runAfterCreateCommand(command: string): Promise<void>
@@ -81,7 +83,7 @@ async function runAfterCreateCommand(command: string): Promise<void>
 }
 
 async function createFileFromTemplate(processConfig: IFinalizedInputs, file: string, dryRun: boolean): Promise<void> {
-    if (!fs.existsSync(processConfig.destination) || !fs.statSync(processConfig.destination).isDirectory())
+    if (!existsSync(processConfig.destination) || !(await stat(processConfig.destination)).isDirectory())
     {
         logError(`Destination specified is not a directory: ${processConfig.destination}`);
         process.exit(-1);
@@ -93,13 +95,13 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
 
     const destinationPath = getDestinationPath(path.join(destinationDirPath, file), processConfig.variables);
 
-    if (!processConfig.overwrite && fs.existsSync(destinationPath))
+    if (!processConfig.overwrite && existsSync(destinationPath))
     {
         log(`WARN: file ${destinationPath} already exists, can't process template. Skipping this file`);
         return;
     }
 
-    const content = getFileContents(
+    const content = await getFileContents(
         scaffoldingPath(processConfig.template.dir, file),
         processConfig.variables,
         processConfig.macros,
@@ -114,8 +116,8 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
     else
     {
         log(`creating ${destinationPath}`, 1);
-        fs.mkdirSync(path.dirname(destinationPath), {recursive: true});
-        fs.writeFileSync(destinationPath, content);
+        await mkdir(path.dirname(destinationPath), {recursive: true});
+        await writeFile(destinationPath, content);
     }
 
     if (processConfig.afterFileCreated)
@@ -136,7 +138,7 @@ async function createFileFromTemplate(processConfig: IFinalizedInputs, file: str
 }
 
 export async function createTemplates(processConfig: IFinalizedInputs, dryRun?: boolean): Promise<void> {
-    const templateFiles = getTemplateFiles(processConfig.template.dir);
+    const templateFiles = await getTemplateFiles(processConfig.template.dir);
 
     for(const templateFile of templateFiles)
     {
@@ -144,7 +146,7 @@ export async function createTemplates(processConfig: IFinalizedInputs, dryRun?: 
     }
 }
 
-function getFileLines(filePath: string, stripLines: PatternList = [], processedFiles: string[]): string[] {
+async function getFileLines(filePath: string, stripLines: PatternList = [], processedFiles: string[]): Promise<string[]> {
     const shouldKeep = (line: string): boolean => {
         for (const pattern of stripLines) {
             if (typeof (pattern) === 'string') {
@@ -160,7 +162,7 @@ function getFileLines(filePath: string, stripLines: PatternList = [], processedF
 
     processedFiles.push(filePath);
     const resultLines = new Array<string>();
-    const fileText = fs.readFileSync(filePath, 'utf-8');
+    const fileText = await readFile(filePath, 'utf-8');
     const lines = fileText.split('\n').filter(shouldKeep);
     for(const line of lines) {
         const matchResult = line.matchAll(/#include\(['"]?([^'")]+)['"]?\)/ig);
@@ -170,7 +172,7 @@ function getFileLines(filePath: string, stripLines: PatternList = [], processedF
             for(const match of matches)
             {
                 const includePath = path.join(SCAFFOLD_FOLDER_NAME, INCLUDES_FOLDER_NAME, match[1]);
-                const lines = getFileLines(includePath, stripLines, processedFiles);
+                const lines = await getFileLines(includePath, stripLines, processedFiles);
                 lines.forEach(l => resultLines.push(l));
             }
         } else {

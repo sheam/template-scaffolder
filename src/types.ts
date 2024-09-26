@@ -11,7 +11,7 @@ export interface IConfigFile
     version?: string;
     variables?: object | ((instanceName: string, initialInputs: any) => any),
     prompts?: Question[] | ((instanceName: string) => Question[]);
-    stripLines: PatternList;
+    stripLines?: PatternList;
     macros?: object;
     destinations?: Array<string>|string;
     createNameDir?: boolean;

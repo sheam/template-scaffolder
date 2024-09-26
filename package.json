@@ -22,6 +22,7 @@
     "compile-watch": "tsc --watch",
     "debug": "tsx src/test.mts",
     "test-run": "npm run compile && node dist/index.mjs --template=component --overwrite",
+    "test-ts": "npm run compile && node dist/index.mjs --overwrite",
     "clean": "npx rimraf dist"
   },
   "keywords": [

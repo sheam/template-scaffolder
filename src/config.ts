@@ -1,14 +1,18 @@
-import fs from 'fs';
-import * as path from 'path';
+import { readdir, stat } from "node:fs/promises";
+import { existsSync } from 'fs';
+import path from 'path';
 import {CONFIG_FILE_NAME} from './constants.js';
 import {IConfigFile, IInitialInputs, ITemplateDescriptor} from './types.js';
 import {log, scaffoldingPath} from './util.js';
 
 export async function getTemplateDescriptors(): Promise<ITemplateDescriptor[]> {
     const result: ITemplateDescriptor[] = [];
-    const templateDirs = fs.readdirSync(scaffoldingPath(''));
+    const templateDirs = await readdir(scaffoldingPath(''));
     for (const templateDir of templateDirs)
     {
+        if(templateDir.startsWith('_')) continue;
+        const info = await stat(scaffoldingPath(templateDir));
+        if(!info.isDirectory()) continue;
         try
         {
             const config = await loadConfigFile(templateDir);
@@ -35,7 +39,7 @@ export async function getConfig(initialInputs: IInitialInputs): Promise<IConfigF
     const templateConfigFile = scaffoldingPath(initialInputs.template.dir, CONFIG_FILE_NAME);
 
     log(`getting template configuration from ${templateConfigFile}`);
-    if (!fs.existsSync(templateConfigFile))
+    if (process.env.NODE_ENV === 'development' && !existsSync(templateConfigFile))
     {
         log(`no valid configuration found at ${templateConfigFile}`);
         process.exit(-1);

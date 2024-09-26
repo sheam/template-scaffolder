@@ -1,4 +1,5 @@
-import fs from 'fs';
+import { readdir } from "node:fs/promises";
+import { existsSync } from 'fs';
 import path from 'path';
 import {SCAFFOLD_FOLDER_NAME} from './constants.js';
 import {exec} from "child_process";
@@ -13,13 +14,13 @@ export function logError(str: string): void
     console.error(str);
 }
 
-export function verifyScaffoldingFolder(): void
+export async function verifyScaffoldingFolder(): Promise<void>
 {
     let error = false;
-    if(fs.existsSync(SCAFFOLD_FOLDER_NAME))
+    if(existsSync(SCAFFOLD_FOLDER_NAME))
     {
 
-        const templates = fs.readdirSync(scaffoldingPath(''));
+        const templates = await readdir(scaffoldingPath(''));
         if(templates.length <= 0)
         {
             logError(`No templates exist in ${path.resolve(SCAFFOLD_FOLDER_NAME)}`);

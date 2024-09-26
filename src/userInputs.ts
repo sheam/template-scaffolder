@@ -1,4 +1,5 @@
-import fs from 'fs';
+import { existsSync, statSync } from 'fs';
+import { stat } from "node:fs/promises";
 import {getTemplateDescriptors} from './config.js';
 import {
     ICliArgs,
@@ -27,12 +28,6 @@ interface IInitialPromptResult {
  */
 export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInputs> {
     const questions: Question[] = [];
-
-    if (!cliValues.name)
-    {
-        questions.push({name: 'name', type: 'input', message: 'Enter the name: ', required: true});
-    }
-
     const templates = await getTemplateDescriptors();
     let templateDescriptor: ITemplateDescriptor|undefined = undefined;
     if (cliValues.template)
@@ -55,6 +50,11 @@ export async function getInitialInputs(cliValues: ICliArgs): Promise<IInitialInp
         };
         const templateChoices = templates.map(td => ({value: td.dir, name: getTitle(td)}));
         questions.push({name: 'template', type: 'select', choices: templateChoices, message: 'Select a template: ', required: true});
+    }
+
+    if (!cliValues.name)
+    {
+        questions.push({name: 'name', type: 'input', message: 'Enter the name: ', required: true});
     }
 
     const userInputs = questions.length > 0 ? await prompt<IInitialPromptResult>(questions) : {} as IInitialPromptResult;
@@ -96,7 +96,7 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
 
     let hardCodedDestination = '';
     if (typeof(config.destinations) === 'string') {
-        if (fs.existsSync(config.destinations) && fs.statSync(config.destinations).isDirectory()) {
+        if (existsSync(config.destinations) && (await stat(config.destinations)).isDirectory()) {
             hardCodedDestination = config.destinations;
         } else {
             throw new Error(`destination '${config.destinations}' is not a valid directory`);
@@ -147,8 +147,8 @@ export async function finalizeInputs(config: IConfigFile, cliValues: ICliArgs, r
  */
 function addDestinationPrompt(srcRoot: string, destinations: string[]|string|undefined, questions: Question[]): void
 {
-    function dirValidator(path: string): boolean | string {
-        if (fs.existsSync(path) && fs.statSync(path).isDirectory()) return true;
+    function dirValidator(path: string): boolean {
+        if (existsSync(path) && statSync(path).isDirectory()) return true;
         console.log(`destination path '${path}' is not a valid directory`);
         return false;
     }
@@ -187,7 +187,7 @@ function getSrcRoot(config: IConfigFile): string
     {
         return config.srcRoot;
     }
-    if (fs.existsSync(DEFAULT_SRC_ROOT))
+    if (existsSync(DEFAULT_SRC_ROOT))
     {
         return DEFAULT_SRC_ROOT;
     }
