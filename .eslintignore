@@ -1,0 +1,7 @@
+src/__tests__/*
+src/__mocks__/*
+src/@types
+src/testdir/**
+scaffolding/**
+*.js
+jest-setup.ts

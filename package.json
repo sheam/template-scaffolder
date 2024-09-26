@@ -15,6 +15,12 @@
     "scaffolder": "./dist/index.mjs"
   },
   "scripts": {
+    "prepare": "echo node env is $NODE_ENV",
+    "lint:pre-commit": "npx eslint --fix",
+    "format:pre-commit": "npx prettier --write",
+    "format:all": "npx prettier --write src",
+    "lint:all": "npx eslint --fix src",
+    "pre-commit": "npx lint-staged",
     "publish-to-npm": "npm run build && npm publish",
     "patch-version": "npm version patch -m \"updating version for publish\"",
     "build": "npm run clean && npm run compile && npm run types",
@@ -23,7 +29,7 @@
     "compile-watch": "tsc --watch",
     "debug": "tsx src/test.mts",
     "test-run": "npm run compile && node dist/index.mjs --template=component --overwrite",
-    "test-ts": "npm run compile && node dist/index.mjs --overwrite",
+    "test-ts": "npm run compile && cross-env DEBUG=true node dist/index.mjs --overwrite",
     "clean": "npx rimraf dist"
   },
   "keywords": [
@@ -40,7 +46,20 @@
     "ts-jest": "^29.2.5",
     "tsx": "^4.19.1",
     "typescript": "^4.9.5",
-    "config-file-ts": "^0.2.8-rc1"
+    "config-file-ts": "^0.2.8-rc1",
+    "prettier": "^3.3.3",
+    "lint-staged": "^15.2.10",
+    "husky": "^9.1.6",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-deprecation": "^3.0.0",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-jest": "^28.8.3",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-unused-imports": "^4.1.4"
   },
   "dependencies": {
     "@inquirer/prompts": "^6.0.1",

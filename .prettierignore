@@ -1,0 +1,9 @@
+package-lock.json
+dist
+.husky
+node_modules
+.vscode
+.idea
+scaffolding
+src/testdir
+.git

@@ -1,0 +1,182 @@
+module.exports = {
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/eslint-recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended", "plugin:jest/recommended", "plugin:import/recommended", "plugin:import/typescript"],
+  plugins: ["@typescript-eslint", "jest", "import", "unused-imports"],
+  env: {
+    browser: false,
+    es6: true,
+    jest: true,
+  },
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: 2015,
+    project: "./tsconfig.json",
+    sourceType: "module",
+    ecmaFeatures: {
+      jsx: false,
+    },
+  },
+  rules: {
+
+    // JEST:
+    "jest/no-mocks-import": "off",
+
+    // REMOVE IMPORTS
+    // These delete ALL the unused imports. Double-check if everything works after the --fix
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "error",
+      {
+        vars: "all",
+        args: "after-used",
+        argsIgnorePattern: "^_",
+      },
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        vars: "all",
+        args: "after-used",
+        argsIgnorePattern: "^_",
+      },
+    ],
+
+    // TYPESCRIPT:
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/member-delimiter-style": [
+      "error",
+      {
+        multiline: {
+          delimiter: "semi",
+          requireLast: true,
+        },
+        singleline: {
+          delimiter: "semi",
+          requireLast: false,
+        },
+      },
+    ],
+    "@typescript-eslint/prefer-namespace-keyword": "error",
+    "@typescript-eslint/quotes": ["warn", "single", { avoidEscape: true, allowTemplateLiterals: true }],
+    "@typescript-eslint/semi": ["error", "always"],
+    "@typescript-eslint/type-annotation-spacing": "error",
+    "@typescript-eslint/space-infix-ops": [
+      "error",
+      {
+        int32Hint: true,
+      },
+    ],
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/ban-ts-ignore": "off",
+    "@typescript-eslint/explicit-function-return-type": [
+      1,
+      {
+        allowExpressions: true,
+      },
+    ],
+    "@typescript-eslint/naming-convention": [
+      "warn",
+      {
+        selector: "typeLike",
+        format: ["PascalCase"],
+      },
+      {
+        selector: "default",
+        format: ["PascalCase", "camelCase"],
+      },
+      {
+        selector: "variable",
+        format: ["camelCase", "PascalCase"],
+      },
+      {
+        selector: "variable",
+        modifiers: ["global", "const"],
+        types: ["number", "string", "boolean", "array"],
+        format: ["UPPER_CASE"],
+      },
+      {
+        selector: "parameter",
+        format: ["camelCase"],
+        leadingUnderscore: "allow",
+      },
+      {
+        selector: "memberLike",
+        modifiers: ["private"],
+        format: ["camelCase"],
+        leadingUnderscore: "allow",
+      },
+    ],
+
+    // IMPORTS
+    "import/named": "off",
+    "import/no-unassigned-import": ["warn"],
+    "import/no-duplicates": ["warn", { considerQueryString: true }],
+    "import/no-unresolved": "off",
+    "import/order": [
+      "warn",
+      {
+        "newlines-between": "never",
+        alphabetize: {
+          order: "asc",
+          caseInsensitive: true,
+        },
+        warnOnUnassignedImports: false,
+        groups: ["builtin", "external", ["internal", "parent", "sibling", "index"], ["object", "type", "unknown"]],
+      },
+    ],
+
+    //ESLINT
+    "no-unreachable": "error",
+    "no-multiple-empty-lines": "error",
+    "no-console": 2,
+    "space-before-function-paren": [
+      "error",
+      {
+        anonymous: "never",
+        named: "never",
+        asyncArrow: "always",
+      },
+    ],
+    eqeqeq: ["error", "always"],
+    "brace-style": ["error", "1tbs"],
+    "no-trailing-spaces": "error",
+    "no-var": "error",
+    "arrow-body-style": ["warn", "as-needed"],
+    camelcase: [
+      "error",
+      {
+        properties: "never",
+      },
+    ],
+    "max-params": ["error", 3],
+    "new-cap": "error", // let's watch if this causes problems
+    "prefer-arrow-callback": ["error"],
+    "prefer-const": "error",
+    "spaced-comment": [
+      "error",
+      "always",
+      {
+        markers: ["/"],
+      },
+    ],
+
+    "max-lines": [ "warn", {"max": 200, "skipComments": false, "skipBlankLines": false}],
+  },
+  overrides: [
+    {
+      files: ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)", "**/testcafe/**/*.[jt]s?(x)", "**/scripts/**/*.[jt]s?(x)"],
+    },
+  ],
+  settings: {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"],
+    },
+
+    "import/resolver": {
+      typescript: {
+        alwaysTryTypes: true, // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
+        project: "<root>",
+      },
+    },
+  },
+};
