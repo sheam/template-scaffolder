@@ -1,16 +1,6 @@
-// IConfig
-// {
-//     variables?: any,
-//     destinations?: string[];
-//     prompts?: DistinctQuestion[];
-//     createNameDir?: boolean;
-//     srcRoot?: string;
-//     afterFileCreated?: (createdFilePath: string, variables: any) => Promise<string[]>;
-// }
-
 import {IConfigFile, Question} from "../../src/types";
 
-const config: IConfigFile = {
+export default {
     name: 'typescript',
     description: 'for testing velocity templates',
     srcRoot: 'src',
@@ -29,6 +19,4 @@ const config: IConfigFile = {
             ],
         }
     ],
-};
-
-export default config;
+} as IConfigFile;
