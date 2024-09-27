@@ -22,6 +22,7 @@
     "test:debug": "tsx src/test.mts",
     "test:test-run": "npm run build:exe && cross-env NODE_ENV=production DEBUG=false node dist/exe/index.js --template=component --overwrite",
     "test:test-ts": "npm run build:exe && cross-env DEBUG=false node dist/exe/index.js --overwrite --template=typescript-config",
+    "test:ask-template": "npm run build:exe && cross-env DEBUG=false node dist/exe/index.js --dryRun",
     "test:all": "jest src",
     "publish:login": "npm login",
     "publish:npm": "npm run build:all && npm publish",

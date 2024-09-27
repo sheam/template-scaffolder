@@ -15,24 +15,37 @@ import {
 import { log, scaffoldingPath } from './util.js';
 
 export async function getTemplateDescriptors(): Promise<ITemplateDescriptor[]> {
-  const result: ITemplateDescriptor[] = [];
   const templateDirs = await readdir(scaffoldingPath(''));
-  for (const templateDir of templateDirs) {
-    if (templateDir === INCLUDES_FOLDER_NAME) continue;
+
+  const getTemplateDescriptor = async (
+    templateDir: string
+  ): Promise<ITemplateDescriptor | null> => {
+    if (templateDir === INCLUDES_FOLDER_NAME || templateDir.startsWith('_')) {
+      return null;
+    }
     const info = await stat(scaffoldingPath(templateDir));
-    if (!info.isDirectory()) continue;
+    if (!info.isDirectory()) return null;
+
     try {
       const config = await loadConfigFile(templateDir);
-      result.push({
+      return {
         dir: templateDir,
         name: config.name || templateDir,
         description: config.description,
-      });
+      };
     } catch (_) {
-      result.push({ name: templateDir, dir: templateDir });
+      return { name: templateDir, dir: templateDir };
     }
+  };
+
+  const templateDescriptorPromises = new Array<
+    Promise<ITemplateDescriptor | null>
+  >();
+  for (const templateDir of templateDirs) {
+    templateDescriptorPromises.push(getTemplateDescriptor(templateDir));
   }
-  return result;
+  const result = await Promise.all(templateDescriptorPromises);
+  return result.filter(x => x !== null);
 }
 
 async function loadConfigFile(templateDir: string): Promise<IConfigFile> {
