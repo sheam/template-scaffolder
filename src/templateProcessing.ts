@@ -5,11 +5,11 @@ import {
   CONFIG_FILE_NAME_NO_EXT,
   INCLUDES_FOLDER_NAME,
   SCAFFOLD_FOLDER_NAME,
-} from './constants';
-import { execCommand, padString } from './templateProcessing/helpers';
-import { processTemplate } from './templateProcessing/processTemplate';
-import { IFinalizedInputs, PatternList, TemplateVariables } from './types';
-import { log, logError, scaffoldingPath } from './util';
+} from './constants.js';
+import { execCommand, padString } from './templateProcessing/helpers.js';
+import { processTemplate } from './templateProcessing/processTemplate.js';
+import { IFinalizedInputs, PatternList, TemplateVariables } from './types.js';
+import { log, logError, scaffoldingPath } from './util.js';
 
 // eslint-disable-next-line max-params
 async function getFileContents(

@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { readdir } from 'node:fs/promises';
 import * as path from 'path';
-import { SCAFFOLD_FOLDER_NAME } from './constants';
+import { SCAFFOLD_FOLDER_NAME } from './constants.js';
 
 export function log(str: string, indent = 0, debug = false): void {
   if (debug && !process.env.DEBUG) return;

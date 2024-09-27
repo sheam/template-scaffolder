@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { logError } from './util';
+import { logError } from './util.js';
 
 export type TemplateVariables = {
   [key: string]: string | number;

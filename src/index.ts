@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import { getArgs } from './cli';
-import { getConfig } from './config';
-import { createTemplates } from './templateProcessing';
-import { getInitialInputs, finalizeInputs } from './userInputs';
-import { log, printValues, verifyScaffoldingFolder } from './util';
+import { getArgs } from './cli.js';
+import { getConfig } from './config.js';
+import { createTemplates } from './templateProcessing.js';
+import { getInitialInputs, finalizeInputs } from './userInputs.js';
+import { log, printValues, verifyScaffoldingFolder } from './util.js';
 
 if (!Array.prototype.findLastIndex) {
   Array.prototype.findLastIndex = function (predicate) {

@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { logError } from '../util';
+import { logError } from '../util.js';
 
 export function padString(str: string, char = '-', lineLen = 80): string {
   if (str.length >= lineLen) return str;

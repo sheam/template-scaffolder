@@ -1,4 +1,4 @@
-import { IChoice, ISearchQuestion } from '../types';
+import { IChoice, ISearchQuestion } from '../types.js';
 
 export type SearchQuestionImplementation = Required<
   Pick<ISearchQuestion, 'source'>

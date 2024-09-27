@@ -1,9 +1,9 @@
 import { existsSync, statSync } from 'fs';
 import { stat } from 'node:fs/promises';
-import { getBuiltIns } from './builtIns';
-import { getTemplateDescriptors } from './config';
-import { DEFAULT_SRC_ROOT } from './constants';
-import { prompt } from './prompts/prompt';
+import { getBuiltIns } from './builtIns.js';
+import { getTemplateDescriptors } from './config.js';
+import { DEFAULT_SRC_ROOT } from './constants.js';
+import { prompt } from './prompts/prompt.js';
 import {
   ICliArgs,
   IConfigFile,
@@ -12,8 +12,8 @@ import {
   ITemplateDescriptor,
   Question,
   IChoice,
-} from './types';
-import { logError } from './util';
+} from './types.js';
+import { logError } from './util.js';
 
 interface IInitialPromptResult {
   template?: string;

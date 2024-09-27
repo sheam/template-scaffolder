@@ -1,7 +1,7 @@
 import { confirm, input, number, search, select } from '@inquirer/prompts';
-import { getPathQuestion } from './path';
-import { getSearchQuestion } from './search';
-import { MANUAL_ENTRY_VALUE } from './types';
+import { getPathQuestion } from './path.js';
+import { getSearchQuestion } from './search.js';
+import { MANUAL_ENTRY_VALUE } from './types.js';
 import {
   isConfirmQuestion,
   isInputQuestion,
@@ -10,7 +10,7 @@ import {
   isSearchQuestion,
   isSelectQuestion,
   Question,
-} from '../types';
+} from '../types.js';
 
 export async function prompt<TResult extends object>(
   questions: Question[]

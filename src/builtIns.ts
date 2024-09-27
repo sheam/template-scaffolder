@@ -1,5 +1,5 @@
-import { execCommand } from './templateProcessing/helpers';
-import { IConfigFile, IInitialInputs } from './types';
+import { execCommand } from './templateProcessing/helpers.js';
+import { IConfigFile, IInitialInputs } from './types.js';
 
 export async function getBuiltIns(
   config: IConfigFile,
