@@ -4,4 +4,7 @@ src/@types
 src/testdir/**
 scaffolding/**
 *.js
+*.cjs
+*.mjs
 jest-setup.ts
+package.json

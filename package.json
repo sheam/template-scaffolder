@@ -15,7 +15,7 @@
     "scaffolder": "./dist/index.mjs"
   },
   "scripts": {
-    "prepare": "echo node env is $NODE_ENV",
+    "prepare": "husky",
     "lint:pre-commit": "npx eslint --fix",
     "format:pre-commit": "npx prettier --write",
     "format:all": "npx prettier --write src",
