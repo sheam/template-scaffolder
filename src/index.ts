@@ -3,7 +3,7 @@
 import { getArgs } from './cli.js';
 import { getConfig } from './config.js';
 import { processTemplates } from './templateProcessing/index.js';
-import { getInitialInputs, finalizeInputs } from './userInputs.js';
+import { finalizeInputs, getInitialInputs } from './userInputs/index.js';
 import { log, printValues, verifyScaffoldingFolder } from './util.js';
 
 // hack for older versions of Node, remove after forcing version 18

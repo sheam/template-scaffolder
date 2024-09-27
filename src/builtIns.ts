@@ -1,10 +1,10 @@
 import { IConfigFile, IInitialInputs } from './types/index.js';
 import { execCommand } from './util.js';
 
-export async function getBuiltIns(
-  config: IConfigFile,
+export async function getBuiltIns<TInput extends object>(
+  config: IConfigFile<TInput>,
   initialInputs: IInitialInputs
-): Promise<IConfigFile> {
+): Promise<IConfigFile<TInput>> {
   return {
     variables: {
       NAME: initialInputs.instanceName,

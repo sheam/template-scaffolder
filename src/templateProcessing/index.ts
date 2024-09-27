@@ -2,8 +2,8 @@ import { createFileFromTemplate } from './createFileFromTemplate.js';
 import { getTemplateFiles } from './getTemplateFiles.js';
 import { IFinalizedInputs } from '../types/index.js';
 
-export async function processTemplates(
-  processConfig: IFinalizedInputs,
+export async function processTemplates<TInput extends object>(
+  processConfig: IFinalizedInputs<TInput>,
   dryRun?: boolean
 ): Promise<number> {
   const templateFiles = await getTemplateFiles(processConfig.template.dir);

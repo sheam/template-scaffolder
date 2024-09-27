@@ -61,7 +61,9 @@ export async function getTemplateDescriptors(
   }
 }
 
-async function loadConfigFile(templateDir: string): Promise<IConfigFile> {
+async function loadConfigFile<TInput extends object>(
+  templateDir: string
+): Promise<IConfigFile<TInput>> {
   const loaders = [
     { loader: loadJsConfigFile, extensions: ['.js', '.mjs'] },
     { loader: loadTsConfigFile, extensions: ['.ts', '.mts'] },
@@ -79,9 +81,9 @@ async function loadConfigFile(templateDir: string): Promise<IConfigFile> {
   );
 }
 
-async function loadJsConfigFile(
+async function loadJsConfigFile<TInput extends object>(
   configFileScaffoldingPath: string
-): Promise<IConfigFile> {
+): Promise<IConfigFile<TInput>> {
   const modulePath =
     'file://' + path.join(process.cwd(), configFileScaffoldingPath);
   log(`modulePath ${modulePath}, cwd=${process.cwd()}`, 0, true);
@@ -89,9 +91,9 @@ async function loadJsConfigFile(
   return config.default;
 }
 
-async function loadTsConfigFile(
+async function loadTsConfigFile<TInput extends object>(
   configFileScaffoldingPath: string
-): Promise<IConfigFile> {
+): Promise<IConfigFile<TInput>> {
   log(
     `typescript config ${configFileScaffoldingPath}, cwd=${process.cwd()}`,
     0,
@@ -103,7 +105,7 @@ async function loadTsConfigFile(
     TS_CACHE_FOLDER_NAME,
     configFileScaffoldingPath
   );
-  const config = loadTsConfig<IConfigFile>(configPath, cachePath, true);
+  const config = loadTsConfig<IConfigFile<TInput>>(configPath, cachePath, true);
   if (!config) {
     throw new Error(
       `failed to load ${configFileScaffoldingPath}, make sure the default export is a valid IConfigFile object`
@@ -112,9 +114,9 @@ async function loadTsConfigFile(
   return config;
 }
 
-export async function getConfig(
+export async function getConfig<TInput extends object>(
   initialInputs: IInitialInputs
-): Promise<IConfigFile> {
+): Promise<IConfigFile<TInput>> {
   log(`loading config from ${initialInputs.template.dir}`, 0, true);
   return await loadConfigFile(initialInputs.template.dir);
 }

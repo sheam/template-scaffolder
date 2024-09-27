@@ -7,8 +7,8 @@ import { getDestinationPath } from './getDestinationPath.js';
 import { getFileContents } from './getFileContents.js';
 import { runAfterCreateCommand } from './runAfterCreateCommand.js';
 
-export async function createFileFromTemplate(
-  processConfig: IFinalizedInputs,
+export async function createFileFromTemplate<TInput extends object>(
+  processConfig: IFinalizedInputs<TInput>,
   file: string,
   dryRun: boolean
 ): Promise<void> {

@@ -8,16 +8,13 @@ export type PatternList = Array<string | RegExp> | undefined;
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type MacroObject = { [key: string]: Function };
 
-export interface IConfigFile {
+export interface IConfigFile<TInput extends object> {
   name?: string;
   description?: string;
   version?: string;
   variables?:
     | TemplateVariables
-    | ((
-        instanceName: string,
-        initialInputs: TemplateVariables
-      ) => TemplateVariables);
+    | ((instanceName: string, initialInputs: TInput) => TemplateVariables);
   prompts?: Question[] | ((instanceName: string) => Question[]);
   stripLines?: PatternList;
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -38,14 +35,14 @@ export interface ITemplateDescriptor {
   description?: string;
 }
 
-export interface IFinalizedInputs {
+export interface IFinalizedInputs<TInput extends object> {
   instanceName: string;
   template: ITemplateDescriptor;
   destination: string;
   overwrite: boolean;
   variables: TemplateVariables;
   srcRoot: string;
-  afterFileCreated: IConfigFile['afterFileCreated'];
+  afterFileCreated: IConfigFile<TInput>['afterFileCreated'];
   stripLines: Array<string | RegExp> | undefined;
   createNameDir: boolean;
   macros: MacroObject;
