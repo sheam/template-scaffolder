@@ -14,7 +14,9 @@ import {
 } from './types/index.js';
 import { log, scaffoldingPath } from './util.js';
 
-export async function getTemplateDescriptors(): Promise<ITemplateDescriptor[]> {
+export async function getTemplateDescriptors(
+  parallel: boolean | undefined
+): Promise<ITemplateDescriptor[]> {
   const templateDirs = await readdir(scaffoldingPath(''));
 
   const getTemplateDescriptor = async (
@@ -38,14 +40,25 @@ export async function getTemplateDescriptors(): Promise<ITemplateDescriptor[]> {
     }
   };
 
-  const templateDescriptorPromises = new Array<
-    Promise<ITemplateDescriptor | null>
-  >();
-  for (const templateDir of templateDirs) {
-    templateDescriptorPromises.push(getTemplateDescriptor(templateDir));
+  if (parallel) {
+    const templateDescriptorPromises = new Array<
+      Promise<ITemplateDescriptor | null>
+    >();
+    for (const templateDir of templateDirs) {
+      templateDescriptorPromises.push(getTemplateDescriptor(templateDir));
+    }
+    const result = await Promise.all(templateDescriptorPromises);
+    return result.filter(x => x !== null);
+  } else {
+    const templateDescriptors = new Array<ITemplateDescriptor>();
+    for (const templateDir of templateDirs) {
+      const descriptor = await getTemplateDescriptor(templateDir);
+      if (descriptor) {
+        templateDescriptors.push(descriptor);
+      }
+    }
+    return templateDescriptors;
   }
-  const result = await Promise.all(templateDescriptorPromises);
-  return result.filter(x => x !== null);
 }
 
 async function loadConfigFile(templateDir: string): Promise<IConfigFile> {

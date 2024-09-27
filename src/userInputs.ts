@@ -31,7 +31,7 @@ export async function getInitialInputs(
   cliValues: ICliArgs
 ): Promise<IInitialInputs> {
   const questions: Question[] = [];
-  const templates = await getTemplateDescriptors();
+  const templates = await getTemplateDescriptors(cliValues.parallel);
   let templateDescriptor: ITemplateDescriptor | undefined = undefined;
   if (cliValues.template) {
     templateDescriptor =

@@ -57,6 +57,7 @@ export interface ICliArgs {
   destination?: string;
   dryRun?: boolean;
   overwrite?: boolean;
+  parallel?: boolean;
 }
 
 export interface IInitialInputs {

@@ -27,6 +27,12 @@ const cliConfig: IArgsConfig = {
       required: false,
       description: 'Root folder where generated files are to be deployed.',
     },
+    {
+      name: 'parallel',
+      type: 'boolean',
+      description:
+        'Process all files at the same time. The default is process one file at a time.',
+    },
   ],
 };
 
