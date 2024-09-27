@@ -5,7 +5,7 @@ import {
   CONFIG_FILE_NAME_NO_EXT,
   INCLUDES_FOLDER_NAME,
   SCAFFOLD_FOLDER_NAME,
-} from './constants.js';
+} from './constants';
 import { execCommand, padString } from './templateProcessing/helpers';
 import { processTemplate } from './templateProcessing/processTemplate';
 import { IFinalizedInputs, PatternList, TemplateVariables } from './types';

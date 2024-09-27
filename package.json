@@ -12,7 +12,7 @@
   },
   "types": "dist/index.d.ts",
   "bin": {
-    "scaffolder": "./dist/index.mjs"
+    "scaffolder": "./dist/index.js"
   },
   "scripts": {
     "build:all": "npm run build:clean && npm run build:exe && npm run build:types",
@@ -20,8 +20,8 @@
     "build:exe": "tsc",
     "build:clean": "npx rimraf dist",
     "test:debug": "tsx src/test.mts",
-    "test:test-run": "npm run build:exe && cross-env DEBUG=true node dist/index.mjs --template=component --overwrite",
-    "test:test-ts": "npm run build:exe && cross-env DEBUG=true node dist/index.mjs --overwrite",
+    "test:test-run": "npm run build:exe && cross-env DEBUG=true node dist/index.js --template=component --overwrite",
+    "test:test-ts": "npm run build:exe && cross-env DEBUG=true node dist/index.js --overwrite",
     "test:all": "jest src",
     "publish:to-npm": "npm run build:all && npm publish",
     "publicsh:version-update-with-login": "npm version patch",
@@ -44,7 +44,7 @@
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
     "tsx": "^4.19.1",
-    "typescript": "^4.9.5",
+    "typescript": "^5.6.2",
     "config-file-ts": "^0.2.8-rc1",
     "prettier": "^3.3.3",
     "lint-staged": "^15.2.10",

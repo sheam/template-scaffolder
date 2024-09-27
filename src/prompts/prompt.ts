@@ -10,7 +10,7 @@ import {
   isSearchQuestion,
   isSelectQuestion,
   Question,
-} from '../types.js';
+} from '../types';
 
 export async function prompt<TResult extends object>(
   questions: Question[]

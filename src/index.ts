@@ -6,9 +6,7 @@ import { createTemplates } from './templateProcessing';
 import { getInitialInputs, finalizeInputs } from './userInputs';
 import { log, printValues, verifyScaffoldingFolder } from './util';
 
-// @ts-expect-error needed for node versions before v18
 if (!Array.prototype.findLastIndex) {
-  // @ts-expect-error needed for node versions before v18
   Array.prototype.findLastIndex = function (predicate) {
     for (let i = this.length - 1; i >= 0; i--) {
       if (predicate(this[i], i, this)) {
