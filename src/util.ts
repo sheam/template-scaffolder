@@ -1,16 +1,18 @@
-import { readdir } from 'node:fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
-import { SCAFFOLD_FOLDER_NAME } from './constants.js';
 import { exec } from 'child_process';
+import { existsSync } from 'fs';
+import { readdir } from 'node:fs/promises';
+import * as path from 'path';
+import { SCAFFOLD_FOLDER_NAME } from './constants.js';
 
 export function log(str: string, indent = 0, debug = false): void {
   if (debug && !process.env.DEBUG) return;
+  // eslint-disable-next-line no-console
   console.log(`${'  '.repeat(indent)}${str}`);
 }
 
 export function logError(str: string): void {
-  console.error(str);
+  // eslint-disable-next-line no-console
+  console.warn(str);
 }
 
 export async function verifyScaffoldingFolder(): Promise<void> {
@@ -39,11 +41,12 @@ export async function verifyScaffoldingFolder(): Promise<void> {
 export function scaffoldingPath(template: string, filePath = ''): string {
   return path
     .join(SCAFFOLD_FOLDER_NAME, template, filePath)
-    .replaceAll('\\', '/');
+    .replace(/\//g, '/');
 }
 
+type IndexedObject = { [index: string]: unknown };
 export function printValues(
-  variables: any,
+  variables: object,
   debug = false,
   indent: number = 0
 ): void {
@@ -61,8 +64,8 @@ export function printValues(
     }
   }
   Object.keys(variables).forEach(key => {
-    const val = variables[key];
-    if (val && Array.isArray(val) && typeof val !== 'string') {
+    const val = (variables as IndexedObject)[key];
+    if (val && Array.isArray(val)) {
       log(`${key}: [`, indent, debug);
       val.forEach(item => log(wrapValue(item), indent + 1, debug));
       log(']', indent, debug);
@@ -70,7 +73,11 @@ export function printValues(
       log(`${key}:`, indent, debug);
       printValues(val, debug, indent + 1);
     } else {
-      log(`${key}=${wrapValue(variables[key])}`, indent, debug);
+      log(
+        `${key}=${wrapValue((variables as IndexedObject)[key])}`,
+        indent,
+        debug
+      );
     }
   });
 }
@@ -105,9 +112,9 @@ export function execCommand(
   });
 }
 
-let _cachedUserName: string;
+let cachedUserName: string;
 export async function getUserName(): Promise<string> {
-  if (_cachedUserName) return _cachedUserName;
+  if (cachedUserName) return cachedUserName;
 
   async function getCommandOutput(command: string): Promise<string> {
     try {
@@ -127,6 +134,6 @@ export async function getUserName(): Promise<string> {
   if (!userName) {
     userName = await getCommandOutput('git config user.email');
   }
-  _cachedUserName = userName || process.env.USERNAME || 'Unknown';
-  return _cachedUserName;
+  cachedUserName = userName || process.env.USERNAME || 'Unknown';
+  return cachedUserName;
 }

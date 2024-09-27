@@ -1,3 +1,6 @@
+/* eslint-disable max-lines */
+import { logError } from './util.js';
+
 export type TemplateVariables = {
   [key: string]: string | number;
 };
@@ -8,7 +11,9 @@ export interface IConfigFile {
   name?: string;
   description?: string;
   version?: string;
-  variables?: object | ((instanceName: string, initialInputs: any) => any);
+  variables?:
+    | object
+    | ((instanceName: string, initialInputs: object) => object);
   prompts?: Question[] | ((instanceName: string) => Question[]);
   stripLines?: PatternList;
   macros?: object;
@@ -155,7 +160,7 @@ export function isSearchQuestion(q: IQuestionBase): q is ISearchQuestion {
     return false;
   }
   if ((!x.source && !x.choices) || (x.source && x.choices)) {
-    console.warn(
+    logError(
       `Search question '${q.message}' must either 'source' or 'choices', but not both.`
     );
     return false;
@@ -175,7 +180,7 @@ export function isSelectQuestion(q: IQuestionBase): q is ISelectQuestion {
     return false;
   }
   if (!Array.isArray(x.choices)) {
-    console.warn(
+    logError(
       `SelectQuestion '${q.message}' must have a 'choices' property with a list of options.`
     );
     return false;
@@ -201,7 +206,7 @@ export function isPathSelectQuestion(
     return false;
   }
   if (x.excludePath && typeof x.excludePath !== 'function') {
-    console.warn(
+    logError(
       `The 'excludePath' of PathSelectQuestion for question '${q.message}' is not a function`
     );
     return false;

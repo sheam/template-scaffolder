@@ -1,6 +1,10 @@
+/* eslint-disable max-lines */
 import { existsSync, statSync } from 'fs';
 import { stat } from 'node:fs/promises';
+import { getBuiltIns } from './builtIns.js';
 import { getTemplateDescriptors } from './config.js';
+import { DEFAULT_SRC_ROOT } from './constants.js';
+import { prompt } from './prompt.js';
 import {
   ICliArgs,
   IConfigFile,
@@ -11,9 +15,6 @@ import {
   IChoice,
 } from './types.js';
 import { logError } from './util.js';
-import { DEFAULT_SRC_ROOT } from './constants.js';
-import { getBuiltIns } from './builtIns.js';
-import { prompt } from './prompt.js';
 
 interface IInitialPromptResult {
   template?: string;
@@ -42,8 +43,8 @@ export async function getInitialInputs(
       process.exit(-1);
     }
   } else {
-    const getTitle = (td: ITemplateDescriptor) => {
-      let s = td.name || td.dir;
+    const getTitle = (td: ITemplateDescriptor): string => {
+      const s = td.name || td.dir;
       if (!td.description) return s;
       return `${s} - ${td.description.substring(0, 50)}`;
     };
@@ -183,7 +184,7 @@ function addDestinationPrompt(
 ): void {
   function dirValidator(path: string): boolean {
     if (existsSync(path) && statSync(path).isDirectory()) return true;
-    console.log(`destination path '${path}' is not a valid directory`);
+    logError(`destination path '${path}' is not a valid directory`);
     return false;
   }
 
@@ -201,7 +202,7 @@ function addDestinationPrompt(
       required: true,
     });
   } else {
-    // console.log(`srcRoot=[${srcRoot}]`);
+    // log(`srcRoot=[${srcRoot}]`);
     questions.push({
       name: 'destination',
       message: `Enter a destination directory:`,

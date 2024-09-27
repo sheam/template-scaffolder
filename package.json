@@ -19,7 +19,7 @@
     "lint:pre-commit": "npx eslint --fix",
     "format:pre-commit": "npx prettier --write",
     "format:all": "npx prettier --write src",
-    "lint:all": "npx eslint --fix src",
+    "lint:all": "npx eslint --fix src/**",
     "pre-commit": "npx lint-staged",
     "publish-to-npm": "npm run build && npm publish",
     "patch-version": "npm version patch -m \"updating version for publish\"",

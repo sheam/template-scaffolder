@@ -1,3 +1,6 @@
+/* eslint-disable max-lines */
+import { existsSync } from 'fs';
+import { readdir, stat, readFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'path';
 import {
   CONFIG_FILE_NAME_NO_EXT,
@@ -12,8 +15,6 @@ import {
   padString,
   scaffoldingPath,
 } from './util.js';
-import { readdir, stat, readFile, mkdir, writeFile } from 'node:fs/promises';
-import { existsSync } from 'fs';
 
 const velocityModule = await import('velocityjs');
 const velocity = velocityModule.default;
@@ -26,6 +27,7 @@ function processTemplate(
   return velocity.render(text, variables, macros);
 }
 
+// eslint-disable-next-line max-params
 async function getFileContents(
   path: string,
   variables: TemplateVariables,
@@ -36,9 +38,9 @@ async function getFileContents(
   try {
     const fileLines = await getFileLines(path, stripPatterns, processedFiles);
     return processTemplate(fileLines.join('\n'), variables, macros);
-  } catch (error: any) {
+  } catch (error: unknown) {
     let message = `Error processing template file '${path}':`;
-    message += `\n  message: ${error.message}`;
+    message += `\n  message: ${(error as Error).message}`;
     message += `\n  files: ${processedFiles.join(' -> ')}`;
     logError(message);
     process.exit(-1);
@@ -51,9 +53,9 @@ function getDestinationPath(
 ): string {
   try {
     return processTemplate(rawPath.replaceAll('\\', '/'), variables);
-  } catch (parseError: any) {
+  } catch (parseError: unknown) {
     logError(
-      `error transforming destination file path '${rawPath}':\n${parseError.message}`
+      `error transforming destination file path '${rawPath}':\n${(parseError as Error).message}`
     );
     process.exit(-1);
   }

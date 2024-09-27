@@ -1,6 +1,6 @@
-import { confirm, input, number, search, select } from '@inquirer/prompts';
 import { readdir, stat } from 'node:fs/promises';
 import path from 'path';
+import { confirm, input, number, search, select } from '@inquirer/prompts';
 import {
   IChoice,
   IPathInfo,
@@ -16,16 +16,6 @@ import {
 } from './types.js';
 
 const MANUAL_ENTRY_VALUE = '__manual_entry__';
-
-// @ts-ignore
-Array.prototype.findLastIndex = function (predicate) {
-  for (let i = this.length - 1; i >= 0; i--) {
-    if (predicate(this[i], i, this)) {
-      return i;
-    }
-  }
-  return -1;
-};
 
 export async function prompt<TResult extends object>(
   questions: Question[]
@@ -162,7 +152,7 @@ async function getDir(
   q: IPathSelectQuestion
 ): Promise<IPathInfo[]> {
   const result = new Array<IPathInfo>();
-  // console.log(`processing ${rootPath} (depth=${currentDepth})`);
+  // log(`processing ${rootPath} (depth=${currentDepth})`);
   if (typeof q.maxDepth === 'number' && currentDepth >= q.maxDepth) {
     return result;
   }

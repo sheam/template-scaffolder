@@ -19,8 +19,7 @@ const cliConfig: IArgsConfig = {
     { name: 'name', description: 'Name of the output.' },
     {
       name: 'template',
-      description:
-        'Name of the template. This foldering in scaffolding directory',
+      description: 'Name of the template. This folder in scaffolding directory',
     },
     {
       name: 'destination',

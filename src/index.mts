@@ -4,14 +4,19 @@ import { getArgs } from './cli.js';
 import { getConfig } from './config.js';
 import { createTemplates } from './templateProcessing.js';
 import { getInitialInputs, finalizeInputs } from './userInputs.js';
-import {
-  getUserName,
-  log,
-  printValues,
-  verifyScaffoldingFolder,
-} from './util.js';
+import { log, printValues, verifyScaffoldingFolder } from './util.js';
 
-verifyScaffoldingFolder();
+// @ts-expect-error needed for pre-node-18
+Array.prototype.findLastIndex = function (predicate) {
+  for (let i = this.length - 1; i >= 0; i--) {
+    if (predicate(this[i], i, this)) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+await verifyScaffoldingFolder();
 
 const args = getArgs();
 const initialValues = await getInitialInputs(args);
