@@ -3,7 +3,6 @@ node_modules/.bin/
 src/testdir
 node_modules/
 dist/
-
+.template-scaffolder-ts-cache/
 .npmrc
-
 testsrc/

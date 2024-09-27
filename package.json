@@ -21,11 +21,13 @@
     "build:clean": "npx rimraf dist",
     "test:debug": "tsx src/test.mts",
     "test:test-run": "npm run build:exe && cross-env NODE_ENV=production DEBUG=false node dist/exe/index.js --template=component --overwrite",
-    "test:test-ts": "npm run build:exe && cross-env DEBUG=false node dist/exe/index.js --overwrite",
+    "test:test-ts": "npm run build:exe && cross-env DEBUG=false node dist/exe/index.js --overwrite --template=typescript-config",
     "test:all": "jest src",
     "publish:login": "npm login",
     "publish:npm": "npm run build:all && npm publish",
-    "publish:version-update": "npm version patch -m",
+    "publish:version-patch": "npm version patch -m",
+    "publish:version-minor": "npm version minor -m",
+    "publish:version-major": "npm version premajor -preid=alpha -m",
     "x:prepare": "husky init",
     "pre-commit:lint": "npx eslint --fix",
     "pre-commit:format": "npx prettier --write",
@@ -44,9 +46,7 @@
     "jest": "^29.7.0",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
-    "tsx": "^4.19.1",
     "typescript": "^5.6.2",
-    "config-file-ts": "^0.2.8-rc1",
     "prettier": "^3.3.3",
     "lint-staged": "^15.2.10",
     "husky": "^9.1.6",
@@ -64,6 +64,7 @@
   "dependencies": {
     "@inquirer/prompts": "^6.0.1",
     "node-cli-arg-by-config": "^0.11.0",
-    "velocityjs": "^2.0.6"
+    "velocityjs": "^2.0.6",
+    "config-file-ts": "^0.2.8-rc1"
   }
 }
