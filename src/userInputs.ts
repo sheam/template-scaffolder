@@ -1,10 +1,9 @@
-/* eslint-disable max-lines */
 import { existsSync, statSync } from 'fs';
 import { stat } from 'node:fs/promises';
-import { getBuiltIns } from './builtIns.js';
-import { getTemplateDescriptors } from './config.js';
-import { DEFAULT_SRC_ROOT } from './constants.js';
-import { prompt } from './prompt.js';
+import { getBuiltIns } from './builtIns';
+import { getTemplateDescriptors } from './config';
+import { DEFAULT_SRC_ROOT } from './constants';
+import { prompt } from './prompts/prompt';
 import {
   ICliArgs,
   IConfigFile,
@@ -14,7 +13,7 @@ import {
   Question,
   IChoice,
 } from './types.js';
-import { logError } from './util.js';
+import { logError } from './util';
 
 interface IInitialPromptResult {
   template?: string;

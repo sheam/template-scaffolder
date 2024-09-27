@@ -1,5 +1,5 @@
-import { IConfigFile, IInitialInputs } from './types.js';
-import { getUserName } from './util.js';
+import { execCommand } from './templateProcessing/helpers';
+import { IConfigFile, IInitialInputs } from './types';
 
 export async function getBuiltIns(
   config: IConfigFile,
@@ -16,4 +16,30 @@ export async function getBuiltIns(
     },
     macros: {},
   };
+}
+
+let cachedUserName: string;
+async function getUserName(): Promise<string> {
+  if (cachedUserName) return cachedUserName;
+
+  async function getCommandOutput(command: string): Promise<string> {
+    try {
+      let output = '';
+      const code = await execCommand(command, text => (output = text));
+      if (code !== 0) {
+        return '';
+      }
+      return output?.trim();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  let userName: string;
+  userName = await getCommandOutput('git config user.name');
+  if (!userName) {
+    userName = await getCommandOutput('git config user.email');
+  }
+  cachedUserName = userName || process.env.USERNAME || 'Unknown';
+  return cachedUserName;
 }

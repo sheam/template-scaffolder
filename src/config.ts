@@ -2,9 +2,9 @@ import { existsSync } from 'fs';
 import { readdir, stat } from 'node:fs/promises';
 import path from 'path';
 import { loadTsConfig } from 'config-file-ts';
-import { CONFIG_FILE_NAME_NO_EXT, INCLUDES_FOLDER_NAME } from './constants.js';
-import { IConfigFile, IInitialInputs, ITemplateDescriptor } from './types.js';
-import { log, scaffoldingPath } from './util.js';
+import { CONFIG_FILE_NAME_NO_EXT, INCLUDES_FOLDER_NAME } from './constants';
+import { IConfigFile, IInitialInputs, ITemplateDescriptor } from './types';
+import { log, scaffoldingPath } from './util';
 
 export async function getTemplateDescriptors(): Promise<ITemplateDescriptor[]> {
   const result: ITemplateDescriptor[] = [];

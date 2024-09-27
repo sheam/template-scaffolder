@@ -1,31 +1,15 @@
-/* eslint-disable max-lines */
 import { existsSync } from 'fs';
-import { readdir, stat, readFile, mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'path';
 import {
   CONFIG_FILE_NAME_NO_EXT,
   INCLUDES_FOLDER_NAME,
   SCAFFOLD_FOLDER_NAME,
 } from './constants.js';
-import { IFinalizedInputs, PatternList, TemplateVariables } from './types.js';
-import {
-  execCommand,
-  log,
-  logError,
-  padString,
-  scaffoldingPath,
-} from './util.js';
-
-const velocityModule = await import('velocityjs');
-const velocity = velocityModule.default;
-
-function processTemplate(
-  text: string,
-  variables: TemplateVariables,
-  macros?: object
-): string {
-  return velocity.render(text, variables, macros);
-}
+import { execCommand, padString } from './templateProcessing/helpers';
+import { processTemplate } from './templateProcessing/processTemplate';
+import { IFinalizedInputs, PatternList, TemplateVariables } from './types';
+import { log, logError, scaffoldingPath } from './util';
 
 // eslint-disable-next-line max-params
 async function getFileContents(

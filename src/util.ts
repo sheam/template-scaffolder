@@ -1,8 +1,7 @@
-import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import { readdir } from 'node:fs/promises';
 import * as path from 'path';
-import { SCAFFOLD_FOLDER_NAME } from './constants.js';
+import { SCAFFOLD_FOLDER_NAME } from './constants';
 
 export function log(str: string, indent = 0, debug = false): void {
   if (debug && !process.env.DEBUG) return;
@@ -80,60 +79,4 @@ export function printValues(
       );
     }
   });
-}
-
-export function padString(str: string, char = '-', lineLen = 80): string {
-  if (str.length >= lineLen) return str;
-  const remaining = lineLen - str.length;
-  const startPad = Math.round(remaining / 2);
-  return str.padStart(str.length + startPad, char).padEnd(lineLen, char);
-}
-
-export function execCommand(
-  command: string,
-  handleStdOutText?: (text: string) => void,
-  handleStdErrText?: (text: string) => void
-): Promise<number | null> {
-  return new Promise((resolve, reject) => {
-    const process = exec(command);
-    if (handleStdOutText) {
-      process.stdout?.on('data', handleStdOutText);
-    }
-    if (handleStdErrText) {
-      process.stderr?.on('data', handleStdErrText);
-    }
-    process.on('error', () => {
-      logError('failed to run command');
-      reject();
-    });
-    process.on('close', code => {
-      resolve(code);
-    });
-  });
-}
-
-let cachedUserName: string;
-export async function getUserName(): Promise<string> {
-  if (cachedUserName) return cachedUserName;
-
-  async function getCommandOutput(command: string): Promise<string> {
-    try {
-      let output = '';
-      const code = await execCommand(command, text => (output = text));
-      if (code !== 0) {
-        return '';
-      }
-      return output?.trim();
-    } catch (e) {
-      return '';
-    }
-  }
-
-  let userName: string;
-  userName = await getCommandOutput('git config user.name');
-  if (!userName) {
-    userName = await getCommandOutput('git config user.email');
-  }
-  cachedUserName = userName || process.env.USERNAME || 'Unknown';
-  return cachedUserName;
 }

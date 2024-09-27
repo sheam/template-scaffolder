@@ -8,14 +8,14 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=14.16"
+    "node": ">=16.00"
   },
   "types": "dist/index.d.ts",
   "bin": {
     "scaffolder": "./dist/index.mjs"
   },
   "scripts": {
-    "build:all": "npm run clean && npm run compile && npm run types",
+    "build:all": "npm run build:clean && npm run build:exe && npm run build:types",
     "build:types": "tsc --emitDeclarationOnly -d src/types.ts  -outDir dist",
     "build:exe": "tsc",
     "build:clean": "npx rimraf dist",

@@ -1,5 +1,5 @@
 import { IArgsConfig, processArgs } from 'node-cli-arg-by-config';
-import { ICliArgs } from './types.js';
+import { ICliArgs } from './types';
 
 const cliConfig: IArgsConfig = {
   helpHeader: 'scaffolder <args>',
