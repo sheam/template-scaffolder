@@ -29,5 +29,9 @@ const finalizedInputs = await finalizeInputs(config, args, initialValues);
 // console.log ( JS ON.stringify(finalizedInputs, undefined, 4));
 printValues(finalizedInputs, args.dryRun, 1);
 
+const start = new Date().getTime();
 log('Creating files:');
-await processTemplates(finalizedInputs, args.dryRun);
+const count = await processTemplates(finalizedInputs, args.dryRun);
+const end = new Date().getTime();
+const elapsed = (end - start) / 1000;
+log(`Created ${count} files in ${elapsed}s`);
