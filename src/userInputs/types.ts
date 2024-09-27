@@ -1,5 +1,6 @@
 export interface IInitialPromptResult {
-  template?: string;
-  name?: string;
+  name: string;
+  instanceName: string;
+  template: string;
   destination?: string;
 }

@@ -24,5 +24,5 @@ export async function getTemplateFiles(template: string): Promise<string[]> {
   const dirs = await readDirRecursive(scaffoldingPath(template));
   return dirs
     .map(p => p.substring(templateDir.length + 1))
-    .filter(p => p.startsWith(CONFIG_FILE_NAME_NO_EXT));
+    .filter(p => !p.startsWith(CONFIG_FILE_NAME_NO_EXT));
 }

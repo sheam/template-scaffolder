@@ -1,14 +1,15 @@
 import { existsSync, statSync } from 'fs';
 import { IChoice, Question } from '../types/index.js';
 import { logError } from '../util.js';
+import { IInitialPromptResult } from './types.js';
 
 /**
  * Add a prompt to get destination directory to existing question list.
  */
-export function addDestinationPrompt(
+export function addDestinationPrompt<TInput extends object>(
   srcRoot: string,
   destinations: string[] | string | undefined,
-  questions: Question[]
+  questions: Question<TInput & IInitialPromptResult>[]
 ): void {
   function dirValidator(path: string): boolean {
     if (existsSync(path) && statSync(path).isDirectory()) return true;

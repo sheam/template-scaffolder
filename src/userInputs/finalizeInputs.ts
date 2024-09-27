@@ -28,7 +28,7 @@ export async function finalizeInputs<TInput extends object>(
   requiredInputs: IInitialInputs
 ): Promise<IFinalizedInputs<TInput>> {
   const srcRoot = getSrcRoot(config);
-  const questions: Question[] = [];
+  const questions: Question<TInput & IInitialPromptResult>[] = [];
 
   let hardCodedDestination = '';
   if (typeof config.destinations === 'string') {
@@ -49,14 +49,15 @@ export async function finalizeInputs<TInput extends object>(
   }
 
   if (typeof config.prompts === 'function') {
-    config.prompts(requiredInputs.instanceName).forEach(p => questions.push(p));
+    const promptQuestions = await config.prompts(requiredInputs.instanceName);
+    promptQuestions.forEach(p => questions.push(p));
   }
 
   if (Array.isArray(config.prompts)) {
     config.prompts.forEach(p => questions.push(p));
   }
 
-  const answers = await prompt<IInitialPromptResult>(questions);
+  const answers = await prompt<IInitialPromptResult & TInput>(questions);
 
   const destination =
     answers.destination || cliValues.destination || hardCodedDestination;

@@ -17,7 +17,7 @@ import { IInitialPromptResult } from './types.js';
 export async function getInitialInputs(
   cliValues: ICliArgs
 ): Promise<IInitialInputs> {
-  const questions: Question[] = [];
+  const questions: Question<IInitialPromptResult>[] = [];
   const templates = await getTemplateDescriptors(cliValues.parallel);
   let templateDescriptor: ITemplateDescriptor | undefined = undefined;
   if (cliValues.template) {

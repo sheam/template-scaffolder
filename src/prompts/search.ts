@@ -1,15 +1,15 @@
 import { IChoice, ISearchQuestion } from '../types/index.js';
 
-export type SearchQuestionImplementation = Required<
-  Pick<ISearchQuestion, 'source'>
+export type SearchQuestionImplementation<TInput extends object> = Required<
+  Pick<ISearchQuestion<TInput>, 'source'>
 > &
-  ISearchQuestion;
+  ISearchQuestion<TInput>;
 
-export function getSearchQuestion(
-  q: ISearchQuestion
-): SearchQuestionImplementation {
+export function getSearchQuestion<TInput extends object>(
+  q: ISearchQuestion<TInput>
+): SearchQuestionImplementation<TInput> {
   if (q.source) {
-    return q as SearchQuestionImplementation;
+    return q as SearchQuestionImplementation<TInput>;
   }
   const choices = q.choices!;
   delete q.choices;
@@ -29,5 +29,5 @@ export function getSearchQuestion(
       return true;
     });
   };
-  return q as SearchQuestionImplementation;
+  return q as SearchQuestionImplementation<TInput>;
 }

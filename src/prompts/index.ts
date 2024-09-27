@@ -12,40 +12,43 @@ import {
 } from '../types/helpers.js';
 import { Question } from '../types/index.js';
 
-export async function prompt<TResult extends object>(
-  questions: Question[]
-): Promise<TResult> {
+export async function prompt<TInput extends object>(
+  questions: Question<TInput>[]
+): Promise<TInput> {
   const answers = new Array<(string | number | boolean | undefined)[]>();
   for (const question of questions) {
     if (question.when) {
-      if (!question.when(Object.fromEntries(answers) as TResult)) {
+      if (!question.when(Object.fromEntries(answers) as TInput)) {
         continue;
       }
     }
     if (isInputQuestion(question)) {
-      answers.push([question.name, await input(question)]);
+      answers.push([question.name.toString(), await input(question)]);
     } else if (isConfirmQuestion(question)) {
-      answers.push([question.name, await confirm(question)]);
+      answers.push([question.name.toString(), await confirm(question)]);
     } else if (isNumberQuestion(question)) {
-      answers.push([question.name, await number(question)]);
+      answers.push([question.name.toString(), await number(question)]);
     } else if (isSelectQuestion(question)) {
-      answers.push([question.name, await select(question)]);
+      answers.push([question.name.toString(), await select(question)]);
     } else if (isSearchQuestion(question)) {
-      answers.push([question.name, await search(getSearchQuestion(question))]);
+      answers.push([
+        question.name.toString(),
+        await search(getSearchQuestion(question)),
+      ]);
     } else if (isPathSelectQuestion(question)) {
       const pathQuestion = await getPathQuestion(question);
       const answer = await search(pathQuestion);
       if (answer === MANUAL_ENTRY_VALUE) {
         answers.push([
-          question.name,
+          question.name.toString(),
           await input({ ...question, message: 'enter path' }),
         ]);
       } else {
-        answers.push([question.name, answer]);
+        answers.push([question.name.toString(), answer]);
       }
     } else {
       throw new Error(`Unsupported question type: ${JSON.stringify(question)}`);
     }
   }
-  return Object.fromEntries(answers) as TResult;
+  return Object.fromEntries(answers) as TInput;
 }

@@ -4,9 +4,9 @@ import { SearchQuestionImplementation } from './search.js';
 import { MANUAL_ENTRY_VALUE } from './types.js';
 import { IChoice, IPathInfo, IPathSelectQuestion } from '../types/index.js';
 
-export async function getPathQuestion(
-  q: IPathSelectQuestion
-): Promise<SearchQuestionImplementation> {
+export async function getPathQuestion<TInput extends object>(
+  q: IPathSelectQuestion<TInput>
+): Promise<SearchQuestionImplementation<TInput>> {
   const pathEntries = await getDir(q.rootPath || process.cwd(), 0, q);
   return {
     type: 'search',
@@ -67,14 +67,14 @@ export function searchPathEntries(
   });
 }
 
-async function getDir(
+async function getDir<TInput extends object>(
   rootPath: string,
   currentDepth: number,
-  q: IPathSelectQuestion
+  q: IPathSelectQuestion<TInput>
 ): Promise<IPathInfo[]> {
   const result = new Array<IPathInfo>();
   // log(`processing ${rootPath} (depth=${currentDepth})`);
-  if (typeof q.maxDepth === 'number' && currentDepth >= q.maxDepth) {
+  if (typeof q.depthLimit === 'number' && currentDepth >= q.depthLimit) {
     return result;
   }
 

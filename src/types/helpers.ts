@@ -9,23 +9,31 @@ import {
   ISelectQuestion,
 } from './index.js';
 
-export function isConfirmQuestion(q: IQuestionBase): q is IConfirmQuestion {
-  return (q as IConfirmQuestion).type === 'confirm';
+export function isConfirmQuestion<TInput extends object>(
+  q: IQuestionBase<TInput>
+): q is IConfirmQuestion<TInput> {
+  return (q as IConfirmQuestion<TInput>).type === 'confirm';
 }
 
-export function isInputQuestion(q: IQuestionBase): q is IInputQuestion {
+export function isInputQuestion<TInput extends object>(
+  q: IQuestionBase<TInput>
+): q is IInputQuestion<TInput> {
   return (
-    (q as IInputQuestion).type === 'input' ||
-    (q as IInputQuestion).type === undefined
+    (q as IInputQuestion<TInput>).type === 'input' ||
+    (q as IInputQuestion<TInput>).type === undefined
   );
 }
 
-export function isNumberQuestion(q: IQuestionBase): q is INumberQuestion {
-  return (q as INumberQuestion).type === 'number';
+export function isNumberQuestion<TInput extends object>(
+  q: IQuestionBase<TInput>
+): q is INumberQuestion<TInput> {
+  return (q as INumberQuestion<TInput>).type === 'number';
 }
 
-export function isSearchQuestion(q: IQuestionBase): q is ISearchQuestion {
-  const x = q as ISearchQuestion;
+export function isSearchQuestion<TInput extends object>(
+  q: IQuestionBase<TInput>
+): q is ISearchQuestion<TInput> {
+  const x = q as ISearchQuestion<TInput>;
   if (x.type !== 'search') {
     return false;
   }
@@ -38,8 +46,10 @@ export function isSearchQuestion(q: IQuestionBase): q is ISearchQuestion {
   return true;
 }
 
-export function isSelectQuestion(q: IQuestionBase): q is ISelectQuestion {
-  const x = q as ISelectQuestion;
+export function isSelectQuestion<TInput extends object>(
+  q: IQuestionBase<TInput>
+): q is ISelectQuestion<TInput> {
+  const x = q as ISelectQuestion<TInput>;
   if (x.type !== 'select' && x.type !== 'list') {
     return false;
   }
@@ -52,10 +62,10 @@ export function isSelectQuestion(q: IQuestionBase): q is ISelectQuestion {
   return true;
 }
 
-export function isPathSelectQuestion(
-  q: IQuestionBase
-): q is IPathSelectQuestion {
-  const x = q as IPathSelectQuestion;
+export function isPathSelectQuestion<TInput extends object>(
+  q: IQuestionBase<TInput>
+): q is IPathSelectQuestion<TInput> {
+  const x = q as IPathSelectQuestion<TInput>;
   if (x.type !== 'path' && x.type !== 'fuzzypath') {
     return false;
   }

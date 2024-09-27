@@ -51,6 +51,9 @@ export function printValues(
   debug = false,
   indent: number = 0
 ): void {
+  if (indent === 1) {
+    log(`============= RUN CONFIGURATION =============`);
+  }
   function wrapValue(val: unknown): string {
     if (val === null) return 'null';
     switch (typeof val) {
@@ -59,7 +62,9 @@ export function printValues(
       case 'string':
         return `'${val}'`;
       case 'object':
-        return `[${val.toString()}]`;
+        return JSON.stringify(val);
+      case 'function':
+        return 'function';
       default:
         return val.toString();
     }
@@ -81,6 +86,9 @@ export function printValues(
       );
     }
   });
+  if (indent === 1) {
+    log(`============= END =============`);
+  }
 }
 
 export function execCommand(

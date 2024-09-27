@@ -41,6 +41,7 @@ export async function getTemplateDescriptors(
   };
 
   if (parallel) {
+    log('loading template configurations in parallel');
     const templateDescriptorPromises = new Array<
       Promise<ITemplateDescriptor | null>
     >();
