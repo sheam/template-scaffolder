@@ -56,7 +56,7 @@ export async function createFileFromTemplate(
   }
 
   if (processConfig.afterFileCreated) {
-    const commands = await processConfig.afterFileCreated(
+    const commands = processConfig.afterFileCreated(
       destinationPath,
       dryRun,
       processConfig.variables
