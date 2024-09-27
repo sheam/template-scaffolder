@@ -3,7 +3,7 @@ import { TemplateVariables } from '../types.js';
 const velocityModule = await import('velocityjs');
 const velocity = velocityModule.default;
 
-export function processTemplate(
+export function transform(
   text: string,
   variables: TemplateVariables,
   macros?: object

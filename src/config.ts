@@ -2,7 +2,11 @@ import { existsSync } from 'fs';
 import { readdir, stat } from 'node:fs/promises';
 import path from 'path';
 import { loadTsConfig } from 'config-file-ts';
-import { CONFIG_FILE_NAME_NO_EXT, INCLUDES_FOLDER_NAME } from './constants.js';
+import {
+  CONFIG_FILE_NAME_NO_EXT,
+  INCLUDES_FOLDER_NAME,
+  TS_CACHE_FOLDER_NAME,
+} from './constants.js';
 import { IConfigFile, IInitialInputs, ITemplateDescriptor } from './types.js';
 import { log, scaffoldingPath } from './util.js';
 
@@ -54,6 +58,7 @@ async function loadJsConfigFile(
   const config = await import(modulePath);
   return config.default;
 }
+
 async function loadTsConfigFile(
   configFileScaffoldingPath: string
 ): Promise<IConfigFile> {
@@ -63,7 +68,12 @@ async function loadTsConfigFile(
     true
   );
   const configPath = path.join(process.cwd(), configFileScaffoldingPath);
-  const config = loadTsConfig<IConfigFile>(configPath);
+  const cachePath = path.join(
+    process.cwd(),
+    TS_CACHE_FOLDER_NAME,
+    configFileScaffoldingPath
+  );
+  const config = loadTsConfig<IConfigFile>(configPath, cachePath, true);
   if (!config) {
     throw new Error(
       `failed to load ${configFileScaffoldingPath}, make sure the default export is a valid IConfigFile object`

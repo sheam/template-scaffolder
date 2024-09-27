@@ -1,10 +1,12 @@
+import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import { readdir } from 'node:fs/promises';
-import * as path from 'path';
+import path from 'path';
 import { SCAFFOLD_FOLDER_NAME } from './constants.js';
 
+const IS_DEBUG = process.env.DEBUG === 'true';
 export function log(str: string, indent = 0, debug = false): void {
-  if (debug && !process.env.DEBUG) return;
+  if (debug && !IS_DEBUG) return;
   // eslint-disable-next-line no-console
   console.log(`${'  '.repeat(indent)}${str}`);
 }
@@ -78,5 +80,28 @@ export function printValues(
         debug
       );
     }
+  });
+}
+
+export function execCommand(
+  command: string,
+  handleStdOutText?: (text: string) => void,
+  handleStdErrText?: (text: string) => void
+): Promise<number | null> {
+  return new Promise((resolve, reject) => {
+    const process = exec(command);
+    if (handleStdOutText) {
+      process.stdout?.on('data', handleStdOutText);
+    }
+    if (handleStdErrText) {
+      process.stderr?.on('data', handleStdErrText);
+    }
+    process.on('error', () => {
+      logError('failed to run command');
+      reject();
+    });
+    process.on('close', code => {
+      resolve(code);
+    });
   });
 }

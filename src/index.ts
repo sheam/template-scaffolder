@@ -2,10 +2,11 @@
 
 import { getArgs } from './cli.js';
 import { getConfig } from './config.js';
-import { createTemplates } from './templateProcessing.js';
+import { processTemplates } from './templateProcessing/index.js';
 import { getInitialInputs, finalizeInputs } from './userInputs.js';
 import { log, printValues, verifyScaffoldingFolder } from './util.js';
 
+// hack for older versions of Node, remove after forcing version 18
 if (!Array.prototype.findLastIndex) {
   Array.prototype.findLastIndex = function (predicate) {
     for (let i = this.length - 1; i >= 0; i--) {
@@ -29,4 +30,4 @@ const finalizedInputs = await finalizeInputs(config, args, initialValues);
 printValues(finalizedInputs, args.dryRun, 1);
 
 log('Creating files:');
-await createTemplates(finalizedInputs, args.dryRun);
+await processTemplates(finalizedInputs, args.dryRun);
