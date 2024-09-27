@@ -12,6 +12,7 @@ import {
   ITemplateDescriptor,
   Question,
   IChoice,
+  TemplateVariables,
 } from './types/index.js';
 import { logError } from './util.js';
 
@@ -154,7 +155,7 @@ export async function finalizeInputs(
     typeof config.variables === 'function'
       ? config.variables(
           requiredInputs.instanceName,
-          Object.assign({}, builtIns, answers)
+          Object.assign({}, builtIns as TemplateVariables, answers)
         )
       : config.variables || {};
 

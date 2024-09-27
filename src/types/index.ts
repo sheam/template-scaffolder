@@ -1,21 +1,27 @@
-/* eslint-disable max-lines */
-
+export type TemplateVariableValue = unknown;
 export type TemplateVariables = {
-  [key: string]: string | number;
+  [key: string]: TemplateVariableValue;
 };
 
 export type PatternList = Array<string | RegExp> | undefined;
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type MacroObject = { [key: string]: Function };
 
 export interface IConfigFile {
   name?: string;
   description?: string;
   version?: string;
   variables?:
-    | object
-    | ((instanceName: string, initialInputs: object) => object);
+    | TemplateVariables
+    | ((
+        instanceName: string,
+        initialInputs: TemplateVariables
+      ) => TemplateVariables);
   prompts?: Question[] | ((instanceName: string) => Question[]);
   stripLines?: PatternList;
-  macros?: object;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  macros?: MacroObject;
   destinations?: Array<string> | string;
   createNameDir?: boolean;
   srcRoot?: string;
@@ -42,7 +48,7 @@ export interface IFinalizedInputs {
   afterFileCreated: IConfigFile['afterFileCreated'];
   stripLines: Array<string | RegExp> | undefined;
   createNameDir: boolean;
-  macros: object;
+  macros: MacroObject;
 }
 
 export interface ICliArgs {
