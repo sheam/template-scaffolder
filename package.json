@@ -22,7 +22,7 @@
     "lint:all": "npx eslint --fix src/**",
     "pre-commit": "npx lint-staged",
     "publish-to-npm": "npm run build && npm publish",
-    "patch-version": "npm version patch -m \"updating version for publish\"",
+    "patch-version": "npm version patch",
     "build": "npm run clean && npm run compile && npm run types",
     "types": "tsc --emitDeclarationOnly -d src/types.ts  -outDir dist",
     "compile": "tsc",
