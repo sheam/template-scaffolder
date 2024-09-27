@@ -74,13 +74,10 @@ export interface IPathInfo {
 
 interface IQuestionBase {
   type?:
-    | 'fuzzypath'
     | 'path'
     | 'select'
-    | 'list'
     | 'search'
     | 'confirm'
-    | 'separator'
     | 'number'
     | 'input'
     | undefined;
@@ -169,7 +166,7 @@ export function isSearchQuestion(q: IQuestionBase): q is ISearchQuestion {
 }
 
 interface ISelectQuestion extends IQuestionBase {
-  type: 'select' | 'list';
+  type: 'select';
   choices: IChoice[];
   default?: string;
 }
@@ -189,7 +186,7 @@ export function isSelectQuestion(q: IQuestionBase): q is ISelectQuestion {
 }
 
 export interface IPathSelectQuestion extends IQuestionBase {
-  type: 'fuzzypath' | 'path';
+  type: 'path';
   itemType?: 'file' | 'directory';
   allowManualInput?: boolean;
   rootPath?: string;

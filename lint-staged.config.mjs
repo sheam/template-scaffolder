@@ -1,6 +1,6 @@
 export default {
-  '*.{ts,tsx}': ['npm run format:pre-commit', 'npm run lint:pre-commit'],
-  '*.json': ['npm run format:pre-commit'],
-  '*.js': ['npm run format:pre-commit'],
-  '*.md': ['npm run format:pre-commit'],
+  '*.{ts,tsx}': ['npm run pre-commit:format', 'npm run pre-commit:lint'],
+  '*.json': ['npm run pre-commit:format'],
+  '*.js': ['npm run pre-commit:format'],
+  '*.md': ['npm run pre-commit:format'],
 };

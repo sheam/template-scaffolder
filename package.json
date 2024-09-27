@@ -15,22 +15,21 @@
     "scaffolder": "./dist/index.mjs"
   },
   "scripts": {
-    "prepare": "husky",
-    "lint:pre-commit": "npx eslint --fix",
-    "format:pre-commit": "npx prettier --write",
-    "format:all": "npx prettier --write src",
-    "lint:all": "npx eslint --fix src/**",
-    "pre-commit": "npx lint-staged",
-    "publish-to-npm": "npm run build && npm publish",
-    "patch-version": "npm version patch",
-    "build": "npm run clean && npm run compile && npm run types",
-    "types": "tsc --emitDeclarationOnly -d src/types.ts  -outDir dist",
-    "compile": "tsc",
-    "compile-watch": "tsc --watch",
-    "debug": "tsx src/test.mts",
-    "test-run": "npm run compile && node dist/index.mjs --template=component --overwrite",
-    "test-ts": "npm run compile && cross-env DEBUG=true node dist/index.mjs --overwrite",
-    "clean": "npx rimraf dist"
+    "build:all": "npm run clean && npm run compile && npm run types",
+    "build:types": "tsc --emitDeclarationOnly -d src/types.ts  -outDir dist",
+    "build:exe": "tsc",
+    "build:clean": "npx rimraf dist",
+    "test:debug": "tsx src/test.mts",
+    "test:test-run": "npm run build:exe && cross-env DEBUG=true node dist/index.mjs --template=component --overwrite",
+    "test:test-ts": "npm run build:exe && cross-env DEBUG=true node dist/index.mjs --overwrite",
+    "test:all": "jest src",
+    "publish:to-npm": "npm run build:all && npm publish",
+    "publicsh:version-update-with-login": "npm version patch",
+    "x:prepare": "husky init",
+    "pre-commit:lint": "npx eslint --fix",
+    "pre-commit:format": "npx prettier --write",
+    "tidy:format-all": "npx prettier --write src",
+    "tidy:lint-fix-all": "npx eslint --fix src/**"
   },
   "keywords": [
     "scaffolding"
