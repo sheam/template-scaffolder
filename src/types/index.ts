@@ -27,8 +27,8 @@ export interface IConfigFile {
   srcRoot?: string;
   afterFileCreated?: (
     createdFilePath: string,
-    dryRun: boolean,
-    variablesHash: TemplateVariables
+    dryRun?: boolean,
+    variablesHash?: TemplateVariables
   ) => Promise<string[]>;
 }
 
