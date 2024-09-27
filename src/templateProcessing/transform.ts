@@ -1,4 +1,4 @@
-import { TemplateVariables } from '../types.js';
+import { TemplateVariables } from '../types/index.js';
 
 const velocityModule = await import('velocityjs');
 const velocity = velocityModule.default;

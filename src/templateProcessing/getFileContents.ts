@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-params
-import { PatternList, TemplateVariables } from '../types.js';
 import { getFileLines } from './getFileLines.js';
 import { transform } from './transform.js';
+import { PatternList, TemplateVariables } from '../types/index.js';
 import { logError } from '../util.js';
 
 // eslint-disable-next-line max-params

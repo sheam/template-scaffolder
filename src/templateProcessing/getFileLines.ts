@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'path';
 import { INCLUDES_FOLDER_NAME, SCAFFOLD_FOLDER_NAME } from '../constants.js';
-import { PatternList } from '../types.js';
+import { PatternList } from '../types/index.js';
 
 export async function getFileLines(
   filePath: string,

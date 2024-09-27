@@ -1,5 +1,5 @@
-import { TemplateVariables } from '../types.js';
 import { transform } from './transform.js';
+import { TemplateVariables } from '../types/index.js';
 import { logError } from '../util.js';
 
 export function getDestinationPath(

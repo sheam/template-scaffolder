@@ -1,6 +1,6 @@
-import { IFinalizedInputs } from '../types.js';
 import { createFileFromTemplate } from './createFileFromTemplate.js';
 import { getTemplateFiles } from './getTemplateFiles.js';
+import { IFinalizedInputs } from '../types/index.js';
 
 export async function processTemplates(
   processConfig: IFinalizedInputs,

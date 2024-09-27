@@ -1,4 +1,4 @@
-import { IConfigFile, IInitialInputs } from './types.js';
+import { IConfigFile, IInitialInputs } from './types/index.js';
 import { execCommand } from './util.js';
 
 export async function getBuiltIns(

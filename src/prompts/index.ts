@@ -9,8 +9,8 @@ import {
   isPathSelectQuestion,
   isSearchQuestion,
   isSelectQuestion,
-  Question,
-} from '../types.js';
+} from '../types/helpers.js';
+import { Question } from '../types/index.js';
 
 export async function prompt<TResult extends object>(
   questions: Question[]

@@ -7,7 +7,11 @@ import {
   INCLUDES_FOLDER_NAME,
   TS_CACHE_FOLDER_NAME,
 } from './constants.js';
-import { IConfigFile, IInitialInputs, ITemplateDescriptor } from './types.js';
+import {
+  IConfigFile,
+  IInitialInputs,
+  ITemplateDescriptor,
+} from './types/index.js';
 import { log, scaffoldingPath } from './util.js';
 
 export async function getTemplateDescriptors(): Promise<ITemplateDescriptor[]> {

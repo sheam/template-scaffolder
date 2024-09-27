@@ -1,4 +1,4 @@
-import { IPathInfo } from '../types.js';
+import { IPathInfo } from '../types';
 
 import { searchPathEntries } from '../prompts/path.js';
 

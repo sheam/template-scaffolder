@@ -12,7 +12,7 @@ import {
   ITemplateDescriptor,
   Question,
   IChoice,
-} from './types.js';
+} from './types/index.js';
 import { logError } from './util.js';
 
 interface IInitialPromptResult {

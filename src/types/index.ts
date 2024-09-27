@@ -1,5 +1,4 @@
 /* eslint-disable max-lines */
-import { logError } from './util.js';
 
 export type TemplateVariables = {
   [key: string]: string | number;
@@ -72,7 +71,7 @@ export interface IPathInfo {
   isDir: boolean;
 }
 
-interface IQuestionBase {
+export interface IQuestionBase {
   type?:
     | 'path'
     | 'select'
@@ -114,34 +113,19 @@ interface IQuestionBase {
   ) => boolean;
 }
 
-interface IConfirmQuestion extends IQuestionBase {
+export interface IConfirmQuestion extends IQuestionBase {
   type: 'confirm';
   default?: boolean;
 }
 
-export function isConfirmQuestion(q: IQuestionBase): q is IConfirmQuestion {
-  return (q as IConfirmQuestion).type === 'confirm';
-}
-
-interface IInputQuestion extends IQuestionBase {
+export interface IInputQuestion extends IQuestionBase {
   type?: 'input';
   default?: string;
 }
 
-export function isInputQuestion(q: IQuestionBase): q is IInputQuestion {
-  return (
-    (q as IInputQuestion).type === 'input' ||
-    (q as IInputQuestion).type === undefined
-  );
-}
-
-interface INumberQuestion extends IQuestionBase {
+export interface INumberQuestion extends IQuestionBase {
   type: 'number';
   default?: number;
-}
-
-export function isNumberQuestion(q: IQuestionBase): q is INumberQuestion {
-  return (q as INumberQuestion).type === 'number';
 }
 
 export interface ISearchQuestion extends IQuestionBase {
@@ -151,38 +135,10 @@ export interface ISearchQuestion extends IQuestionBase {
   default?: string;
 }
 
-export function isSearchQuestion(q: IQuestionBase): q is ISearchQuestion {
-  const x = q as ISearchQuestion;
-  if (x.type !== 'search') {
-    return false;
-  }
-  if ((!x.source && !x.choices) || (x.source && x.choices)) {
-    logError(
-      `Search question '${q.message}' must either 'source' or 'choices', but not both.`
-    );
-    return false;
-  }
-  return true;
-}
-
-interface ISelectQuestion extends IQuestionBase {
+export interface ISelectQuestion extends IQuestionBase {
   type: 'select';
   choices: IChoice[];
   default?: string;
-}
-
-export function isSelectQuestion(q: IQuestionBase): q is ISelectQuestion {
-  const x = q as ISelectQuestion;
-  if (x.type !== 'select' && x.type !== 'list') {
-    return false;
-  }
-  if (!Array.isArray(x.choices)) {
-    logError(
-      `SelectQuestion '${q.message}' must have a 'choices' property with a list of options.`
-    );
-    return false;
-  }
-  return true;
 }
 
 export interface IPathSelectQuestion extends IQuestionBase {
@@ -193,22 +149,6 @@ export interface IPathSelectQuestion extends IQuestionBase {
   maxDepth?: number;
   excludePath?: (pathInfo: IPathInfo) => boolean;
   default?: string;
-}
-
-export function isPathSelectQuestion(
-  q: IQuestionBase
-): q is IPathSelectQuestion {
-  const x = q as IPathSelectQuestion;
-  if (x.type !== 'path' && x.type !== 'fuzzypath') {
-    return false;
-  }
-  if (x.excludePath && typeof x.excludePath !== 'function') {
-    logError(
-      `The 'excludePath' of PathSelectQuestion for question '${q.message}' is not a function`
-    );
-    return false;
-  }
-  return true;
 }
 
 export type Question =

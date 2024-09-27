@@ -1,8 +1,8 @@
 import { readdir, stat } from 'node:fs/promises';
-import path from 'path';
-import { IChoice, IPathInfo, IPathSelectQuestion } from '../types.js';
+import * as path from 'path';
 import { SearchQuestionImplementation } from './search.js';
 import { MANUAL_ENTRY_VALUE } from './types.js';
+import { IChoice, IPathInfo, IPathSelectQuestion } from '../types/index.js';
 
 export async function getPathQuestion(
   q: IPathSelectQuestion

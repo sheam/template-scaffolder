@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { mkdir, stat, writeFile } from 'node:fs/promises';
 import path from 'path';
-import { IFinalizedInputs } from '../types.js';
+import { IFinalizedInputs } from '../types/index.js';
 import { log, logError, scaffoldingPath } from '../util.js';
 import { getDestinationPath } from './getDestinationPath.js';
 import { getFileContents } from './getFileContents.js';
