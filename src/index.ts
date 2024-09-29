@@ -31,7 +31,11 @@ printValues(finalizedInputs, args.dryRun, 1);
 
 const start = new Date().getTime();
 log('Creating files:');
-const count = await processTemplates(finalizedInputs, args.dryRun);
+const count = await processTemplates(
+  finalizedInputs,
+  args.parallel || false,
+  args.dryRun || false
+);
 const end = new Date().getTime();
 const elapsed = (end - start) / 1000;
 log(`Created ${count} files in ${elapsed}s`);

@@ -1,6 +1,6 @@
-import { IPathInfo } from '../types';
-
 import { searchPathEntries } from '../prompts/path.js';
+// @ts-ignore
+import { IPathInfo } from '../types';
 
 const fileEntries: IPathInfo[] = [
   {

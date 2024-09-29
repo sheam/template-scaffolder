@@ -4,12 +4,20 @@ import { IFinalizedInputs } from '../types/index.js';
 
 export async function processTemplates<TInput extends object>(
   processConfig: IFinalizedInputs<TInput>,
-  dryRun?: boolean
+  parallel: boolean,
+  dryRun: boolean
 ): Promise<number> {
   const templateFiles = await getTemplateFiles(processConfig.template.dir);
 
-  for (const templateFile of templateFiles) {
-    await createFileFromTemplate(processConfig, templateFile, dryRun || false);
+  if (parallel) {
+    const tasks = templateFiles.map(templateFile =>
+      createFileFromTemplate(processConfig, templateFile, dryRun)
+    );
+    await Promise.all(tasks);
+  } else {
+    for (const templateFile of templateFiles) {
+      await createFileFromTemplate(processConfig, templateFile, dryRun);
+    }
   }
 
   return templateFiles.length;
