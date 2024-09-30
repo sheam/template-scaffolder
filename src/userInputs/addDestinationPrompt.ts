@@ -1,7 +1,7 @@
 import { existsSync, statSync } from 'fs';
-import { IChoice, Question } from '../types/index.js';
-import { logError } from '../util.js';
 import { IInitialPromptResult } from './types.js';
+import { logError } from '../logger.js';
+import { IChoice, Question } from '../types/index.js';
 
 /**
  * Add a prompt to get destination directory to existing question list.

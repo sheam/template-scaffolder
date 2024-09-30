@@ -7,12 +7,13 @@ import {
   INCLUDES_FOLDER_NAME,
   TS_CACHE_FOLDER_NAME,
 } from './constants.js';
+import { log } from './logger.js';
 import {
   IConfigFile,
   IInitialInputs,
   ITemplateDescriptor,
 } from './types/index.js';
-import { log, scaffoldingPath } from './util.js';
+import { scaffoldingPath } from './util.js';
 
 export async function getTemplateDescriptors(
   parallel: boolean | undefined

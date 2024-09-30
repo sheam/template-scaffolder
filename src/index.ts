@@ -4,7 +4,7 @@ import { getArgs } from './cli.js';
 import { getConfig } from './config.js';
 import { processTemplates } from './templateProcessing/index.js';
 import { finalizeInputs, getInitialInputs } from './userInputs/index.js';
-import { log, printValues, verifyScaffoldingFolder } from './util.js';
+import { printValues, verifyScaffoldingFolder } from './util.js';
 
 // hack for older versions of Node, remove after forcing version 18
 if (!Array.prototype.findLastIndex) {
@@ -29,13 +29,8 @@ const finalizedInputs = await finalizeInputs(config, args, initialValues);
 // console.log ( JS ON.stringify(finalizedInputs, undefined, 4));
 printValues(finalizedInputs, args.dryRun, 1);
 
-const start = new Date().getTime();
-log('Creating files:');
-const count = await processTemplates(
+await processTemplates(
   finalizedInputs,
   args.parallel || false,
   args.dryRun || false
 );
-const end = new Date().getTime();
-const elapsed = (end - start) / 1000;
-log(`Created ${count} files in ${elapsed}s`);

@@ -1,4 +1,6 @@
 import { getTemplateDescriptors } from '../config.js';
+import { IInitialPromptResult } from './types.js';
+import { logError } from '../logger.js';
 import { prompt } from '../prompts/index.js';
 import {
   ICliArgs,
@@ -6,8 +8,6 @@ import {
   ITemplateDescriptor,
   Question,
 } from '../types/index.js';
-import { logError } from '../util.js';
-import { IInitialPromptResult } from './types.js';
 
 /**
  * Setup config based on command line values.

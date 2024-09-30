@@ -2,24 +2,27 @@ import { existsSync } from 'fs';
 import { mkdir, stat, writeFile } from 'node:fs/promises';
 import path from 'path';
 import { IFinalizedInputs } from '../types/index.js';
-import { log, logError, scaffoldingPath } from '../util.js';
+import { scaffoldingPath } from '../util.js';
 import { getDestinationPath } from './getDestinationPath.js';
 import { getFileContents } from './getFileContents.js';
 import { runAfterCreateCommand } from './runAfterCreateCommand.js';
+import { Logger } from '../logger.js';
 
 export async function createFileFromTemplate<TInput extends object>(
   processConfig: IFinalizedInputs<TInput>,
   file: string,
   dryRun: boolean
-): Promise<void> {
+): Promise<Logger> {
+  const logging = new Logger();
+
   if (
     !existsSync(processConfig.destination) ||
     !(await stat(processConfig.destination)).isDirectory()
   ) {
-    logError(
+    logging.appendError(
       `Destination specified is not a directory: ${processConfig.destination}`
     );
-    process.exit(-1);
+    return logging;
   }
 
   const destinationDirPath = processConfig.createNameDir
@@ -28,31 +31,43 @@ export async function createFileFromTemplate<TInput extends object>(
 
   const destinationPath = getDestinationPath(
     path.join(destinationDirPath, file),
-    processConfig.variables
+    processConfig.variables,
+    logging
   );
+  if (logging.hasError()) {
+    return logging;
+  }
 
   if (!processConfig.overwrite && existsSync(destinationPath)) {
-    log(
+    logging.appendError(
       `WARN: file ${destinationPath} already exists, can't process template. Skipping this file`
     );
-    return;
+    return logging;
   }
 
   const content = await getFileContents(
     scaffoldingPath(processConfig.template.dir, file),
     processConfig.variables,
     processConfig.macros,
-    processConfig.stripLines
+    processConfig.stripLines,
+    logging
   );
+  if (logging.hasError()) {
+    return logging;
+  }
 
   if (dryRun) {
-    log(padString(` ${destinationPath} `, '⌄'));
-    log(content);
-    log('⌃'.repeat(80) + '\n\n');
+    logging.append(padString(` ${destinationPath} `, '⌄'));
+    logging.append(content);
+    logging.append('⌃'.repeat(80) + '\n\n');
   } else {
-    log(`creating ${destinationPath}`, 1);
-    await mkdir(path.dirname(destinationPath), { recursive: true });
-    await writeFile(destinationPath, content);
+    logging.append(`writing ${destinationPath}`, 1);
+    try {
+      await mkdir(path.dirname(destinationPath), { recursive: true });
+      await writeFile(destinationPath, content);
+    } catch (e: unknown) {
+      logging.appendError(`failed write to ${destinationPath}: ${e}`, 1);
+    }
   }
 
   if (processConfig.afterFileCreated) {
@@ -63,13 +78,15 @@ export async function createFileFromTemplate<TInput extends object>(
     );
     if (Array.isArray(commands)) {
       for (const command of commands) {
-        log(`executing ${command}`, 2);
+        logging.append(`executing ${command}`, 2);
         if (!dryRun) {
-          await runAfterCreateCommand(command);
+          await runAfterCreateCommand(command, logging);
         }
       }
     }
   }
+
+  return logging;
 }
 
 function padString(str: string, char = '-', lineLen = 80): string {

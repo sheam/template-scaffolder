@@ -3,18 +3,7 @@ import { existsSync } from 'fs';
 import { readdir } from 'node:fs/promises';
 import path from 'path';
 import { SCAFFOLD_FOLDER_NAME } from './constants.js';
-
-const IS_DEBUG = process.env.DEBUG === 'true';
-export function log(str: string, indent = 0, debug = false): void {
-  if (debug && !IS_DEBUG) return;
-  // eslint-disable-next-line no-console
-  console.log(`${'  '.repeat(indent)}${str}`);
-}
-
-export function logError(str: string): void {
-  // eslint-disable-next-line no-console
-  console.warn(str);
-}
+import { log, logError } from './logger.js';
 
 export async function verifyScaffoldingFolder(): Promise<void> {
   let error = false;

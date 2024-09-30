@@ -5,6 +5,15 @@ Make sure your team is using the same patterns by using scaffolding templates.
 Quickly create multiple files based on simple templates.
 Access to environment variables, users prompts, and scripting.
 
+# Release Notes
+
+## Version 2
+
+- support for typescript configuration files (`scaffolding.config.ts`)
+- parallel file processing with the `--parallel` option. Testing shows up to 10x faster.
+- re-write of the prompt system, as the package we were using for this changed dramatically,
+  so the following question types are deprecated: `list` is now `select` and `fuzzypath` is now just `path`.
+
 # Getting Started
 
 1. `npm install template-scaffolder`
@@ -26,11 +35,9 @@ Access to environment variables, users prompts, and scripting.
 
 # Configuration Files
 
-Each template must have exactly one `scaffolding.config.js` _or_ `scaffolding.config.ts` file
-in the root.
-It is a javascript esm module file.
-
-**Note**: although there are references to types, and the tool is written in typescript, config files are only supported in javascript currently. A future version will support typescript config files.
+Each template must have exactly one `scaffolding.config` file with one of the following
+extensions: `.js, .mjs, .ts, .mts`
+in the root. The default export of this file must be an `IConfigFile` (see below for schema).
 
 The typescript schema for this file is:
 
@@ -449,6 +456,11 @@ The contents of what would have been written will be dumped to the console.
 
 By default, the scaffolder will skip the output file if it already exists.
 This flag will cause the file to be overwritten.
+
+### parallel
+
+- Read config files in parallel for better startup times.
+- Process templates in parallel for much faster processing times.
 
 # Making a Template
 

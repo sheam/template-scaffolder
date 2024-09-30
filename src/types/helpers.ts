@@ -1,4 +1,3 @@
-import { logError } from '../util.js';
 import {
   IConfirmQuestion,
   IInputQuestion,
@@ -8,6 +7,7 @@ import {
   ISearchQuestion,
   ISelectQuestion,
 } from './index.js';
+import { logError } from '../logger.js';
 
 export function isConfirmQuestion<TInput extends object>(
   q: IQuestionBase<TInput>

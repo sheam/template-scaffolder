@@ -1,15 +1,16 @@
 // eslint-disable-next-line max-params
 import { getFileLines } from './getFileLines.js';
 import { transform } from './transform.js';
+import { Logger } from '../logger.js';
 import { PatternList, TemplateVariables } from '../types/index.js';
-import { logError } from '../util.js';
 
 // eslint-disable-next-line max-params
 export async function getFileContents(
   path: string,
   variables: TemplateVariables,
   macros: object,
-  stripPatterns: PatternList
+  stripPatterns: PatternList,
+  logging: Logger
 ): Promise<string> {
   const processedFiles = new Array<string>();
   try {
@@ -19,7 +20,7 @@ export async function getFileContents(
     let message = `Error processing template file '${path}':`;
     message += `\n  message: ${(error as Error).message}`;
     message += `\n  files: ${processedFiles.join(' -> ')}`;
-    logError(message);
-    process.exit(-1);
+    logging.appendError(message);
+    return 'error';
   }
 }
