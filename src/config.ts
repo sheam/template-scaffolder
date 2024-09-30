@@ -7,65 +7,91 @@ import {
   INCLUDES_FOLDER_NAME,
   TS_CACHE_FOLDER_NAME,
 } from './constants.js';
-import { log } from './logger.js';
+import { log, logError, Logger } from './logger.js';
+import { getSelectResponse } from './prompts/select.js';
 import {
+  ICliArgs,
   IConfigFile,
-  IInitialInputs,
+  ISelectQuestion,
   ITemplateDescriptor,
 } from './types/index.js';
 import { scaffoldingPath } from './util.js';
 
-export async function getTemplateDescriptors(
+export interface IGetConfigFileResult<TInput extends object> {
+  logging: Logger;
+  dir: string;
+  config: IConfigFile<TInput> | null;
+}
+
+async function getConfigFile<TInput extends object>(
+  templateDir: string
+): Promise<IGetConfigFileResult<TInput>> {
+  const logging = new Logger();
+
+  if (templateDir === INCLUDES_FOLDER_NAME || templateDir.startsWith('_')) {
+    logging.append(`ignoring ${templateDir}`, true);
+    return { logging: logging.unindent(), dir: templateDir, config: null };
+  }
+  const info = await stat(scaffoldingPath(templateDir));
+  if (!info.isDirectory()) {
+    logging.append(`${scaffoldingPath(templateDir)} is not a directory`, true);
+    return { logging: logging.unindent(), dir: templateDir, config: null };
+  }
+
+  try {
+    const config = await loadConfigFile(templateDir, logging.indent());
+    if (!config) {
+      return { logging: logging.unindent(), dir: templateDir, config: null };
+    }
+    return {
+      logging: logging.unindent(),
+      dir: templateDir,
+      config,
+    };
+  } catch (e: unknown) {
+    logging.unindent();
+    logging.appendError(`Error loading: ${e}`);
+    return {
+      logging,
+      dir: templateDir,
+      config: null,
+    };
+  }
+}
+
+export async function getTemplateDescriptors<TInput extends object>(
   parallel: boolean | undefined
-): Promise<ITemplateDescriptor[]> {
+): Promise<IGetConfigFileResult<TInput>[]> {
   const templateDirs = await readdir(scaffoldingPath(''));
-
-  const getTemplateDescriptor = async (
-    templateDir: string
-  ): Promise<ITemplateDescriptor | null> => {
-    if (templateDir === INCLUDES_FOLDER_NAME || templateDir.startsWith('_')) {
-      return null;
-    }
-    const info = await stat(scaffoldingPath(templateDir));
-    if (!info.isDirectory()) return null;
-
-    try {
-      const config = await loadConfigFile(templateDir);
-      return {
-        dir: templateDir,
-        name: config.name || templateDir,
-        description: config.description,
-      };
-    } catch (_) {
-      return { name: templateDir, dir: templateDir };
-    }
-  };
 
   if (parallel) {
     log('loading template configurations in parallel');
-    const templateDescriptorPromises = new Array<
-      Promise<ITemplateDescriptor | null>
+    const configFilePromises = new Array<
+      Promise<IGetConfigFileResult<TInput>>
     >();
     for (const templateDir of templateDirs) {
-      templateDescriptorPromises.push(getTemplateDescriptor(templateDir));
+      configFilePromises.push(getConfigFile(templateDir));
     }
-    const result = await Promise.all(templateDescriptorPromises);
-    return result.filter(x => x !== null);
+    const results = await Promise.all(configFilePromises);
+    results.forEach(r => r.logging.dump());
+    return results.filter(x => x.config !== null);
   } else {
-    const templateDescriptors = new Array<ITemplateDescriptor>();
+    const configFiles = new Array<IGetConfigFileResult<TInput>>();
     for (const templateDir of templateDirs) {
-      const descriptor = await getTemplateDescriptor(templateDir);
-      if (descriptor) {
-        templateDescriptors.push(descriptor);
+      const result = await getConfigFile(templateDir);
+      result.logging.dump();
+      if (result.config) {
+        configFiles.push(result);
       }
     }
-    return templateDescriptors;
+    return configFiles;
   }
 }
 
 async function loadConfigFile<TInput extends object>(
-  templateDir: string
-): Promise<IConfigFile<TInput>> {
+  templateDir: string,
+  logging: Logger
+): Promise<IConfigFile<TInput> | null> {
   const loaders = [
     { loader: loadJsConfigFile, extensions: ['.js', '.mjs'] },
     { loader: loadTsConfigFile, extensions: ['.ts', '.mts'] },
@@ -74,31 +100,38 @@ async function loadConfigFile<TInput extends object>(
     for (const ext of extensionLoader.extensions) {
       const path = scaffoldingPath(templateDir, CONFIG_FILE_NAME_NO_EXT + ext);
       if (existsSync(path)) {
-        return await extensionLoader.loader(path);
+        return await extensionLoader.loader(path, logging);
       }
     }
   }
-  throw new Error(
+  logging.appendError(
     `Unable to find ${CONFIG_FILE_NAME_NO_EXT}.[js,mjs,ts,mts] in ${templateDir}`
   );
+  return null;
 }
 
 async function loadJsConfigFile<TInput extends object>(
-  configFileScaffoldingPath: string
-): Promise<IConfigFile<TInput>> {
+  configFileScaffoldingPath: string,
+  logging: Logger
+): Promise<IConfigFile<TInput> | null> {
   const modulePath =
     'file://' + path.join(process.cwd(), configFileScaffoldingPath);
-  log(`modulePath ${modulePath}, cwd=${process.cwd()}`, 0, true);
-  const config = await import(modulePath);
-  return config.default;
+  logging.append(`modulePath ${modulePath}, cwd=${process.cwd()}`, true);
+  try {
+    const config = await import(modulePath);
+    return config.default;
+  } catch (e: unknown) {
+    logging.appendError(`Failed to import ${modulePath}:\n ${e}`);
+    return null;
+  }
 }
 
 async function loadTsConfigFile<TInput extends object>(
-  configFileScaffoldingPath: string
-): Promise<IConfigFile<TInput>> {
-  log(
+  configFileScaffoldingPath: string,
+  logging: Logger
+): Promise<IConfigFile<TInput> | null> {
+  logging.append(
     `typescript config ${configFileScaffoldingPath}, cwd=${process.cwd()}`,
-    0,
     true
   );
   const configPath = path.join(process.cwd(), configFileScaffoldingPath);
@@ -109,16 +142,81 @@ async function loadTsConfigFile<TInput extends object>(
   );
   const config = loadTsConfig<IConfigFile<TInput>>(configPath, cachePath, true);
   if (!config) {
-    throw new Error(
+    logging.appendError(
       `failed to load ${configFileScaffoldingPath}, make sure the default export is a valid IConfigFile object`
     );
+    return null;
   }
   return config;
 }
 
 export async function getConfig<TInput extends object>(
-  initialInputs: IInitialInputs
-): Promise<IConfigFile<TInput>> {
-  log(`loading config from ${initialInputs.template.dir}`, 0, true);
-  return await loadConfigFile(initialInputs.template.dir);
+  cliValues: ICliArgs
+): Promise<ITemplateDescriptor<TInput>> {
+  if (cliValues.template) {
+    log(
+      `loading config ${cliValues.template} template specified on command line`
+    );
+
+    const logging = new Logger();
+    const config = await loadConfigFile<TInput>(
+      scaffoldingPath(cliValues.template),
+      logging.indent()
+    );
+    logging.dump();
+    if (config) {
+      return {
+        config,
+        dir: cliValues.template,
+      };
+    }
+
+    const templates = await getTemplateDescriptors<TInput>(
+      cliValues.parallel === true
+    );
+    const foundConfig = templates.find(
+      x => x.config?.name === cliValues.template
+    );
+    if (!foundConfig?.config) {
+      logError(
+        `Could not find template at ${scaffoldingPath(cliValues.template)}, ` +
+          `or a template in the scaffolding directory with the name ${cliValues.template}.`
+      );
+      process.exit(1);
+    }
+    return {
+      dir: foundConfig.dir,
+      config: foundConfig.config,
+    };
+  }
+
+  const templates = await getTemplateDescriptors<TInput>(cliValues.parallel);
+
+  const getTitle = (td: IGetConfigFileResult<TInput>): string => {
+    if (!td.config) throw new Error('config must be present');
+    const s = td.config.name || td.dir;
+    if (!td.config.description) return s;
+    return `${s} - ${td.config.description.substring(0, 50)}`;
+  };
+
+  const templateQuestion: ISelectQuestion<TInput> = {
+    name: 'template' as keyof TInput,
+    choices: templates.map(td => ({
+      value: td.dir,
+      name: getTitle(td),
+    })),
+    message: 'Select the template: ',
+    type: 'select',
+    required: true,
+  };
+  const selectedTemplate = await getSelectResponse(templateQuestion);
+  const foundConfig = templates.find(x => x.dir === selectedTemplate);
+  if (!foundConfig?.config) {
+    logError(`Could not find the template you selected: ${selectedTemplate}`);
+    process.exit(1);
+  }
+  return {
+    dir: foundConfig.dir,
+    config: foundConfig.config,
+  };
 }

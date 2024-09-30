@@ -33,15 +33,14 @@ export interface IConfigFile<TInput extends object> {
   ) => string[];
 }
 
-export interface ITemplateDescriptor {
-  name: string;
+export interface ITemplateDescriptor<TInput extends object> {
   dir: string;
-  description?: string;
+  config: IConfigFile<TInput>;
 }
 
 export interface IFinalizedInputs<TInput extends object> {
   instanceName: string;
-  template: ITemplateDescriptor;
+  template: ITemplateDescriptor<TInput>;
   destination: string;
   overwrite: boolean;
   variables: TemplateVariables;
@@ -61,9 +60,9 @@ export interface ICliArgs {
   parallel?: boolean;
 }
 
-export interface IInitialInputs {
+export interface IInitialInputs<TInput extends object> {
   instanceName: string;
-  template: ITemplateDescriptor;
+  template: ITemplateDescriptor<TInput>;
 }
 
 export interface IChoice {

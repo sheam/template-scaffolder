@@ -7,7 +7,6 @@ import { getSrcRoot } from './getSrcRoot.js';
 import { prompt } from '../prompts/index.js';
 import {
   ICliArgs,
-  IConfigFile,
   IFinalizedInputs,
   IInitialInputs,
   Question,
@@ -18,15 +17,14 @@ import {
  * Determine the values missing from command line and config file,
  * and prompt user for what we can't determine a reasonable default for.
  * This should be run after getInitialInputs(). and getConfig().
- * @param config config file options.
  * @param cliValues command line options.
  * @param requiredInputs what we were able to determine from the getInitialInputs function.
  */
 export async function finalizeInputs<TInput extends object>(
-  config: IConfigFile<TInput>,
   cliValues: ICliArgs,
-  requiredInputs: IInitialInputs
+  requiredInputs: IInitialInputs<TInput>
 ): Promise<IFinalizedInputs<TInput>> {
+  const config = requiredInputs.template.config;
   const srcRoot = getSrcRoot(config);
   const questions: Question<TInput & IInitialPromptResult>[] = [];
 

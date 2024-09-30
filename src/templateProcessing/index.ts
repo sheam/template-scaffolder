@@ -9,7 +9,7 @@ export async function processTemplates<TInput extends object>(
   dryRun: boolean
 ): Promise<void> {
   const start = new Date().getTime();
-  log('Creating files:');
+  log(`Creating files${parallel ? 'in parallel' : ''}:`);
 
   const templateFiles = await getTemplateFiles(processConfig.template.dir);
 

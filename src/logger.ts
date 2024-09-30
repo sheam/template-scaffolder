@@ -8,19 +8,33 @@ const IS_DEBUG = process.env.DEBUG === 'true';
 export const INDENT = '  ';
 
 export class Logger {
+  private _indent: number;
   private readonly _stdoutPrefix: string;
   private readonly _stderrPrefix: string;
   private readonly _debugPrefix: string;
   private readonly _lines = new Array<ILine>();
 
+  // eslint-disable-next-line max-params
   constructor(
-    errorPrefix: string = 'stderr',
+    indent: number = 0,
+    errorPrefix: string = 'stderr: ',
     outputPrefix: string = '',
     debugPrefix: string = ''
   ) {
+    this._indent = indent;
     this._stderrPrefix = errorPrefix;
     this._stdoutPrefix = outputPrefix;
     this._debugPrefix = debugPrefix;
+  }
+
+  indent(): Logger {
+    this._indent++;
+    return this;
+  }
+
+  unindent(): Logger {
+    Math.max(this._indent - 1, 0);
+    return this;
   }
 
   hasError(): boolean {
@@ -31,16 +45,20 @@ export class Logger {
     return this._lines.filter(x => x.type !== 'stderr').length > 0;
   }
 
-  append(text: string, indent = 0, isDebug = false): void {
+  append(text: string, isDebug = false): void {
     if (isDebug && !IS_DEBUG) return;
     this.getLinesFromText(text).forEach(line =>
-      this._lines.push({ line, indent, type: isDebug ? 'debug' : 'stdout' })
+      this._lines.push({
+        line,
+        indent: this._indent,
+        type: isDebug ? 'debug' : 'stdout',
+      })
     );
   }
 
-  appendError(text: string, indent = 0): void {
+  appendError(text: string): void {
     this.getLinesFromText(text).forEach(line =>
-      this._lines.push({ line, indent, type: 'stderr' })
+      this._lines.push({ line, indent: this._indent, type: 'stderr' })
     );
   }
 
@@ -49,15 +67,10 @@ export class Logger {
   }
 
   private prefix(line: ILine): string {
-    if (line.type === 'stderr') {
-      return this._stderrPrefix;
-    }
-    if (line.type === 'stdout') {
-      return this._stdoutPrefix;
-    }
-    if (line.type === 'debug') {
-      return this._debugPrefix;
-    }
+    if (!line.line) return '';
+    if (line.type === 'stderr') return this._stderrPrefix;
+    if (line.type === 'stdout') return this._stdoutPrefix;
+    if (line.type === 'debug') return this._debugPrefix;
     throw new Error('Unknown line type');
   }
 

@@ -1,6 +1,7 @@
-import { confirm, input, number, search, select } from '@inquirer/prompts';
+import { confirm, input, number, search } from '@inquirer/prompts';
 import { getPathQuestion } from './path.js';
 import { getSearchQuestion } from './search.js';
+import { getSelectResponse } from './select.js';
 import { MANUAL_ENTRY_VALUE } from './types.js';
 import {
   isConfirmQuestion,
@@ -29,7 +30,10 @@ export async function prompt<TInput extends object>(
     } else if (isNumberQuestion(question)) {
       answers.push([question.name.toString(), await number(question)]);
     } else if (isSelectQuestion(question)) {
-      answers.push([question.name.toString(), await select(question)]);
+      answers.push([
+        question.name.toString(),
+        await getSelectResponse(question),
+      ]);
     } else if (isSearchQuestion(question)) {
       answers.push([
         question.name.toString(),

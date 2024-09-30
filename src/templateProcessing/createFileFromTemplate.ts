@@ -32,8 +32,9 @@ export async function createFileFromTemplate<TInput extends object>(
   const destinationPath = getDestinationPath(
     path.join(destinationDirPath, file),
     processConfig.variables,
-    logging
+    logging.indent()
   );
+  logging.unindent();
   if (logging.hasError()) {
     return logging;
   }
@@ -50,8 +51,9 @@ export async function createFileFromTemplate<TInput extends object>(
     processConfig.variables,
     processConfig.macros,
     processConfig.stripLines,
-    logging
+    logging.indent()
   );
+  logging.unindent();
   if (logging.hasError()) {
     return logging;
   }
@@ -61,12 +63,12 @@ export async function createFileFromTemplate<TInput extends object>(
     logging.append(content);
     logging.append('⌃'.repeat(80) + '\n\n');
   } else {
-    logging.append(`writing ${destinationPath}`, 1);
+    logging.append(`writing ${destinationPath}`);
     try {
       await mkdir(path.dirname(destinationPath), { recursive: true });
       await writeFile(destinationPath, content);
     } catch (e: unknown) {
-      logging.appendError(`failed write to ${destinationPath}: ${e}`, 1);
+      logging.appendError(`failed write to ${destinationPath}: ${e}`);
     }
   }
 
@@ -78,7 +80,7 @@ export async function createFileFromTemplate<TInput extends object>(
     );
     if (Array.isArray(commands)) {
       for (const command of commands) {
-        logging.append(`executing ${command}`, 2);
+        logging.append(`executing ${command}`);
         if (!dryRun) {
           await runAfterCreateCommand(command, logging);
         }

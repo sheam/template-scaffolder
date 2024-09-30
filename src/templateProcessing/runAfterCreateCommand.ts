@@ -5,11 +5,13 @@ export async function runAfterCreateCommand(
   command: string,
   logging: Logger
 ): Promise<void> {
+  logging.indent();
   const code = await execCommand(
     command,
-    text => logging.append(text, 3),
-    text => logging.appendError(text, 3)
+    text => logging.append(text),
+    text => logging.appendError(text)
   );
+  logging.unindent();
 
-  logging.append(`command exited with status: ${code}`, 2);
+  logging.append(`command exited with status: ${code}`);
 }
