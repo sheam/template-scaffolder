@@ -43,9 +43,11 @@ async function getConfigFileFromTemplateDir<TInput extends object>(
     logging.append(`ignoring ${templateDir}`, true);
     return { logging: logging.unindent(), dir: templateDir, config: null };
   }
-  const info = await stat(scaffoldingPath(templateDir));
+
+  const path = scaffoldingPath(templateDir);
+  const info = await stat(path);
   if (!info.isDirectory()) {
-    logging.append(`${scaffoldingPath(templateDir)} is not a directory`, true);
+    logging.append(`${path} is not a directory`, true);
     return { logging: logging.unindent(), dir: templateDir, config: null };
   }
 

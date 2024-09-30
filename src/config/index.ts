@@ -15,12 +15,12 @@ export async function getConfig<TInput extends object>(
 ): Promise<ITemplateDescriptor<TInput>> {
   if (cliValues.template) {
     log(
-      `loading config ${cliValues.template} template specified on command line`
+      `loading config '${cliValues.template}' template specified on command line`
     );
 
     const logging = new Logger();
     const config = await loadConfigFile<TInput>(
-      scaffoldingPath(cliValues.template),
+      cliValues.template,
       logging.indent()
     );
     logging.dump();

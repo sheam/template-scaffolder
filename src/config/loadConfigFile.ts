@@ -11,14 +11,16 @@ export async function loadConfigFile<TInput extends object>(
   logging: Logger
 ): Promise<IConfigFile<TInput> | null> {
   const loaders = [
-    { loader: loadJsConfigFile, extensions: ['.js', '.mjs'] },
     { loader: loadTsConfigFile, extensions: ['.ts', '.mts'] },
+    { loader: loadJsConfigFile, extensions: ['.js', '.mjs'] },
   ];
   for (const extensionLoader of loaders) {
     for (const ext of extensionLoader.extensions) {
       const path = scaffoldingPath(templateDir, CONFIG_FILE_NAME_NO_EXT + ext);
       if (existsSync(path)) {
         return await extensionLoader.loader(path, logging);
+      } else {
+        logging.append(`No file at ${path}`, true);
       }
     }
   }
@@ -34,9 +36,10 @@ async function loadJsConfigFile<TInput extends object>(
 ): Promise<IConfigFile<TInput> | null> {
   const modulePath =
     'file://' + path.join(process.cwd(), configFileScaffoldingPath);
-  logging.append(`modulePath ${modulePath}, cwd=${process.cwd()}`, true);
+  logging.append(`loading JS modulePath ${modulePath}`, true);
   try {
     const config = await import(modulePath);
+    logging.append('  loaded', true);
     return config.default;
   } catch (e: unknown) {
     logging.appendError(`Failed to import ${modulePath}:\n ${e}`);
@@ -48,10 +51,7 @@ async function loadTsConfigFile<TInput extends object>(
   configFileScaffoldingPath: string,
   logging: Logger
 ): Promise<IConfigFile<TInput> | null> {
-  logging.append(
-    `typescript config ${configFileScaffoldingPath}, cwd=${process.cwd()}`,
-    true
-  );
+  logging.append(`loading TS module ${configFileScaffoldingPath}`, true);
   const configPath = path.join(process.cwd(), configFileScaffoldingPath);
   const cachePath = path.join(
     process.cwd(),
@@ -65,5 +65,6 @@ async function loadTsConfigFile<TInput extends object>(
     );
     return null;
   }
+  logging.append('  loaded', true);
   return config;
 }
