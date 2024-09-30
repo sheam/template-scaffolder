@@ -1,5 +1,5 @@
-import { getConfig } from '../config.js';
 import { IInitialPromptResult } from './types.js';
+import { getConfig } from '../config/index.js';
 import { prompt } from '../prompts/index.js';
 import { ICliArgs, IInitialInputs, Question } from '../types/index.js';
 
