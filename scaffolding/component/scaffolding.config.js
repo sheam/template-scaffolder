@@ -1,10 +1,12 @@
 import {camelCaseToKebabCase, camelCaseToTitleWords} from "../_templateHelpers/index.mjs";
+import os from "os";
 
 export default {
     name: 'React Component',
     description: 'Used for creating a react component',
     variables: (name, inputs) => ({
         COMPONENT: name,
+        HOME: os.homedir(),
         STORY_TITLE: camelCaseToTitleWords(name),
         TEST_ID: camelCaseToKebabCase(name),
         OTHER_VAL: inputs.SOME_VAL.toLowerCase(),

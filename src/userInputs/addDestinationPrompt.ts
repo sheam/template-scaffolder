@@ -1,26 +1,25 @@
-import { existsSync, statSync } from 'fs';
 import { IInitialPromptResult } from './types.js';
 import { logError } from '../logger.js';
 import { IChoice, Question } from '../types/index.js';
+import { isDirectory } from '../util.js';
 
 /**
  * Add a prompt to get destination directory to existing question list.
  */
-export function addDestinationPrompt<TInput extends object>(
+export async function addDestinationPrompt<TInput extends object>(
   srcRoot: string,
   destinations: string[] | string | undefined,
   questions: Question<TInput & IInitialPromptResult>[]
-): void {
-  function dirValidator(path: string): boolean {
-    if (existsSync(path) && statSync(path).isDirectory()) return true;
-    logError(`destination path '${path}' is not a valid directory`);
-    return false;
-  }
-
+): Promise<void> {
   if (Array.isArray(destinations)) {
-    const destinationChoices = destinations
-      .filter(p => dirValidator(p))
-      .map<IChoice>(x => ({ value: x, title: x }));
+    const destinationChoices = new Array<IChoice>();
+    for (const path of destinations) {
+      if (await isDirectory(path)) {
+        destinationChoices.push({ value: path, name: path });
+      } else {
+        logError(`destination path '${path}' is not a valid directory`);
+      }
+    }
 
     destinationChoices.push({ value: '__other__', name: 'Other' });
     questions.push({

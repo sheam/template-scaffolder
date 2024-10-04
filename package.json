@@ -3,6 +3,19 @@
   "repository": "https://github.com/sheam/template-scaffolder",
   "version": "2.1.0",
   "description": "multi-file scaffolding with velocity template for any type of project",
+  "keywords": [
+    "typescript",
+    "javascript",
+    "command-line",
+    "cli",
+    "devops",
+    "command",
+    "development",
+    "devtools",
+    "scaffolding",
+    "templates",
+    "automation"
+  ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
@@ -22,7 +35,7 @@
     "test:debug": "tsx src/test.mts",
     "test:test-run": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --template=component --overwrite",
     "test:test-ts": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --overwrite --template=typescript-component",
-    "test:ask-template": "npm run build:exe && cross-env DEBUG=false node dist/exe/index.js --dryRun",
+    "test:ask-template": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --dryRun",
     "test:all": "jest src",
     "publish:login": "npm login",
     "publish:npm": "npm run build:all && npm publish",
@@ -35,24 +48,14 @@
     "tidy:format-all": "npx prettier --write src",
     "tidy:lint-fix-all": "npx eslint --fix src/**"
   },
-  "keywords": [
-    "scaffolding"
-  ],
   "author": "Shea Martin",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.13",
-    "@types/node": "^18.7.18",
-    "cross-env": "^7.0.3",
-    "jest": "^29.7.0",
-    "rimraf": "^6.0.1",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.6.2",
-    "prettier": "^3.3.3",
-    "lint-staged": "^15.2.10",
-    "husky": "^9.1.6",
+    "@types/node": "^16.18.112",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.3",
@@ -60,12 +63,20 @@
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-jest": "^28.8.3",
     "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-unused-imports": "^4.1.4"
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "husky": "^9.1.6",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.2"
   },
   "dependencies": {
     "@inquirer/prompts": "^6.0.1",
+    "config-file-ts-async": "^0.4.0",
+    "glob": "^11.0.0",
     "node-cli-arg-by-config": "^0.11.0",
-    "velocityjs": "^2.0.6",
-    "config-file-ts": "^0.2.8-rc1"
+    "velocityjs": "^2.0.6"
   }
 }

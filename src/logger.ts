@@ -17,7 +17,7 @@ export class Logger {
   // eslint-disable-next-line max-params
   constructor(
     indent: number = 0,
-    errorPrefix: string = 'stderr: ',
+    errorPrefix: string = '[stderr] ',
     outputPrefix: string = '',
     debugPrefix: string = ''
   ) {

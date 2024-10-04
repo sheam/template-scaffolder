@@ -1,23 +1,22 @@
-import { existsSync } from 'fs';
 import path from 'path';
-import { loadTsConfig } from 'config-file-ts';
+import { loadTsConfig } from 'config-file-ts-async';
 import { CONFIG_FILE_NAME_NO_EXT, TS_CACHE_FOLDER_NAME } from '../constants.js';
 import { Logger } from '../logger.js';
 import { IConfigFile } from '../types/index.js';
-import { scaffoldingPath } from '../util.js';
+import { existsAsync, scaffoldingPath } from '../util.js';
 
 export async function loadConfigFile<TInput extends object>(
   templateDir: string,
   logging: Logger
 ): Promise<IConfigFile<TInput> | null> {
   const loaders = [
-    { loader: loadTsConfigFile, extensions: ['.ts', '.mts'] },
-    { loader: loadJsConfigFile, extensions: ['.js', '.mjs'] },
+    { loader: loadTsConfigFile, extensions: ['.ts', '.mts', '.cts'] },
+    { loader: loadJsConfigFile, extensions: ['.js', '.mjs', '.cjs'] },
   ];
   for (const extensionLoader of loaders) {
     for (const ext of extensionLoader.extensions) {
       const path = scaffoldingPath(templateDir, CONFIG_FILE_NAME_NO_EXT + ext);
-      if (existsSync(path)) {
+      if (await existsAsync(path)) {
         return await extensionLoader.loader(path, logging);
       } else {
         logging.append(`No file at ${path}`, true);
@@ -52,19 +51,21 @@ async function loadTsConfigFile<TInput extends object>(
   logging: Logger
 ): Promise<IConfigFile<TInput> | null> {
   logging.append(`loading TS module ${configFileScaffoldingPath}`, true);
-  const configPath = path.join(process.cwd(), configFileScaffoldingPath);
-  const cachePath = path.join(
-    process.cwd(),
-    TS_CACHE_FOLDER_NAME,
-    configFileScaffoldingPath
+  // const configPath = path.join(process.cwd(), configFileScaffoldingPath);
+  const config = await loadTsConfig<IConfigFile<TInput>>(
+    configFileScaffoldingPath,
+    {
+      cacheConfig: { cacheType: 'local', cacheDir: TS_CACHE_FOLDER_NAME },
+      compileConfig: { strict: true, module: 'NodeNext' },
+    }
   );
-  const config = loadTsConfig<IConfigFile<TInput>>(configPath, cachePath, true);
   if (!config) {
     logging.appendError(
       `failed to load ${configFileScaffoldingPath}, make sure the default export is a valid IConfigFile object`
     );
     return null;
   }
+
   logging.append('  loaded', true);
   return config;
 }

@@ -1,13 +1,30 @@
 import { exec } from 'child_process';
-import { existsSync } from 'fs';
-import { readdir } from 'node:fs/promises';
+import { constants, PathLike } from 'fs';
+import { access, readdir, stat } from 'node:fs/promises';
 import path from 'path';
 import { SCAFFOLD_FOLDER_NAME } from './constants.js';
 import { log, logError } from './logger.js';
 
+export async function existsAsync(path: PathLike): Promise<boolean> {
+  try {
+    await access(path, constants.F_OK);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+export async function isDirectory(path: PathLike): Promise<boolean> {
+  try {
+    const info = await stat(path);
+    return info.isDirectory();
+  } catch (error) {
+    return false;
+  }
+}
+
 export async function verifyScaffoldingFolder(): Promise<void> {
   let error = false;
-  if (existsSync(SCAFFOLD_FOLDER_NAME)) {
+  if (await existsAsync(SCAFFOLD_FOLDER_NAME)) {
     const templates = await readdir(scaffoldingPath(''));
     if (templates.length <= 0) {
       logError(`No templates exist in ${path.resolve(SCAFFOLD_FOLDER_NAME)}`);

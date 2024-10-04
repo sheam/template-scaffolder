@@ -6,3 +6,5 @@ dist/
 .template-scaffolder-ts-cache/
 .npmrc
 testsrc/
+.yalc/
+yalc.lock

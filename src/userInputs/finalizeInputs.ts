@@ -1,5 +1,3 @@
-import { existsSync } from 'fs';
-import { stat } from 'node:fs/promises';
 import { IInitialPromptResult } from './types.js';
 import { getBuiltIns } from '../builtIns.js';
 import { addDestinationPrompt } from './addDestinationPrompt.js';
@@ -12,6 +10,7 @@ import {
   Question,
   TemplateVariables,
 } from '../types/index.js';
+import { isDirectory } from '../util.js';
 
 /**
  * Determine the values missing from command line and config file,
@@ -25,15 +24,12 @@ export async function finalizeInputs<TInput extends object>(
   requiredInputs: IInitialInputs<TInput>
 ): Promise<IFinalizedInputs<TInput>> {
   const config = requiredInputs.template.config;
-  const srcRoot = getSrcRoot(config);
+  const srcRoot = await getSrcRoot(config);
   const questions: Question<TInput & IInitialPromptResult>[] = [];
 
   let hardCodedDestination = '';
   if (typeof config.destinations === 'string') {
-    if (
-      existsSync(config.destinations) &&
-      (await stat(config.destinations)).isDirectory()
-    ) {
+    if (await isDirectory(config.destinations)) {
       hardCodedDestination = config.destinations;
     } else {
       throw new Error(
@@ -43,7 +39,7 @@ export async function finalizeInputs<TInput extends object>(
   }
 
   if (!cliValues.destination && !hardCodedDestination) {
-    addDestinationPrompt(srcRoot, config.destinations, questions);
+    await addDestinationPrompt(srcRoot, config.destinations, questions);
   }
 
   if (typeof config.prompts === 'function') {

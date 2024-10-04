@@ -1,8 +1,7 @@
-import { existsSync } from 'fs';
 import { mkdir, stat, writeFile } from 'node:fs/promises';
 import path from 'path';
 import { IFinalizedInputs } from '../types/index.js';
-import { scaffoldingPath } from '../util.js';
+import { existsAsync, scaffoldingPath } from '../util.js';
 import { getDestinationPath } from './getDestinationPath.js';
 import { getFileContents } from './getFileContents.js';
 import { runAfterCreateCommand } from './runAfterCreateCommand.js';
@@ -14,11 +13,14 @@ export async function createFileFromTemplate<TInput extends object>(
   dryRun: boolean
 ): Promise<Logger> {
   const logging = new Logger();
-
-  if (
-    !existsSync(processConfig.destination) ||
-    !(await stat(processConfig.destination)).isDirectory()
-  ) {
+  let isDir: boolean;
+  try {
+    const info = await stat(processConfig.destination);
+    isDir = info.isDirectory();
+  } catch (err) {
+    isDir = false;
+  }
+  if (!isDir) {
     logging.appendError(
       `Destination specified is not a directory: ${processConfig.destination}`
     );
@@ -39,7 +41,7 @@ export async function createFileFromTemplate<TInput extends object>(
     return logging;
   }
 
-  if (!processConfig.overwrite && existsSync(destinationPath)) {
+  if (!processConfig.overwrite && (await existsAsync(destinationPath))) {
     logging.appendError(
       `WARN: file ${destinationPath} already exists, can't process template. Skipping this file`
     );

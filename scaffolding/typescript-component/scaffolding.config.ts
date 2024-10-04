@@ -1,8 +1,6 @@
-// import { IConfigFile } from "../../src/types";
+import {IConfigFile } from "../../src/types/index.js";
 
 interface IUserInput {}
-
-//TODO: make this work when not an NPM module
 
 export default {
     name: 'Simple',
@@ -11,4 +9,4 @@ export default {
     macros: {
         sayHello: (person: string) => `Well hello there ${person}!!!`
     }
-}; // as IConfigFile<IUserInput>
+} as IConfigFile<IUserInput>;

@@ -1,14 +1,14 @@
-import { existsSync } from 'fs';
 import { DEFAULT_SRC_ROOT } from '../constants.js';
 import { IConfigFile } from '../types/index.js';
+import { isDirectory } from '../util.js';
 
-export function getSrcRoot<TInput extends object>(
+export async function getSrcRoot<TInput extends object>(
   config: IConfigFile<TInput>
-): string {
+): Promise<string> {
   if (config.srcRoot) {
     return config.srcRoot;
   }
-  if (existsSync(DEFAULT_SRC_ROOT)) {
+  if (await isDirectory(DEFAULT_SRC_ROOT)) {
     return DEFAULT_SRC_ROOT;
   }
   return process.cwd();
