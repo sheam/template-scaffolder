@@ -74,7 +74,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^6.0.1",
-    "config-file-ts-async": "^1.0.1-rc.0",
+    "config-file-ts-async": "^1.0.2",
     "glob": "^11.0.0",
     "node-cli-arg-by-config": "^0.11.0",
     "velocityjs": "^2.0.6"
