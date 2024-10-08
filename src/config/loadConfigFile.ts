@@ -1,6 +1,14 @@
 import path from 'path';
-import { loadTsConfig } from 'config-file-ts-async';
-import { CONFIG_FILE_NAME_NO_EXT, TS_CACHE_FOLDER_NAME } from '../constants.js';
+import {
+  getNearestTsConfigCompilerOptions,
+  loadTsConfig,
+} from 'config-file-ts-async';
+import { ICompileOptions } from 'config-file-ts-async/dist/types.js';
+import {
+  CONFIG_FILE_NAME_NO_EXT,
+  SCAFFOLD_FOLDER_NAME,
+  TS_CACHE_FOLDER_NAME,
+} from '../constants.js';
 import { Logger } from '../logger.js';
 import { IConfigFile } from '../types/index.js';
 import { existsAsync, scaffoldingPath } from '../util.js';
@@ -46,19 +54,27 @@ async function loadJsConfigFile<TInput extends object>(
   }
 }
 
+let _compilerOptions: ICompileOptions | null = null;
+async function getCompilerOptions(logging: Logger): Promise<ICompileOptions> {
+  if (!_compilerOptions) {
+    const result =
+      await getNearestTsConfigCompilerOptions(SCAFFOLD_FOLDER_NAME);
+    _compilerOptions = result.compilerOptions;
+    logging.append(`using compiler options from ${result.tsConfigPath}`);
+  }
+  return _compilerOptions;
+}
+
 async function loadTsConfigFile<TInput extends object>(
   configFileScaffoldingPath: string,
   logging: Logger
 ): Promise<IConfigFile<TInput> | null> {
   logging.append(`loading TS module ${configFileScaffoldingPath}`, true);
-  // const configPath = path.join(process.cwd(), configFileScaffoldingPath);
-  const config = await loadTsConfig<IConfigFile<TInput>>(
-    configFileScaffoldingPath,
-    {
-      cacheConfig: { cacheType: 'local', cacheDir: TS_CACHE_FOLDER_NAME },
-      compileConfig: { strict: true, module: 'NodeNext' },
-    }
-  );
+  const configPath = path.join(process.cwd(), configFileScaffoldingPath);
+  const config = await loadTsConfig<IConfigFile<TInput>>(configPath, {
+    cacheConfig: { cacheType: 'local', cacheDir: TS_CACHE_FOLDER_NAME },
+    compileConfig: await getCompilerOptions(logging),
+  });
   if (!config) {
     logging.appendError(
       `failed to load ${configFileScaffoldingPath}, make sure the default export is a valid IConfigFile object`

@@ -7,7 +7,7 @@
     "module": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "allowJs": false /* Only output d.ts files and not JavaScript files. */,
+    "allowJs": true /* Only output d.ts files and not JavaScript files. */,
     "declaration": false,
     "outDir": "./dist/exe" /* Specify an output folder for all emitted files. */,
     "noEmit": false /* Disable emitting files from a compilation. */,
