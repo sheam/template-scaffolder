@@ -35,6 +35,26 @@ Access to environment variables, users prompts, and scripting.
 
 # Configuration Files
 
+## tsconfig.json
+
+You can have a `tsconfig.json` file in your scaffolding directory to control how your
+scaffolding configuration files are compiled.
+
+```json
+{
+  "compilerOptions": {
+    "strict": true, // can be true or false
+    "module": "CommonJS", // "NodeNext" is also supported
+    "target": "ESNext" // this option can not be changed, it helps with your linting if present.
+    // all other options are ignored, and only relevant to your IDE.
+  }
+}
+```
+
+**note**: you will have to remove comments because this is a JSON file.
+
+## Scaffolding configuration files
+
 Each template must have exactly one `scaffolding.config` file with one of the following
 extensions: `.js, .mjs, .ts, .mts`
 in the root. The default export of this file must be an `IConfigFile` (see below for schema).
