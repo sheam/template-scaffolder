@@ -1,6 +1,6 @@
 import { log, logError, Logger } from '../logger.js';
 import { getTemplateDescriptors } from './getTemplateDescriptors.js';
-import { loadConfigFile } from './loadConfigFile.js';
+import { getTsCompilerOptions, loadConfigFile } from './loadConfigFile.js';
 import { getSelectResponse } from '../prompts/select.js';
 import {
   ICliArgs,
@@ -18,9 +18,12 @@ export async function getConfig<TInput extends object>(
       `loading config '${cliValues.template}' template specified on command line`
     );
 
+    const tsCompileConfig = await getTsCompilerOptions();
+
     const logging = new Logger();
     const config = await loadConfigFile<TInput>(
       cliValues.template,
+      tsCompileConfig,
       logging.indent()
     );
     logging.dump();

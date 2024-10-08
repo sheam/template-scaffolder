@@ -1,20 +1,21 @@
 import path from 'path';
 import {
   getNearestTsConfigCompilerOptions,
-  loadTsConfig,
   ICompileOptions,
+  loadTsConfig,
 } from 'config-file-ts-async';
 import {
   CONFIG_FILE_NAME_NO_EXT,
   SCAFFOLD_FOLDER_NAME,
   TS_CACHE_FOLDER_NAME,
 } from '../constants.js';
-import { Logger } from '../logger.js';
+import { log, Logger } from '../logger.js';
 import { IConfigFile } from '../types/index.js';
 import { existsAsync, scaffoldingPath } from '../util.js';
 
 export async function loadConfigFile<TInput extends object>(
   templateDir: string,
+  tsCompileOptions: ICompileOptions,
   logging: Logger
 ): Promise<IConfigFile<TInput> | null> {
   const loaders = [
@@ -25,7 +26,7 @@ export async function loadConfigFile<TInput extends object>(
     for (const ext of extensionLoader.extensions) {
       const path = scaffoldingPath(templateDir, CONFIG_FILE_NAME_NO_EXT + ext);
       if (await existsAsync(path)) {
-        return await extensionLoader.loader(path, logging);
+        return await extensionLoader.loader(path, tsCompileOptions, logging);
       } else {
         logging.append(`No file at ${path}`, true);
       }
@@ -39,6 +40,7 @@ export async function loadConfigFile<TInput extends object>(
 
 async function loadJsConfigFile<TInput extends object>(
   configFileScaffoldingPath: string,
+  _: ICompileOptions,
   logging: Logger
 ): Promise<IConfigFile<TInput> | null> {
   const modulePath =
@@ -54,26 +56,16 @@ async function loadJsConfigFile<TInput extends object>(
   }
 }
 
-let _compilerOptions: ICompileOptions | null = null;
-async function getCompilerOptions(logging: Logger): Promise<ICompileOptions> {
-  if (!_compilerOptions) {
-    const result =
-      await getNearestTsConfigCompilerOptions(SCAFFOLD_FOLDER_NAME);
-    _compilerOptions = result.compilerOptions;
-    logging.append(`using compiler options from ${result.tsConfigPath}`);
-  }
-  return _compilerOptions;
-}
-
 async function loadTsConfigFile<TInput extends object>(
   configFileScaffoldingPath: string,
+  compilerOptions: ICompileOptions,
   logging: Logger
 ): Promise<IConfigFile<TInput> | null> {
   logging.append(`loading TS module ${configFileScaffoldingPath}`, true);
   const configPath = path.join(process.cwd(), configFileScaffoldingPath);
   const config = await loadTsConfig<IConfigFile<TInput>>(configPath, {
     cacheConfig: { cacheType: 'local', cacheDir: TS_CACHE_FOLDER_NAME },
-    compileConfig: await getCompilerOptions(logging),
+    compileConfig: compilerOptions,
   });
   if (!config) {
     logging.appendError(
@@ -84,4 +76,12 @@ async function loadTsConfigFile<TInput extends object>(
 
   logging.append('  loaded', true);
   return config;
+}
+
+export async function getTsCompilerOptions(): Promise<ICompileOptions> {
+  const result = await getNearestTsConfigCompilerOptions(SCAFFOLD_FOLDER_NAME);
+  if (result.tsConfigPath) {
+    log(`using compiler options from ${result.tsConfigPath}`);
+  }
+  return result.compilerOptions;
 }

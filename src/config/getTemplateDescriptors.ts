@@ -1,14 +1,16 @@
 import { readdir, stat } from 'node:fs/promises';
+import { ICompileOptions } from 'config-file-ts-async';
 import { IGetConfigFileResult } from './types.js';
 import { INCLUDES_FOLDER_NAME } from '../constants.js';
 import { log, Logger } from '../logger.js';
 import { scaffoldingPath } from '../util.js';
-import { loadConfigFile } from './loadConfigFile.js';
+import { getTsCompilerOptions, loadConfigFile } from './loadConfigFile.js';
 
 export async function getTemplateDescriptors<TInput extends object>(
   parallel: boolean | undefined
 ): Promise<IGetConfigFileResult<TInput>[]> {
   const templateDirs = await readdir(scaffoldingPath(''));
+  const tsCompileConfig = await getTsCompilerOptions();
 
   if (parallel) {
     log('loading template configurations in parallel');
@@ -16,7 +18,9 @@ export async function getTemplateDescriptors<TInput extends object>(
       Promise<IGetConfigFileResult<TInput>>
     >();
     for (const templateDir of templateDirs) {
-      configFilePromises.push(getConfigFileFromTemplateDir(templateDir));
+      configFilePromises.push(
+        getConfigFileFromTemplateDir(templateDir, tsCompileConfig)
+      );
     }
     const results = await Promise.all(configFilePromises);
     results.forEach(r => r.logging.dump());
@@ -24,7 +28,10 @@ export async function getTemplateDescriptors<TInput extends object>(
   } else {
     const configFiles = new Array<IGetConfigFileResult<TInput>>();
     for (const templateDir of templateDirs) {
-      const result = await getConfigFileFromTemplateDir(templateDir);
+      const result = await getConfigFileFromTemplateDir(
+        templateDir,
+        tsCompileConfig
+      );
       result.logging.dump();
       if (result.config) {
         configFiles.push(result);
@@ -35,7 +42,8 @@ export async function getTemplateDescriptors<TInput extends object>(
 }
 
 async function getConfigFileFromTemplateDir<TInput extends object>(
-  templateDir: string
+  templateDir: string,
+  tsCompileOptions: ICompileOptions
 ): Promise<IGetConfigFileResult<TInput>> {
   const logging = new Logger();
 
@@ -52,7 +60,11 @@ async function getConfigFileFromTemplateDir<TInput extends object>(
   }
 
   try {
-    const config = await loadConfigFile(templateDir, logging.indent());
+    const config = await loadConfigFile(
+      templateDir,
+      tsCompileOptions,
+      logging.indent()
+    );
     if (!config) {
       return { logging: logging.unindent(), dir: templateDir, config: null };
     }
