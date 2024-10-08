@@ -2,8 +2,8 @@ import path from 'path';
 import {
   getNearestTsConfigCompilerOptions,
   loadTsConfig,
+  ICompileOptions,
 } from 'config-file-ts-async';
-import { ICompileOptions } from 'config-file-ts-async/dist/types.js';
 import {
   CONFIG_FILE_NAME_NO_EXT,
   SCAFFOLD_FOLDER_NAME,
