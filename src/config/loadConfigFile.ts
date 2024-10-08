@@ -81,7 +81,7 @@ async function loadTsConfigFile<TInput extends object>(
 export async function getTsCompilerOptions(): Promise<ICompileOptions> {
   const result = await getNearestTsConfigCompilerOptions(SCAFFOLD_FOLDER_NAME);
   if (result.tsConfigPath) {
-    log(`using compiler options from ${result.tsConfigPath}`);
+    log(`using compiler options from ${result.tsConfigPath}`, 0, true);
   }
   return result.compilerOptions;
 }
