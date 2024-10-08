@@ -1,7 +1,7 @@
 {
   "name": "template-scaffolder",
   "repository": "https://github.com/sheam/template-scaffolder",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "multi-file scaffolding with velocity template for any type of project",
   "keywords": [
     "typescript",
