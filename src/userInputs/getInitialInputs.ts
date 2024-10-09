@@ -1,7 +1,6 @@
-import { IInitialPromptResult } from './types.js';
 import { getConfig } from '../config/index.js';
-import { prompt } from '../prompts/index.js';
-import { ICliArgs, IInitialInputs, Question } from '../types/index.js';
+import { getInputResponse } from '../prompts/input.js';
+import { ICliArgs, IInitialInputs } from '../types/index.js';
 
 /**
  * Setup config based on command line values.
@@ -13,9 +12,9 @@ export async function getInitialInputs<TInput extends object>(
 ): Promise<IInitialInputs<TInput>> {
   const templateDescriptor = await getConfig(cliValues);
 
-  const questions: Question<IInitialPromptResult>[] = [];
+  let inputName = '';
   if (!cliValues.name) {
-    questions.push({
+    inputName = await getInputResponse({
       name: 'name',
       type: 'input',
       message: 'Enter the name: ',
@@ -23,13 +22,8 @@ export async function getInitialInputs<TInput extends object>(
     });
   }
 
-  const userInputs =
-    questions.length > 0
-      ? await prompt<IInitialPromptResult>(questions)
-      : ({} as IInitialPromptResult);
-
   const result: IInitialInputs<TInput> = {
-    instanceName: userInputs.name || cliValues.name || '',
+    instanceName: inputName || cliValues.name || '',
     template: templateDescriptor,
   };
 

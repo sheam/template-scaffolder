@@ -39,6 +39,10 @@ export async function finalizeInputs<TInput extends object>(
   }
 
   if (!cliValues.destination && !hardCodedDestination) {
+    // console.log(`NO CLI DESTINATION OR HARDCODED DESTINATION`);
+    // console.log(`config.destinations: ${JSON.stringify(config.destinations)}`);
+    // console.log(JSON.stringify(config, undefined, 2));
+    // console.log('------------------------------');
     await addDestinationPrompt(srcRoot, config.destinations, questions);
   }
 

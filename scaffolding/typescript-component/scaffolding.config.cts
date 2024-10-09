@@ -1,4 +1,4 @@
-import {IConfigFile } from "../../src/types/index.js";
+import {IConfigFile } from "../../src/types";
 
 interface IUserInput {}
 

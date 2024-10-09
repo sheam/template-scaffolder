@@ -1,3 +1,5 @@
+import { search } from '@inquirer/prompts';
+import { watchForQuitSignal } from './helpers.js';
 import { IChoice, ISearchQuestion } from '../types/index.js';
 
 export type SearchQuestionImplementation<TInput extends object> = Required<
@@ -5,7 +7,7 @@ export type SearchQuestionImplementation<TInput extends object> = Required<
 > &
   ISearchQuestion<TInput>;
 
-export function getSearchQuestion<TInput extends object>(
+function getSearchQuestion<TInput extends object>(
   q: ISearchQuestion<TInput>
 ): SearchQuestionImplementation<TInput> {
   if (q.source) {
@@ -30,4 +32,10 @@ export function getSearchQuestion<TInput extends object>(
     });
   };
   return q as SearchQuestionImplementation<TInput>;
+}
+
+export async function getSearchResponse<TInput extends object>(
+  question: ISearchQuestion<TInput>
+): Promise<string> {
+  return watchForQuitSignal(async () => search(getSearchQuestion(question)));
 }

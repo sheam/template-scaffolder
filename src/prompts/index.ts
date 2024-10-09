@@ -1,8 +1,10 @@
-import { confirm, input, number, search } from '@inquirer/prompts';
-import { getPathQuestion } from './path.js';
-import { getSearchQuestion } from './search.js';
+import { getConfirmResponse } from './confirm.js';
+import { watchForQuitSignal } from './helpers.js';
+import { getInputResponse } from './input.js';
+import { getNumberResponse } from './number.js';
+import { getPathResponse } from './path.js';
+import { getSearchResponse } from './search.js';
 import { getSelectResponse } from './select.js';
-import { MANUAL_ENTRY_VALUE } from './types.js';
 import {
   isConfirmQuestion,
   isInputQuestion,
@@ -23,36 +25,43 @@ export async function prompt<TInput extends object>(
         continue;
       }
     }
-    if (isInputQuestion(question)) {
-      answers.push([question.name.toString(), await input(question)]);
-    } else if (isConfirmQuestion(question)) {
-      answers.push([question.name.toString(), await confirm(question)]);
-    } else if (isNumberQuestion(question)) {
-      answers.push([question.name.toString(), await number(question)]);
-    } else if (isSelectQuestion(question)) {
-      answers.push([
-        question.name.toString(),
-        await getSelectResponse(question),
-      ]);
-    } else if (isSearchQuestion(question)) {
-      answers.push([
-        question.name.toString(),
-        await search(getSearchQuestion(question)),
-      ]);
-    } else if (isPathSelectQuestion(question)) {
-      const pathQuestion = await getPathQuestion(question);
-      const answer = await search(pathQuestion);
-      if (answer === MANUAL_ENTRY_VALUE) {
+    await watchForQuitSignal(async () => {
+      if (isInputQuestion(question)) {
         answers.push([
           question.name.toString(),
-          await input({ ...question, message: 'enter path' }),
+          await getInputResponse(question),
+        ]);
+      } else if (isConfirmQuestion(question)) {
+        answers.push([
+          question.name.toString(),
+          await getConfirmResponse(question),
+        ]);
+      } else if (isNumberQuestion(question)) {
+        answers.push([
+          question.name.toString(),
+          await getNumberResponse(question),
+        ]);
+      } else if (isSelectQuestion(question)) {
+        answers.push([
+          question.name.toString(),
+          await getSelectResponse(question),
+        ]);
+      } else if (isSearchQuestion(question)) {
+        answers.push([
+          question.name.toString(),
+          await getSearchResponse(question),
+        ]);
+      } else if (isPathSelectQuestion(question)) {
+        answers.push([
+          question.name.toString(),
+          await getPathResponse(question),
         ]);
       } else {
-        answers.push([question.name.toString(), answer]);
+        throw new Error(
+          `Unsupported question type: ${JSON.stringify(question)}`
+        );
       }
-    } else {
-      throw new Error(`Unsupported question type: ${JSON.stringify(question)}`);
-    }
+    });
   }
   return Object.fromEntries(answers) as TInput;
 }

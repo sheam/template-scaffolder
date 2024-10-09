@@ -34,7 +34,7 @@
     "build:clean": "npx rimraf dist",
     "test:debug": "tsx src/test.mts",
     "test:test-run": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --template=component --overwrite",
-    "test:test-ts": "npm run build:all && cross-env DEBUG=true node dist/exe/index.js --overwrite --template=typescript-component",
+    "test:test-ts": "npm run build:all && cross-env DEBUG=true node dist/exe/index.js --overwrite --template=typescript-component --dryRun",
     "test:ask-template": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --dryRun",
     "test:all": "jest src",
     "publish:login": "npm login",
@@ -74,7 +74,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^6.0.1",
-    "config-file-ts-async": "^1.0.3",
+    "config-file-ts-async": "^1.0.4",
     "glob": "^11.0.0",
     "node-cli-arg-by-config": "^0.11.0",
     "velocityjs": "^2.0.6"

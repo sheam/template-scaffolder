@@ -1,10 +1,29 @@
 import { readdir, stat } from 'node:fs/promises';
 import * as path from 'path';
+import { search } from '@inquirer/prompts';
+import { watchForQuitSignal } from './helpers.js';
+import { getInputResponse } from './input.js';
 import { SearchQuestionImplementation } from './search.js';
 import { MANUAL_ENTRY_VALUE } from './types.js';
 import { IChoice, IPathInfo, IPathSelectQuestion } from '../types/index.js';
 
-export async function getPathQuestion<TInput extends object>(
+export async function getPathResponse<TInput extends object>(
+  question: IPathSelectQuestion<TInput>
+): Promise<string> {
+  const pathQuestion = await getPathQuestion<TInput>(question);
+  const answer = await watchForQuitSignal(async () => search(pathQuestion));
+  if (answer === MANUAL_ENTRY_VALUE) {
+    return await getInputResponse<TInput>({
+      ...question,
+      type: 'input',
+      message: 'enter path',
+    });
+  } else {
+    return answer;
+  }
+}
+
+async function getPathQuestion<TInput extends object>(
   q: IPathSelectQuestion<TInput>
 ): Promise<SearchQuestionImplementation<TInput>> {
   const pathEntries = await getDir(q.rootPath || process.cwd(), 0, q);
