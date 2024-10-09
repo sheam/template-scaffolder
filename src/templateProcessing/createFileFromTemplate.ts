@@ -42,7 +42,7 @@ export async function createFileFromTemplate<TInput extends object>(
   }
 
   if (!processConfig.overwrite && (await existsAsync(destinationPath))) {
-    logging.appendError(
+    logging.append(
       `WARN: file ${destinationPath} already exists, can't process template. Skipping this file`
     );
     return logging;
