@@ -64,12 +64,16 @@ export async function finalizeInputs<TInput extends object>(
 
   const configVariables =
     typeof config.variables === 'function'
-      ? config.variables(
+      ? await config.variables(
           requiredInputs.instanceName,
           Object.assign({}, builtIns as TemplateVariables, answers as TInput)
         )
       : config.variables || {};
 
+  // console.log(
+  //   `CONFIG AFTER builtins and prompts = ${JSON.stringify(config, null, 2)}`
+  // );
+  // process.exit(-99);
   return {
     destination,
     srcRoot,

@@ -33,6 +33,12 @@ const cliConfig: IArgsConfig = {
       description:
         'Process all files at the same time. The default is process one file at a time.',
     },
+    {
+      name: 'workDir',
+      type: 'string',
+      description:
+        'Use the directory as the working directory. Useful for debugging..',
+    },
   ],
 };
 

@@ -14,7 +14,10 @@ export interface IConfigFile<TInput extends object> {
   version?: string;
   variables?:
     | TemplateVariables
-    | ((instanceName: string, initialInputs: TInput) => TemplateVariables);
+    | ((
+        instanceName: string,
+        initialInputs: TInput
+      ) => Promise<TemplateVariables>);
   prompts?:
     | Question<TInput>[]
     | ((
@@ -58,6 +61,7 @@ export interface ICliArgs {
   dryRun?: boolean;
   overwrite?: boolean;
   parallel?: boolean;
+  workDir?: string;
 }
 
 export interface IInitialInputs<TInput extends object> {

@@ -32,7 +32,8 @@
     "build:types": "tsc --project ./tsconfig.types.json",
     "build:exe": "tsc",
     "build:clean": "npx rimraf dist",
-    "test:debug": "tsx src/test.mts",
+    "test:debug": "tsx src/test.ts --template=typescript-component --dryRun",
+    "test:bn": "cross-env DEBUG=true tsx src/index.ts --workDir=\"c:/Users/sheam/source/repos/BrewNinja/StrangeBrewWeb/StrangeBrew.App\" --template=new-odata-table-page --overwrite --name=tanks --dryRun",
     "test:test-run": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --template=component --overwrite",
     "test:test-ts": "npm run build:all && cross-env DEBUG=true node dist/exe/index.js --overwrite --template=typescript-component --dryRun",
     "test:ask-template": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --dryRun",
@@ -74,7 +75,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^6.0.1",
-    "config-file-ts-async": "^1.0.4",
+    "config-file-ts-async": "^1.0.5",
     "glob": "^11.0.0",
     "node-cli-arg-by-config": "^0.11.0",
     "velocityjs": "^2.0.6"

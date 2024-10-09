@@ -62,14 +62,24 @@ in the root. The default export of this file must be an `IConfigFile` (see below
 The typescript schema for this file is:
 
 ```typescript
-export interface IConfigFile {
+export interface IConfigFile<TInput extends object> {
   name?: string;
   description?: string;
   version?: string;
-  variables?: object | ((instanceName: string, initialInputs: any) => any);
-  prompts?: DistinctQuestion[] | ((instanceName: string) => DistinctQuestion[]);
-  stripLines: PatternList;
-  macros?: object;
+  variables?:
+    | TemplateVariables
+    | ((
+        instanceName: string,
+        initialInputs: TInput
+      ) => Promise<TemplateVariables>);
+  prompts?:
+    | Question<TInput>[]
+    | ((
+        instanceName: string
+      ) => Promise<Question<TInput>[]> | Question<TInput>[]);
+  stripLines?: PatternList;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  macros?: MacroObject;
   destinations?: Array<string> | string;
   createNameDir?: boolean;
   srcRoot?: string;
@@ -77,7 +87,7 @@ export interface IConfigFile {
     createdFilePath: string,
     dryRun: boolean,
     variablesHash: TemplateVariables
-  ) => Promise<string[]>;
+  ) => string[];
 }
 ```
 

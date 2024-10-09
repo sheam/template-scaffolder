@@ -72,7 +72,7 @@ export function printValues(
       case 'function':
         return 'function';
       default:
-        return val.toString();
+        return `${typeof val}/${val.toString()}`;
     }
   }
   Object.keys(variables).forEach(key => {

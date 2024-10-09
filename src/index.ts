@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { getArgs } from './cli.js';
+import { log } from './logger.js';
 import { processTemplates } from './templateProcessing/index.js';
 import { finalizeInputs, getInitialInputs } from './userInputs/index.js';
 import { printValues, verifyScaffoldingFolder } from './util.js';
@@ -20,11 +21,14 @@ if (!Array.prototype.findLastIndex) {
 await verifyScaffoldingFolder();
 
 const args = getArgs();
+if (args.workDir) {
+  log(`using working directory: ${args.workDir}`);
+  process.chdir(args.workDir);
+}
+log(`working directory: ${process.cwd()}`, 0, true);
 const initialValues = await getInitialInputs(args);
 const finalizedInputs = await finalizeInputs(args, initialValues);
 
-// log('Using co n figuration:', 0, !args.dryRun);
-// console.log ( JS ON.stringify(finalizedInputs, undefined, 4));
 printValues(finalizedInputs, args.dryRun, 1);
 
 await processTemplates(
