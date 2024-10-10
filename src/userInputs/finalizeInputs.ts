@@ -7,6 +7,7 @@ import {
   ICliArgs,
   IFinalizedInputs,
   IInitialInputs,
+  ILastRunConfig,
   Question,
   TemplateVariables,
 } from '../types/index.js';
@@ -18,47 +19,44 @@ import { isDirectory } from '../util.js';
  * This should be run after getInitialInputs(). and getConfig().
  * @param cliValues command line options.
  * @param requiredInputs what we were able to determine from the getInitialInputs function.
+ * @param lastRunConfig values used for the previous run, null if should not be honoured.
  */
 export async function finalizeInputs<TInput extends object>(
   cliValues: ICliArgs,
-  requiredInputs: IInitialInputs<TInput>
+  requiredInputs: IInitialInputs<TInput>,
+  lastRunConfig: ILastRunConfig | null
 ): Promise<IFinalizedInputs<TInput>> {
   const config = requiredInputs.template.config;
   const srcRoot = await getSrcRoot(config);
   const questions: Question<TInput & IInitialPromptResult>[] = [];
 
-  let hardCodedDestination = '';
-  if (typeof config.destinations === 'string') {
-    if (await isDirectory(config.destinations)) {
-      hardCodedDestination = config.destinations;
-    } else {
-      throw new Error(
-        `destination '${config.destinations}' is not a valid directory`
-      );
-    }
-  }
-
-  if (!cliValues.destination && !hardCodedDestination) {
-    // console.log(`NO CLI DESTINATION OR HARDCODED DESTINATION`);
-    // console.log(`config.destinations: ${JSON.stringify(config.destinations)}`);
-    // console.log(JSON.stringify(config, undefined, 2));
-    // console.log('------------------------------');
-    await addDestinationPrompt(srcRoot, config.destinations, questions);
-  }
-
   if (typeof config.prompts === 'function') {
     const promptQuestions = await config.prompts(requiredInputs.instanceName);
     promptQuestions.forEach(p => questions.push(p));
-  }
-
-  if (Array.isArray(config.prompts)) {
+  } else if (Array.isArray(config.prompts)) {
     config.prompts.forEach(p => questions.push(p));
   }
 
-  const answers = await prompt<IInitialPromptResult & TInput>(questions);
+  const hardCodedDestination =
+    lastRunConfig?.destination ||
+    cliValues.destination ||
+    (typeof config.destinations === 'string' ? config.destinations : '');
 
-  const destination =
-    answers.destination || cliValues.destination || hardCodedDestination;
+  if (!hardCodedDestination) {
+    await addDestinationPrompt(srcRoot, config.destinations, questions);
+  }
+
+  const answers = await prompt<IInitialPromptResult & TInput>(
+    questions,
+    lastRunConfig?.promptResults
+  );
+
+  const destination = answers.destination || hardCodedDestination;
+
+  const isDestinationDirectory = await isDirectory(destination);
+  if (!isDestinationDirectory) {
+    throw new Error(`destination '${destination}' is not a valid directory`);
+  }
 
   const builtIns = await getBuiltIns(config, requiredInputs);
 
@@ -70,10 +68,6 @@ export async function finalizeInputs<TInput extends object>(
         )
       : config.variables || {};
 
-  // console.log(
-  //   `CONFIG AFTER builtins and prompts = ${JSON.stringify(config, null, 2)}`
-  // );
-  // process.exit(-99);
   return {
     destination,
     srcRoot,
@@ -86,5 +80,6 @@ export async function finalizeInputs<TInput extends object>(
     macros: Object.assign(config.macros || {}, builtIns.macros),
     stripLines: config.stripLines,
     overwrite: cliValues.overwrite === true,
+    answers,
   };
 }

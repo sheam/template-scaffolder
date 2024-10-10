@@ -4,6 +4,7 @@ import { getTsCompilerOptions, loadConfigFile } from './loadConfigFile.js';
 import { getSelectResponse } from '../prompts/select.js';
 import {
   ICliArgs,
+  ILastRunConfig,
   ISelectQuestion,
   ITemplateDescriptor,
 } from '../types/index.js';
@@ -11,18 +12,20 @@ import { scaffoldingPath } from '../util.js';
 import { IGetConfigFileResult } from './types.js';
 
 export async function getConfig<TInput extends object>(
-  cliValues: ICliArgs
+  cliValues: ICliArgs,
+  lastRunConfig: ILastRunConfig | null
 ): Promise<ITemplateDescriptor<TInput>> {
-  if (cliValues.template) {
-    log(
-      `loading config '${cliValues.template}' template specified on command line`
-    );
+  const parallel =
+    (lastRunConfig?.args.parallel || cliValues.parallel) === true;
+  const template = lastRunConfig?.args.template || cliValues.template;
+  if (template) {
+    log(`loading config '${template}' template specified on command line`);
 
     const tsCompileConfig = await getTsCompilerOptions();
 
     const logging = new Logger();
     const config = await loadConfigFile<TInput>(
-      cliValues.template,
+      template,
       tsCompileConfig,
       logging.indent()
     );
@@ -30,20 +33,16 @@ export async function getConfig<TInput extends object>(
     if (config) {
       return {
         config,
-        dir: cliValues.template,
+        dir: template,
       };
     }
 
-    const templates = await getTemplateDescriptors<TInput>(
-      cliValues.parallel === true
-    );
-    const foundConfig = templates.find(
-      x => x.config?.name === cliValues.template
-    );
+    const templates = await getTemplateDescriptors<TInput>(parallel);
+    const foundConfig = templates.find(x => x.config?.name === template);
     if (!foundConfig?.config) {
       logError(
-        `Could not find template at ${scaffoldingPath(cliValues.template)}, ` +
-          `or a template in the scaffolding directory with the name ${cliValues.template}.`
+        `Could not find template at ${scaffoldingPath(template)}, ` +
+          `or a template in the scaffolding directory with the name ${template}.`
       );
       process.exit(1);
     }
@@ -53,7 +52,7 @@ export async function getConfig<TInput extends object>(
     };
   }
 
-  const templates = await getTemplateDescriptors<TInput>(cliValues.parallel);
+  const templates = await getTemplateDescriptors<TInput>(parallel);
 
   const getTitle = (td: IGetConfigFileResult<TInput>): string => {
     if (!td.config) throw new Error('config must be present');

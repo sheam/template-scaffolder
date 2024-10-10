@@ -8,3 +8,5 @@ dist/
 testsrc/
 .yalc/
 yalc.lock
+
+.template-scaffolder-last-run

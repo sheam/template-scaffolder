@@ -2,7 +2,9 @@
 
 import { getArgs } from './cli.js';
 import { log } from './logger.js';
+import { loadLastRun, saveLastRun } from './rerun.js';
 import { processTemplates } from './templateProcessing/index.js';
+import { ILastRunConfig } from './types/index.js';
 import { finalizeInputs, getInitialInputs } from './userInputs/index.js';
 import { printValues, verifyScaffoldingFolder } from './util.js';
 
@@ -18,21 +20,35 @@ if (!Array.prototype.findLastIndex) {
   };
 }
 
+const args = getArgs();
+const lastRunConfig: ILastRunConfig | null = args.rerun
+  ? await loadLastRun()
+  : null;
+
 await verifyScaffoldingFolder();
 
-const args = getArgs();
 if (args.workDir) {
   log(`using working directory: ${args.workDir}`);
   process.chdir(args.workDir);
 }
 log(`working directory: ${process.cwd()}`, 0, true);
-const initialValues = await getInitialInputs(args);
-const finalizedInputs = await finalizeInputs(args, initialValues);
+const initialValues = await getInitialInputs<never>(args, lastRunConfig);
+const finalizedInputs = await finalizeInputs<never>(
+  args,
+  initialValues,
+  lastRunConfig
+);
 
-printValues(finalizedInputs, args.dryRun, 1);
+const isDryRun = args.dryRun || lastRunConfig?.args.dryRun || false;
+printValues(finalizedInputs, isDryRun, 1);
 
 await processTemplates(
   finalizedInputs,
-  args.parallel || false,
-  args.dryRun || false
+  args.parallel || lastRunConfig?.args.parallel || false,
+  isDryRun
 );
+
+if (!args.rerun) {
+  await saveLastRun(args, finalizedInputs);
+}
+log('Done');

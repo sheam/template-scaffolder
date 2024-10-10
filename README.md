@@ -492,6 +492,11 @@ This flag will cause the file to be overwritten.
 - Read config files in parallel for better startup times.
 - Process templates in parallel for much faster processing times.
 
+### rerun
+
+Run scaffolder with the exact same command line arguments and answers to questions as the previous run.
+This can be very useful for debugging your templates.
+
 # Making a Template
 
 1. Create a folder in the **scaffolding** directory.

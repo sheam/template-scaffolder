@@ -39,6 +39,11 @@ const cliConfig: IArgsConfig = {
       description:
         'Use the directory as the working directory. Useful for debugging..',
     },
+    {
+      name: 'rerun',
+      type: 'boolean',
+      description: 'Execute with exact same options as previous run',
+    },
   ],
 };
 

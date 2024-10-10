@@ -37,6 +37,7 @@
     "test:test-run": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --template=component --overwrite",
     "test:test-ts": "npm run build:all && cross-env DEBUG=true node dist/exe/index.js --overwrite --template=typescript-component --dryRun",
     "test:ask-template": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --dryRun",
+    "test:rerun": "npm run build:exe && cross-env DEBUG=true node dist/exe/index.js --rerun",
     "test:all": "jest src",
     "publish:login": "npm login",
     "publish:npm": "npm run build:all && npm publish",

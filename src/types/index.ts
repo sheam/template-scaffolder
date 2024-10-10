@@ -1,3 +1,5 @@
+import { IInitialPromptResult } from '../userInputs/types.js';
+
 export type TemplateVariableValue = unknown;
 export type TemplateVariables = {
   [key: string]: TemplateVariableValue;
@@ -7,6 +9,19 @@ export type PatternList = Array<string | RegExp> | undefined;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type MacroObject = { [key: string]: Function };
+
+export interface ILastRunConfig {
+  lastRunConfigFormatVersion: string;
+  name: string;
+  destination: string;
+  args: ICliArgs;
+  promptResults: IPromptResult[];
+}
+
+export interface IPromptResult {
+  name: string;
+  answer: boolean | string | number | null;
+}
 
 export interface IConfigFile<TInput extends object> {
   name?: string;
@@ -52,6 +67,7 @@ export interface IFinalizedInputs<TInput extends object> {
   stripLines: Array<string | RegExp> | undefined;
   createNameDir: boolean;
   macros: MacroObject;
+  answers: IInitialPromptResult & TInput;
 }
 
 export interface ICliArgs {
@@ -62,6 +78,7 @@ export interface ICliArgs {
   overwrite?: boolean;
   parallel?: boolean;
   workDir?: string;
+  rerun?: boolean;
 }
 
 export interface IInitialInputs<TInput extends object> {
