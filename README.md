@@ -5,6 +5,10 @@ Make sure your team is using the same patterns by using scaffolding templates.
 Quickly create multiple files based on simple templates.
 Access to environment variables, users prompts, and scripting.
 
+If you feel like it...
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/sheamus)
+
 # Release Notes
 
 ## Version 2
