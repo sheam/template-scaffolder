@@ -11,6 +11,7 @@ export async function addDestinationPrompt<TInput extends object>(
   destinations: string[] | string | undefined,
   questions: Question<TInput & IInitialPromptResult>[]
 ): Promise<void> {
+  // log(`destinations:${JSON.stringify(destinations)}`);
   if (Array.isArray(destinations)) {
     const destinationChoices = new Array<IChoice>();
     for (const path of destinations) {
