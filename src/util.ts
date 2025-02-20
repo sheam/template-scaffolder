@@ -52,11 +52,7 @@ export function scaffoldingPath(template: string, filePath = ''): string {
 }
 
 type IndexedObject = { [index: string]: unknown };
-export function printValues(
-  variables: object,
-  debug = false,
-  indent: number = 0
-): void {
+export function printValues(variables: object, indent: number = 0): void {
   if (indent === 1) {
     log(`============= RUN CONFIGURATION =============`);
   }
@@ -78,18 +74,14 @@ export function printValues(
   Object.keys(variables).forEach(key => {
     const val = (variables as IndexedObject)[key];
     if (val && Array.isArray(val)) {
-      log(`${key}: [`, indent, debug);
-      val.forEach(item => log(wrapValue(item), indent + 1, debug));
-      log(']', indent, debug);
+      log(`${key}: [`, indent);
+      val.forEach(item => log(wrapValue(item), indent + 1));
+      log(']', indent);
     } else if (val && typeof val === 'object') {
-      log(`${key}:`, indent, debug);
-      printValues(val, debug, indent + 1);
+      log(`${key}:`, indent);
+      printValues(val, indent + 1);
     } else {
-      log(
-        `${key}=${wrapValue((variables as IndexedObject)[key])}`,
-        indent,
-        debug
-      );
+      log(`${key}=${wrapValue((variables as IndexedObject)[key])}`, indent);
     }
   });
   if (indent === 1) {

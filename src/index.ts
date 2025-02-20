@@ -39,13 +39,16 @@ const finalizedInputs = await finalizeInputs<never>(
   lastRunConfig
 );
 
-const isDryRun = args.dryRun || lastRunConfig?.args.dryRun || false;
-printValues(finalizedInputs, isDryRun, 1);
+const IS_DEBUG = process.env.DEBUG === 'true';
+const IS_DRY_RUN = args.dryRun || lastRunConfig?.args.dryRun || false;
+if (IS_DEBUG || IS_DRY_RUN) {
+  printValues(finalizedInputs, 1);
+}
 
 await processTemplates(
   finalizedInputs,
   args.parallel || lastRunConfig?.args.parallel || false,
-  isDryRun
+  IS_DRY_RUN
 );
 
 if (!args.rerun) {
