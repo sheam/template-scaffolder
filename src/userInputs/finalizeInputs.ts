@@ -73,7 +73,8 @@ export async function finalizeInputs<TInput extends object>(
     typeof config.macros === 'function'
       ? await config.macros(
           requiredInputs.instanceName,
-          Object.assign({}, builtIns as TemplateVariables, answers as TInput)
+          answers as TInput,
+          configVariables as TemplateVariables
         )
       : ((config.macros || {}) as MacroObject);
 

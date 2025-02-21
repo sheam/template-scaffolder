@@ -66,6 +66,8 @@ in the root. The default export of this file must be an `IConfigFile` (see below
 The typescript schema for this file is:
 
 ```typescript
+import { TemplateVariables } from './index';
+
 export interface IConfigFile<TInput extends object> {
   name?: string;
   description?: string;
@@ -85,7 +87,11 @@ export interface IConfigFile<TInput extends object> {
   // eslint-disable-next-line @typescript-eslint/ban-types
   macros?:
     | MacroObject
-    | ((instanceName: string, initialInputs: TInput) => Promise<MacroObject>);
+    | ((
+        instanceName: string,
+        initialInputs: TInput,
+        variables: TemplateVariables
+      ) => Promise<MacroObject>);
   destinations?: Array<string> | string;
   createNameDir?: boolean;
   srcRoot?: string;
@@ -439,7 +445,7 @@ export default {
 
 ```javascript
 export default {
-  macros: (name, inputs) => ({
+  macros: (name, inputs, variables) => ({
     repeat: str => `${str}-${str}`,
     truncate: (str, len) => (str || '').substring(0, len),
     addName: str => `${str}${name}`,

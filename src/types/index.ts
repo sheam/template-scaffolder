@@ -42,7 +42,11 @@ export interface IConfigFile<TInput extends object> {
   // eslint-disable-next-line @typescript-eslint/ban-types
   macros?:
     | MacroObject
-    | ((instanceName: string, initialInputs: TInput) => Promise<MacroObject>);
+    | ((
+        instanceName: string,
+        initialInputs: TInput,
+        variables: TemplateVariables
+      ) => Promise<MacroObject>);
   destinations?: Array<string> | string;
   createNameDir?: boolean;
   srcRoot?: string;
