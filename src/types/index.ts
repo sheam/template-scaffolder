@@ -40,7 +40,9 @@ export interface IConfigFile<TInput extends object> {
       ) => Promise<Question<TInput>[]> | Question<TInput>[]);
   stripLines?: PatternList;
   // eslint-disable-next-line @typescript-eslint/ban-types
-  macros?: MacroObject;
+  macros?:
+    | MacroObject
+    | ((instanceName: string, initialInputs: TInput) => Promise<MacroObject>);
   destinations?: Array<string> | string;
   createNameDir?: boolean;
   srcRoot?: string;

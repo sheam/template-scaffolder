@@ -83,7 +83,9 @@ export interface IConfigFile<TInput extends object> {
       ) => Promise<Question<TInput>[]> | Question<TInput>[]);
   stripLines?: PatternList;
   // eslint-disable-next-line @typescript-eslint/ban-types
-  macros?: MacroObject;
+  macros?:
+    | MacroObject
+    | ((instanceName: string, initialInputs: TInput) => Promise<MacroObject>);
   destinations?: Array<string> | string;
   createNameDir?: boolean;
   srcRoot?: string;
@@ -430,6 +432,18 @@ export default {
     repeat: str => `${str}-${str}`,
     truncate: (str, len) => (str || '').substring(0, len),
   },
+};
+```
+
+`macros` can also be a function which return an object of macros.
+
+```javascript
+export default {
+  macros: (name, inputs) => ({
+    repeat: str => `${str}-${str}`,
+    truncate: (str, len) => (str || '').substring(0, len),
+    addName: str => `${str}${name}`,
+  }),
 };
 ```
 

@@ -8,6 +8,7 @@ import {
   IFinalizedInputs,
   IInitialInputs,
   ILastRunConfig,
+  MacroObject,
   Question,
   TemplateVariables,
 } from '../types/index.js';
@@ -68,6 +69,14 @@ export async function finalizeInputs<TInput extends object>(
         )
       : config.variables || {};
 
+  const configMacros =
+    typeof config.macros === 'function'
+      ? await config.macros(
+          requiredInputs.instanceName,
+          Object.assign({}, builtIns as TemplateVariables, answers as TInput)
+        )
+      : ((config.macros || {}) as MacroObject);
+
   return {
     destination,
     srcRoot,
@@ -77,7 +86,7 @@ export async function finalizeInputs<TInput extends object>(
     template: requiredInputs.template,
     instanceName: requiredInputs.instanceName,
     variables: Object.assign({}, builtIns.variables, answers, configVariables),
-    macros: Object.assign(config.macros || {}, builtIns.macros),
+    macros: Object.assign({}, builtIns.macros, configMacros) as MacroObject,
     stripLines: config.stripLines,
     overwrite: cliValues.overwrite === true,
     answers,
