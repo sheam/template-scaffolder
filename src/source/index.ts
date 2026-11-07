@@ -8,6 +8,7 @@
  */
 export {
   BUILT_IN_READERS,
+  checkSourceReader,
   defineSourceReader,
   readSource,
   readSources,

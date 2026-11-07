@@ -64,9 +64,12 @@ export async function loadGrammar(idOrWasmPath: string): Promise<Language> {
 
 /** Parse text with a grammar and return the root node. */
 export async function parse(idOrWasmPath: string, text: string): Promise<Node> {
+  // The grammar must load first: it also initialises the tree-sitter runtime.
+  const language = await loadGrammar(idOrWasmPath);
   const parser = new Parser();
-  parser.setLanguage(await loadGrammar(idOrWasmPath));
+  parser.setLanguage(language);
   const tree = parser.parse(text);
+  parser.delete();
   if (!tree) throw new Error('tree-sitter returned no tree');
   return tree.rootNode;
 }

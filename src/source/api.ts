@@ -3,6 +3,7 @@ import path from 'node:path';
 import picomatch from 'picomatch';
 import { errorMessage, ScaffolderError } from '../core/errors.js';
 import type {
+  IFunctionDecl,
   IReadOptions,
   ISourceApi,
   ISourceFile,
@@ -128,7 +129,7 @@ class SourceRegistry implements ISourceApi {
     return match.r;
   }
 
-  read(filePath: string, options?: IReadOptions): Promise<ISourceFile> {
+  async read(filePath: string, options?: IReadOptions): Promise<ISourceFile> {
     const absolute = path.resolve(this.projectRoot, filePath);
     const reader = this.pick(filePath, options);
     const key = `${reader.id}:${absolute}`;
@@ -172,8 +173,15 @@ class SourceRegistry implements ISourceApi {
   }
 }
 
-/** One registry per process, shared by `ctx.source` and the standalone functions. */
-export const sourceRegistry = new SourceRegistry();
+/**
+ * One registry per process, shared by `ctx.source` and the standalone functions.
+ * Kept on globalThis because config files load their own copy of this module
+ * (through the config loader); every copy must see the same project root, readers and cache.
+ */
+const REGISTRY_KEY = Symbol.for('template-scaffolder.sourceRegistry');
+export const sourceRegistry: SourceRegistry = ((
+  globalThis as Record<symbol, SourceRegistry | undefined>
+)[REGISTRY_KEY] ??= new SourceRegistry());
 
 /** Parse one file. Paths are relative to the project root (the working directory by default). */
 export function readSource(
@@ -217,4 +225,70 @@ async function globFiles(root: string, pattern: string): Promise<string[]> {
     .filter(rel => !rel.split('/').some(part => SKIP_DIRS.has(part)))
     .filter(rel => isMatch(rel))
     .sort();
+}
+
+/**
+ * Check that a reader's output matches the model, for authors of custom readers:
+ * `expect(await checkSourceReader(myReader, { path: 'x.proto', text })).toEqual([])`.
+ * Returns a list of problems (empty when the output is valid).
+ */
+export async function checkSourceReader(
+  reader: ISourceReader,
+  sample: { path: string; text: string }
+): Promise<string[]> {
+  const problems: string[] = [];
+  const need = (cond: boolean, msg: string): void => {
+    if (!cond) problems.push(msg);
+  };
+  need(
+    typeof reader.id === 'string' && reader.id.length > 0,
+    'reader.id must be a non-empty string'
+  );
+  need(
+    Array.isArray(reader.extensions) &&
+      reader.extensions.every(e => e.startsWith('.')),
+    'reader.extensions must be strings starting with "."'
+  );
+  const data = await reader.read(sample);
+  need(data.path === sample.path, 'path must be the path given to read()');
+  need(data.language === reader.id, 'language must equal reader.id');
+  need(Array.isArray(data.types), 'types must be an array');
+  need(Array.isArray(data.functions), 'functions must be an array');
+  need(Array.isArray(data.namespaces), 'namespaces must be an array');
+  const fn = (f: IFunctionDecl, where: string): void => {
+    need(typeof f.name === 'string', `${where}: name must be a string`);
+    need(Array.isArray(f.params), `${where}: params must be an array`);
+    need(
+      typeof f.returnType === 'string',
+      `${where}: returnType must be a string`
+    );
+    need(Array.isArray(f.attributes), `${where}: attributes must be an array`);
+    need(typeof f.text === 'string', `${where}: text must be a string`);
+  };
+  for (const t of data.types ?? []) {
+    const where = `type ${t.name}`;
+    need(
+      typeof t.name === 'string' && t.name.length > 0,
+      'every type needs a name'
+    );
+    for (const key of [
+      'bases',
+      'typeParams',
+      'fields',
+      'methods',
+      'members',
+      'attributes',
+    ] as const) {
+      need(Array.isArray(t[key]), `${where}: ${key} must be an array`);
+    }
+    t.fields?.forEach(f =>
+      need(
+        typeof f.name === 'string' && typeof f.type === 'string',
+        `${where}: fields need name and type strings`
+      )
+    );
+    t.methods?.forEach(m => fn(m, `${where}.${m.name}`));
+  }
+  data.functions?.forEach(f => fn(f, `function ${f.name}`));
+  return problems;
 }
