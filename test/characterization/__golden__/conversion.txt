@@ -1,0 +1,34 @@
+===== Converted/helpers.js
+export function getInterfaces(inputs) {
+    return [
+        {
+            name: 'MyInterfaceOne',
+            fields: [
+                { name: 'Name', typeName: 'string' },
+                { name: 'Age', typeName: 'number' },
+                { name: 'Something', typeName: inputs.PromptedType }
+            ],
+        },
+        {
+            name: 'MyInterfaceTwo',
+            fields: [
+                { name: 'Colour', typeName: 'string' },
+                { name: 'Hex', typeName: 'number' },
+            ],
+        },
+    ];
+}
+
+===== Converted/types.ts
+// this is a prompted value: Date
+
+
+    interface MyInterfaceOne {
+                   Name: string;
+                   Age: number;
+                   Something: Date;
+            }
+    interface MyInterfaceTwo {
+                   Colour: string;
+                   Hex: number;
+            }
