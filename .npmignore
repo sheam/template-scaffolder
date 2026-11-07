@@ -1,8 +1,0 @@
-src
-scaffolding
-temp
-jest.config.mjs
-yarn-error.log
-.idea
-.git
-dist/__tests__

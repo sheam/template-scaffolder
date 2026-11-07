@@ -1,8 +1,7 @@
 {
   "name": "template-scaffolder",
-  "repository": "https://github.com/sheam/template-scaffolder",
   "version": "2.3.12",
-  "description": "multi-file scaffolding with velocity template for any type of project",
+  "description": "Multi-file scaffolding from Velocity templates, with source readers for TypeScript, C# and C++.",
   "keywords": [
     "typescript",
     "javascript",
@@ -14,24 +13,50 @@
     "devtools",
     "scaffolding",
     "templates",
-    "automation"
+    "automation",
+    "velocity",
+    "codegen",
+    "tree-sitter",
+    "csharp",
+    "cpp"
   ],
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org"
-  },
+  "repository": "https://github.com/sheam/template-scaffolder",
+  "author": "Shea Martin",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"
   },
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./source": {
+      "types": "./dist/source/index.d.ts",
+      "default": "./dist/source/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "bin": {
-    "scaffolder": "./dist/exe/index.js"
+    "scaffolder": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "grammars",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build": "npm run build:clean && npm run build:exe && npm run build:types",
-    "build:clean": "rimraf dist",
-    "build:exe": "tsc",
-    "build:types": "tsc --project ./tsconfig.types.json",
+    "build": "npm run build:clean && tsc -p tsconfig.build.json && node scripts/copy-grammars.mjs",
+    "build:clean": "rimraf dist grammars",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src test",
     "lint:fix": "eslint --fix src test",
@@ -43,11 +68,17 @@
     "prepare": "husky",
     "prepublishOnly": "npm run build && npm run check"
   },
-  "author": "Shea Martin",
-  "license": "MIT",
+  "dependencies": {
+    "@inquirer/prompts": "^8.7.5",
+    "jiti": "^2.7.0",
+    "picomatch": "^4.0.7",
+    "velocityjs": "^2.0.6",
+    "web-tree-sitter": "0.27.2"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@types/node": "^22.20.5",
+    "@types/picomatch": "^4.0.3",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import-x": "^4.18.0",
@@ -56,14 +87,11 @@
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "rimraf": "^6.1.4",
+    "tree-sitter-c-sharp": "0.23.5",
+    "tree-sitter-cpp": "0.23.4",
+    "tree-sitter-typescript": "0.23.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.72.1",
     "vitest": "^5.1.0"
-  },
-  "dependencies": {
-    "@inquirer/prompts": "^6.0.1",
-    "config-file-ts-async": "^1.0.7",
-    "node-cli-arg-by-config": "^0.11.0",
-    "velocityjs": "^2.0.6"
   }
 }

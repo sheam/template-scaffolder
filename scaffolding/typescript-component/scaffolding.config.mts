@@ -1,15 +1,15 @@
-import {IConfigFile } from "../../src/types";
+import { defineConfig } from 'template-scaffolder';
 
 interface IUserInput {}
 
-export default {
+export default defineConfig<IUserInput>({
     name: 'Simple',
     description: 'for testing velocity templates',
     destinations: ['src/testdir/subdir1', 'src/testdir/subdir2'],
     macros: {
         sayHello: (person: string) => `Well hello there ${person}!!!`
     },
-    variables: async (name, _inputs) => {
+    variables: async ({ name }) => {
         return { VAR1: `variable one ${name}`, VAR2: 'variable two' };
     },
-} as IConfigFile<IUserInput>;
+});

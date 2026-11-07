@@ -13,3 +13,4 @@ yalc.lock
 .idea/
 .vscode/
 coverage/
+grammars/

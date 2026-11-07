@@ -3,8 +3,8 @@ import {getInterfaces} from "./helpers.js";
 export default {
     name: 'Conversion',
     description: 'a template which relies on reading another file.',
-    destinations: './src',
-    variables: (name, inputs) => ({
+    destination: './src',
+    variables: ({ answers: inputs }) => ({
         INTERFACES: getInterfaces(inputs),
     }),
     createNameDir: true,

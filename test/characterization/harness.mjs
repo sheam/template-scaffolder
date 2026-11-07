@@ -59,13 +59,8 @@ export function makeProject(testCase) {
     recursive: true,
   });
   mkdirSync(path.join(dir, testCase.destination), { recursive: true });
-  // 2.x fixtures import types via a relative '../../src/types' path (which pulls in other src files);
-  // later fixtures import the package by name through the node_modules link.
-  if (existsSync(path.join(REPO_ROOT, 'src/types'))) {
-    cpSync(path.join(REPO_ROOT, 'src'), path.join(dir, 'src'), {
-      recursive: true,
-    });
-  }
+  // Fixtures import 'template-scaffolder'; the loader aliases it to the running copy, and the
+  // node_modules link below covers anything else that resolves the package by name.
   mkdirSync(path.join(dir, 'node_modules'), { recursive: true });
   symlinkSync(
     REPO_ROOT,

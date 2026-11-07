@@ -1,22 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "lib": [
-      "esnext"
-    ] /* Specify a set of bundled library declaration files that describe the target runtime environment. */,
+    "target": "ES2023",
+    "lib": ["ES2024"],
     "module": "NodeNext",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "allowJs": true /* Only output d.ts files and not JavaScript files. */,
-    "declaration": false,
-    "outDir": "./dist/exe" /* Specify an output folder for all emitted files. */,
-    "noEmit": false /* Disable emitting files from a compilation. */,
-    //    "sourceMap": true /* Create source map files for emitted JavaScript files. */,
-    //    "sourceRoot": "src" /* Specify the root path for debuggers to find the reference source code. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    "strict": true /* Enable all strict type-checking options. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "resolveJsonModule": true
   },
-  "include": ["src"],
-  "exclude": ["src/__tests__/**"]
+  "include": ["src", "test", "vitest.config.ts"],
+  "exclude": ["test/fixtures"]
 }

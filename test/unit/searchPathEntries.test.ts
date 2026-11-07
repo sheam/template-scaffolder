@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { searchPathEntries } from '../../src/prompts/path.js';
-import type { IPathInfo } from '../../src/types/index.js';
+import { searchPathEntries } from '../../src/cli/pathSearch.js';
+import type { IPathInfo } from '../../src/core/types.js';
 
 const fileEntries: IPathInfo[] = [
   {

@@ -11,6 +11,8 @@ export default tseslint.config(
       'dist/**',
       'coverage/**',
       'scaffolding/**',
+      'grammars/**',
+      'test/fixtures/**',
       'node_modules/**',
       '**/*.cjs',
     ],
@@ -66,7 +68,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['test/**', '**/*.test.ts'],
+    files: ['test/**', '**/*.test.ts', 'scripts/**'],
     rules: { 'no-console': 'off', 'max-lines': 'off' },
   },
   prettier
