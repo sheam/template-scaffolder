@@ -335,6 +335,12 @@ Goal: a template author reads declarations from TS, C#, or C++ with the same cod
 | 11. Docs + release                    | todo              |                                                                                                                                                                                                                                                                                      |
 | 12. `ignore` feature                  | done early        | Needed by the plan stage; `afterRun` example still to add.                                                                                                                                                                                                                           |
 
+Also decided while implementing:
+
+- **Characterization tests are kept** rather than deleted after step 9. They are the only tests of the built CLI end to end, and they are cheap.
+- **The interactive prompter is tested** by driving the real inquirer prompts with simulated keystrokes (`createConsolePrompter({ input, output })`).
+- **docs/examples are type-checked, linted and tested**, so the documentation cannot drift from the code.
+
 Deviations from the plan, decided while implementing:
 
 - **Hook commands still run concurrently with `--parallel`.** Writes are always sequential, but serialising every `npx prettier` call would throw away most of the `--parallel` speed-up BrewNinja relies on. The docs recommend `hooks.afterRun` for repo-wide commands such as `git add`, which avoids the index-lock race entirely.

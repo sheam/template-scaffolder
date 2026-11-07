@@ -12,8 +12,12 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": false,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "template-scaffolder/source": ["./src/source/index.ts"],
+      "template-scaffolder": ["./src/index.ts"]
+    }
   },
-  "include": ["src", "test", "vitest.config.ts"],
+  "include": ["src", "test", "docs/examples", "vitest.config.ts"],
   "exclude": ["test/fixtures"]
 }

@@ -1,6 +1,6 @@
 {
   "name": "template-scaffolder",
-  "version": "2.3.12",
+  "version": "3.0.0",
   "description": "Multi-file scaffolding from Velocity templates, with source readers for TypeScript, C# and C++.",
   "keywords": [
     "typescript",
@@ -58,9 +58,9 @@
     "build": "npm run build:clean && tsc -p tsconfig.build.json && node scripts/copy-grammars.mjs",
     "build:clean": "rimraf dist grammars",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src test",
-    "lint:fix": "eslint --fix src test",
-    "format": "prettier --write src test",
+    "lint": "eslint src test docs/examples",
+    "lint:fix": "eslint --fix src test docs/examples",
+    "format": "prettier --write src test docs scripts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:characterization": "npm run build && vitest run test/characterization",

@@ -330,7 +330,7 @@ describe('scaffold() programmatic API', () => {
       destination: 'out',
       answers: { PromptedType: 'bigint' },
     });
-    expect(result.files).toHaveLength(2);
+    expect(result.files.map(f => f.path)).toEqual(['out/Api/types.ts']);
     expect(existsSync(path.join(root, 'out/Api/types.ts'))).toBe(true);
   });
 

@@ -33,6 +33,9 @@ export default {
         afterFileCreated: ({ path: _path, dryRun: _dryRun, variables: _variables }) => {
             //console.log(`>>>>>>>>>>>> '${variables.NAME}' template created ${path}`);
         },
+        // Runs once with every generated path, e.g. to format or `git add` them in one command.
+        afterRun: ({ createdPaths, dryRun }) =>
+            dryRun ? [] : [`echo formatted ${createdPaths.length} files`],
     },
     stripLines: [
         '// TEMPLATE:', //template comments

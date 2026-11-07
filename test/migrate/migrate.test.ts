@@ -75,14 +75,9 @@ describe('migrated 2.x fixtures', () => {
         .replaceAll(dir, '<PROJECT>')
         .replaceAll(homedir(), '<HOME>')
         .trim();
-      let golden = readFileSync(goldenPath(c), 'utf-8').trim();
-      if (c.id === 'conversion') {
-        // Intentional: the converter adds ignore: ['helpers.js'], which 2.x copied into the output.
-        golden = golden.replace(
-          /===== Converted\/helpers\.js\n[\s\S]*?(?====== )/,
-          ''
-        );
-      }
+      // The golden output already excludes conversion/helpers.js: both the in-repo fixture
+      // and the converter add ignore: ['helpers.js'] (2.x copied it into the output).
+      const golden = readFileSync(goldenPath(c), 'utf-8').trim();
       expect(actual).toBe(golden);
     });
   }
