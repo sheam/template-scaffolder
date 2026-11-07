@@ -11,6 +11,7 @@ export type ErrorCode =
   | 'MISSING_ANSWER'
   | 'INVALID_ARGS'
   | 'SOURCE_READ_FAILED'
+  | 'MIGRATE_REFUSED'
   | 'CANCELLED';
 
 /** Expected failures with a message meant for the user. Anything else is a bug. */
