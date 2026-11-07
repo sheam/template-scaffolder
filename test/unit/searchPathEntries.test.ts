@@ -1,6 +1,6 @@
-import { searchPathEntries } from '../prompts/path.js';
-// @ts-ignore
-import { IPathInfo } from '../types';
+import { describe, expect, it } from 'vitest';
+import { searchPathEntries } from '../../src/prompts/path.js';
+import type { IPathInfo } from '../../src/types/index.js';
 
 const fileEntries: IPathInfo[] = [
   {
@@ -25,10 +25,20 @@ const fileEntries: IPathInfo[] = [
   },
 ];
 
-describe('file search', () => {
-  it('finds file with one word', () => {
+describe('searchPathEntries', () => {
+  it('matches word prefixes in order across path segments', () => {
     const result = searchPathEntries('al qu', fileEntries);
     expect(result).toHaveLength(1);
     expect(result[0].path).toEqual(fileEntries[1].path);
+  });
+
+  it('returns everything for blank input', () => {
+    expect(searchPathEntries('  ', fileEntries)).toHaveLength(4);
+  });
+
+  it('matches a single substring case-insensitively', () => {
+    expect(searchPathEntries('SETTINGS', fileEntries).map(x => x.name)).toEqual(
+      ['AppSettings.ts']
+    );
   });
 });

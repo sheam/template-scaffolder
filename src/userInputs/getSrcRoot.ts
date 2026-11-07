@@ -1,5 +1,5 @@
 import { DEFAULT_SRC_ROOT } from '../constants.js';
-import { IConfigFile } from '../types/index.js';
+import { type IConfigFile } from '../types/index.js';
 import { isDirectory } from '../util.js';
 
 export async function getSrcRoot<TInput extends object>(

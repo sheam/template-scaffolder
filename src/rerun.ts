@@ -3,10 +3,10 @@ import path from 'path';
 import { LAST_RUN_CONFIG_NAME } from './constants.js';
 import { log, logError } from './logger.js';
 import {
-  ICliArgs,
-  IFinalizedInputs,
-  ILastRunConfig,
-  IPromptResult,
+  type ICliArgs,
+  type IFinalizedInputs,
+  type ILastRunConfig,
+  type IPromptResult,
 } from './types/index.js';
 import { existsAsync } from './util.js';
 

@@ -1,6 +1,6 @@
+import { type Logger } from '../logger.js';
+import { type TemplateVariables } from '../types/index.js';
 import { transform } from './transform.js';
-import { Logger } from '../logger.js';
-import { TemplateVariables } from '../types/index.js';
 
 export function getDestinationPath(
   rawPath: string,

@@ -1,5 +1,5 @@
-import { Logger } from '../logger.js';
-import { IConfigFile } from '../types/index.js';
+import { type Logger } from '../logger.js';
+import { type IConfigFile } from '../types/index.js';
 
 export interface IGetConfigFileResult<TInput extends object> {
   logging: Logger;

@@ -1,6 +1,10 @@
 import { getConfig } from '../config/index.js';
 import { getInputResponse } from '../prompts/input.js';
-import { ICliArgs, IInitialInputs, ILastRunConfig } from '../types/index.js';
+import {
+  type ICliArgs,
+  type IInitialInputs,
+  type ILastRunConfig,
+} from '../types/index.js';
 
 /**
  * Setup config based on command line values.

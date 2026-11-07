@@ -1,7 +1,7 @@
-import { IInitialPromptResult } from './types.js';
 import { logError } from '../logger.js';
-import { IChoice, Question } from '../types/index.js';
+import { type IChoice, type Question } from '../types/index.js';
 import { isDirectory } from '../util.js';
+import { type IInitialPromptResult } from './types.js';
 
 /**
  * Add a prompt to get destination directory to existing question list.

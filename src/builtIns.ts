@@ -1,4 +1,4 @@
-import { IConfigFile, IInitialInputs } from './types/index.js';
+import { type IConfigFile, type IInitialInputs } from './types/index.js';
 import { execCommand } from './util.js';
 
 export async function getBuiltIns<TInput extends object>(
@@ -8,9 +8,9 @@ export async function getBuiltIns<TInput extends object>(
   return {
     variables: {
       NAME: initialInputs.instanceName,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
+
       TEMPLATE_NAME: config.name || initialInputs.template.config.name,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
+
       TEMPLATE_VERSION: config.version || '1.0',
       USERNAME: await getUserName(),
     },
@@ -30,7 +30,7 @@ async function getUserName(): Promise<string> {
         return '';
       }
       return output?.trim();
-    } catch (e) {
+    } catch {
       return '';
     }
   }

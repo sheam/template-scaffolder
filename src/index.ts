@@ -4,21 +4,9 @@ import { getArgs } from './cli.js';
 import { log } from './logger.js';
 import { loadLastRun, saveLastRun } from './rerun.js';
 import { processTemplates } from './templateProcessing/index.js';
-import { ILastRunConfig } from './types/index.js';
+import { type ILastRunConfig } from './types/index.js';
 import { finalizeInputs, getInitialInputs } from './userInputs/index.js';
 import { printValues, verifyScaffoldingFolder } from './util.js';
-
-// hack for older versions of Node, remove after forcing version 18
-if (!Array.prototype.findLastIndex) {
-  Array.prototype.findLastIndex = function (predicate) {
-    for (let i = this.length - 1; i >= 0; i--) {
-      if (predicate(this[i], i, this)) {
-        return i;
-      }
-    }
-    return -1;
-  };
-}
 
 const args = getArgs();
 const lastRunConfig: ILastRunConfig | null = args.rerun

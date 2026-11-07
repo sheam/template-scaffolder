@@ -10,3 +10,6 @@ testsrc/
 yalc.lock
 
 .template-scaffolder-last-run
+.idea/
+.vscode/
+coverage/

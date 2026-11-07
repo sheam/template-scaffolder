@@ -1,13 +1,13 @@
-import {
-  IConfirmQuestion,
-  IInputQuestion,
-  INumberQuestion,
-  IPathSelectQuestion,
-  IQuestionBase,
-  ISearchQuestion,
-  ISelectQuestion,
-} from './index.js';
 import { logError } from '../logger.js';
+import {
+  type IConfirmQuestion,
+  type IInputQuestion,
+  type INumberQuestion,
+  type IPathSelectQuestion,
+  type IQuestionBase,
+  type ISearchQuestion,
+  type ISelectQuestion,
+} from './index.js';
 
 export function isConfirmQuestion<TInput extends object>(
   q: IQuestionBase<TInput>

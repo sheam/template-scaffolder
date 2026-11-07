@@ -1,18 +1,18 @@
-import { IInitialPromptResult } from './types.js';
 import { getBuiltIns } from '../builtIns.js';
-import { addDestinationPrompt } from './addDestinationPrompt.js';
-import { getSrcRoot } from './getSrcRoot.js';
 import { prompt } from '../prompts/index.js';
 import {
-  ICliArgs,
-  IFinalizedInputs,
-  IInitialInputs,
-  ILastRunConfig,
-  MacroObject,
-  Question,
-  TemplateVariables,
+  type ICliArgs,
+  type IFinalizedInputs,
+  type IInitialInputs,
+  type ILastRunConfig,
+  type MacroObject,
+  type Question,
+  type TemplateVariables,
 } from '../types/index.js';
 import { isDirectory } from '../util.js';
+import { addDestinationPrompt } from './addDestinationPrompt.js';
+import { getSrcRoot } from './getSrcRoot.js';
+import { type IInitialPromptResult } from './types.js';
 
 /**
  * Determine the values missing from command line and config file,

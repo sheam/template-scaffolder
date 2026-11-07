@@ -1,8 +1,7 @@
-// eslint-disable-next-line max-params
+import { type Logger } from '../logger.js';
+import { type PatternList, type TemplateVariables } from '../types/index.js';
 import { getFileLines } from './getFileLines.js';
 import { transform } from './transform.js';
-import { Logger } from '../logger.js';
-import { PatternList, TemplateVariables } from '../types/index.js';
 
 // eslint-disable-next-line max-params
 export async function getFileContents(

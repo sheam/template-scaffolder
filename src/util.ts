@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { constants, PathLike } from 'fs';
+import { constants, type PathLike } from 'fs';
 import { access, readdir, stat } from 'node:fs/promises';
 import path from 'path';
 import { SCAFFOLD_FOLDER_NAME } from './constants.js';
@@ -9,7 +9,7 @@ export async function existsAsync(path: PathLike): Promise<boolean> {
   try {
     await access(path, constants.F_OK);
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -17,7 +17,7 @@ export async function isDirectory(path: PathLike): Promise<boolean> {
   try {
     const info = await stat(path);
     return info.isDirectory();
-  } catch (error) {
+  } catch {
     return false;
   }
 }

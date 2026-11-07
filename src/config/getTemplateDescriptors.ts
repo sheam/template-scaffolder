@@ -1,10 +1,10 @@
 import { readdir, stat } from 'node:fs/promises';
-import { ICompileOptions } from 'config-file-ts-async';
-import { IGetConfigFileResult } from './types.js';
+import { type ICompileOptions } from 'config-file-ts-async';
 import { INCLUDES_FOLDER_NAME } from '../constants.js';
 import { log, Logger } from '../logger.js';
 import { scaffoldingPath } from '../util.js';
 import { getTsCompilerOptions, loadConfigFile } from './loadConfigFile.js';
+import { type IGetConfigFileResult } from './types.js';
 
 export async function getTemplateDescriptors<TInput extends object>(
   parallel: boolean | undefined

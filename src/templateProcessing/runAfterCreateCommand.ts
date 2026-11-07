@@ -1,4 +1,4 @@
-import { Logger } from '../logger.js';
+import { type Logger } from '../logger.js';
 import { execCommand } from '../util.js';
 
 export async function runAfterCreateCommand(

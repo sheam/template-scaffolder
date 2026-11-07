@@ -1,7 +1,7 @@
 import path from 'path';
 import {
   getNearestTsConfigCompilerOptions,
-  ICompileOptions,
+  type ICompileOptions,
   loadTsConfig,
 } from 'config-file-ts-async';
 import {
@@ -9,8 +9,8 @@ import {
   SCAFFOLD_FOLDER_NAME,
   TS_CACHE_FOLDER_NAME,
 } from '../constants.js';
-import { log, Logger } from '../logger.js';
-import { IConfigFile } from '../types/index.js';
+import { log, type Logger } from '../logger.js';
+import { type IConfigFile } from '../types/index.js';
 import { existsAsync, scaffoldingPath } from '../util.js';
 
 export async function loadConfigFile<TInput extends object>(

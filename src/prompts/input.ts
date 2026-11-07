@@ -1,6 +1,6 @@
 import { input } from '@inquirer/prompts';
+import { type IInputQuestion } from '../types/index.js';
 import { watchForQuitSignal } from './helpers.js';
-import { IInputQuestion } from '../types/index.js';
 
 export async function getInputResponse<TInput extends object>(
   question: IInputQuestion<TInput>

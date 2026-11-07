@@ -1,4 +1,4 @@
-import { IInitialPromptResult } from '../userInputs/types.js';
+import { type IInitialPromptResult } from '../userInputs/types.js';
 
 export type TemplateVariableValue = unknown;
 export type TemplateVariables = {
@@ -7,8 +7,8 @@ export type TemplateVariables = {
 
 export type PatternList = Array<string | RegExp> | undefined;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type MacroObject = { [key: string]: Function };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type MacroObject = { [key: string]: (...args: any[]) => unknown };
 
 export interface ILastRunConfig {
   lastRunConfigFormatVersion: string;
@@ -39,7 +39,6 @@ export interface IConfigFile<TInput extends object> {
         instanceName: string
       ) => Promise<Question<TInput>[]> | Question<TInput>[]);
   stripLines?: PatternList;
-  // eslint-disable-next-line @typescript-eslint/ban-types
   macros?:
     | MacroObject
     | ((
@@ -107,13 +106,7 @@ export interface IPathInfo {
 
 export interface IQuestionBase<TInput extends object> {
   type?:
-    | 'path'
-    | 'select'
-    | 'search'
-    | 'confirm'
-    | 'number'
-    | 'input'
-    | undefined;
+    'path' | 'select' | 'search' | 'confirm' | 'number' | 'input' | undefined;
 
   /**
    * The name of the field to store the resulting answer in.
@@ -147,41 +140,47 @@ export interface IQuestionBase<TInput extends object> {
   ) => boolean;
 }
 
-export interface IConfirmQuestion<TInput extends object>
-  extends IQuestionBase<TInput> {
+export interface IConfirmQuestion<
+  TInput extends object,
+> extends IQuestionBase<TInput> {
   type: 'confirm';
   default?: boolean;
 }
 
-export interface IInputQuestion<TInput extends object>
-  extends IQuestionBase<TInput> {
+export interface IInputQuestion<
+  TInput extends object,
+> extends IQuestionBase<TInput> {
   type?: 'input';
   default?: string;
 }
 
-export interface INumberQuestion<TInput extends object>
-  extends IQuestionBase<TInput> {
+export interface INumberQuestion<
+  TInput extends object,
+> extends IQuestionBase<TInput> {
   type: 'number';
   default?: number;
 }
 
-export interface ISearchQuestion<TInput extends object>
-  extends IQuestionBase<TInput> {
+export interface ISearchQuestion<
+  TInput extends object,
+> extends IQuestionBase<TInput> {
   type: 'search';
   source?: (input: string | undefined) => Promise<IChoice[]>;
   choices?: IChoice[];
   default?: string;
 }
 
-export interface ISelectQuestion<TInput extends object>
-  extends IQuestionBase<TInput> {
+export interface ISelectQuestion<
+  TInput extends object,
+> extends IQuestionBase<TInput> {
   type: 'select';
   choices: IChoice[];
   default?: string;
 }
 
-export interface IPathSelectQuestion<TInput extends object>
-  extends IQuestionBase<TInput> {
+export interface IPathSelectQuestion<
+  TInput extends object,
+> extends IQuestionBase<TInput> {
   type: 'path';
   itemType?: 'file' | 'directory';
   allowManualInput?: boolean;

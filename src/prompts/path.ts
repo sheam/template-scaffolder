@@ -1,11 +1,15 @@
 import { readdir, stat } from 'node:fs/promises';
 import * as path from 'path';
 import { search } from '@inquirer/prompts';
+import {
+  type IChoice,
+  type IPathInfo,
+  type IPathSelectQuestion,
+} from '../types/index.js';
 import { watchForQuitSignal } from './helpers.js';
 import { getInputResponse } from './input.js';
-import { SearchQuestionImplementation } from './search.js';
+import { type SearchQuestionImplementation } from './search.js';
 import { MANUAL_ENTRY_VALUE } from './types.js';
-import { IChoice, IPathInfo, IPathSelectQuestion } from '../types/index.js';
 
 export async function getPathResponse<TInput extends object>(
   question: IPathSelectQuestion<TInput>

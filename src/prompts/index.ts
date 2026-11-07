@@ -1,10 +1,3 @@
-import { getConfirmResponse } from './confirm.js';
-import { watchForQuitSignal } from './helpers.js';
-import { getInputResponse } from './input.js';
-import { getNumberResponse } from './number.js';
-import { getPathResponse } from './path.js';
-import { getSearchResponse } from './search.js';
-import { getSelectResponse } from './select.js';
 import { log } from '../logger.js';
 import {
   isConfirmQuestion,
@@ -14,7 +7,14 @@ import {
   isSearchQuestion,
   isSelectQuestion,
 } from '../types/helpers.js';
-import { IPromptResult, Question } from '../types/index.js';
+import { type IPromptResult, type Question } from '../types/index.js';
+import { getConfirmResponse } from './confirm.js';
+import { watchForQuitSignal } from './helpers.js';
+import { getInputResponse } from './input.js';
+import { getNumberResponse } from './number.js';
+import { getPathResponse } from './path.js';
+import { getSearchResponse } from './search.js';
+import { getSelectResponse } from './select.js';
 
 export async function prompt<TInput extends object>(
   questions: Question<TInput>[],

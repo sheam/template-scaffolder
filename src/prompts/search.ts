@@ -1,6 +1,6 @@
 import { search } from '@inquirer/prompts';
+import { type IChoice, type ISearchQuestion } from '../types/index.js';
 import { watchForQuitSignal } from './helpers.js';
-import { IChoice, ISearchQuestion } from '../types/index.js';
 
 export type SearchQuestionImplementation<TInput extends object> = Required<
   Pick<ISearchQuestion<TInput>, 'source'>

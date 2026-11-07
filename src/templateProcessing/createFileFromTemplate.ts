@@ -1,11 +1,11 @@
 import { mkdir, stat, writeFile } from 'node:fs/promises';
 import path from 'path';
-import { IFinalizedInputs } from '../types/index.js';
+import { Logger } from '../logger.js';
+import { type IFinalizedInputs } from '../types/index.js';
 import { existsAsync, scaffoldingPath } from '../util.js';
 import { getDestinationPath } from './getDestinationPath.js';
 import { getFileContents } from './getFileContents.js';
 import { runAfterCreateCommand } from './runAfterCreateCommand.js';
-import { Logger } from '../logger.js';
 
 export async function createFileFromTemplate<TInput extends object>(
   processConfig: IFinalizedInputs<TInput>,
@@ -17,7 +17,7 @@ export async function createFileFromTemplate<TInput extends object>(
   try {
     const info = await stat(processConfig.destination);
     isDir = info.isDirectory();
-  } catch (err) {
+  } catch {
     isDir = false;
   }
   if (!isDir) {
