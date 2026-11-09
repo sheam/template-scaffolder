@@ -1,6 +1,10 @@
 # template-scaffolder v3: re-architecture plan
 
-> Living plan for the v3 re-architecture. Steps are executed in order on the `v3` branch, one commit each.
+> **Status: complete.** All 12 steps are done on the `v3` branch. This file records the plan
+> and the decisions behind it. The "Target architecture" section below is the original
+> plan, and a few planned files ended up merged (for example `context.ts`, `process.ts`
+> and `hooks.ts` became part of `run.ts` and `generate.ts`). For the code as it is now,
+> see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Context
 

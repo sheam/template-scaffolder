@@ -9,8 +9,9 @@ and services the same way every time.
 - Run formatters or `git add` after files are created.
 - Use it from the command line or from code.
 
-> **Upgrading from 2.x?** Run `npx scaffolder migrate --dryRun` to see the changes,
-> then read [Migrating to v3](docs/migrating-to-v3.md).
+> **Upgrading from 2.x?** Install `template-scaffolder@3`, run
+> `npx scaffolder migrate --dryRun` to see the changes it makes to your configs, and
+> read [Migrating to v3](docs/migrating-to-v3.md).
 
 If you feel like it...
 
@@ -26,6 +27,7 @@ If you feel like it...
 - [Reading source code](#reading-source-code)
 - [Programmatic API](#programmatic-api)
 - [Sample project](#sample-project)
+- [Contributing](#contributing)
 
 ## Getting started
 
@@ -282,6 +284,9 @@ variables: async ({ answers, source }) => {
 },
 ```
 
+`source.readAll('src/Api/**/*Dto.cs')` reads every file that matches a glob.
+`source.readers()` lists the readers available to this config.
+
 Built-in readers cover TypeScript/JavaScript, C# and C++. Each produces the same model:
 types with fields, methods, enum members, bases, attributes and doc comments. Helper
 files can use the same functions with `import { readSource } from 'template-scaffolder/source'`.
@@ -306,7 +311,13 @@ for (const file of result.files) console.log(file.path, file.status);
 Questions without an entry in `answers` use their default, or fail with a
 `ScaffolderError` whose `code` is `MISSING_ANSWER`. Pass
 `prompter: createConsolePrompter()` to ask in the terminal, or your own `IPrompter`.
-Pass `reporter: createConsoleReporter({ debug: false })` to see progress.
+`createConsolePrompter({ input, output })` takes other streams instead of stdin and
+stdout. Pass `reporter: createConsoleReporter({ debug: false })` to see progress.
+
+`result.hasErrors` is true if a file failed to render or write, or a hook command
+exited with an error. Each entry in `result.files` has a `status` (`created`,
+`overwritten`, `skipped` or `error`), a `reason` when it failed, and the `commands` its
+`afterFileCreated` hook ran.
 
 ## Sample project
 
@@ -377,3 +388,8 @@ export const $NAME = ({}: $PROPS_INTERFACE): ReactElement => {
 
 The repository's own [`scaffolding`](scaffolding) folder has more examples, and
 [`docs/examples`](docs/examples) shows source readers in use.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how the code is organised, how to run the
+tests, and where to add a question type, a hook or a source reader.

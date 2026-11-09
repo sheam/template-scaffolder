@@ -36,8 +36,15 @@ import { readSource, readSources, tsTypes } from 'template-scaffolder/source';
 const dtos = await readSources('src/Api/**/*Dto.cs');
 ```
 
-Paths are relative to the project root. Each file is parsed once per run, however many
-times it is read.
+| Context (`source.`) | Helper import | Does                                             |
+| ------------------- | ------------- | ------------------------------------------------ |
+| `read(path, opts?)` | `readSource`  | Parse one file.                                  |
+| `readAll(glob)`     | `readSources` | Parse every matching file, sorted by path.       |
+| `readers()`         | (none)        | List the registered readers' ids and extensions. |
+
+Paths and globs are relative to the project root. Each file is parsed once per run,
+however many times it is read. Globs skip `node_modules`, `.git`, `bin`, `obj` and
+`dist`.
 
 ## Built-in readers
 
@@ -220,8 +227,11 @@ or for everything, including `readSource` calls in helpers, with
 `registerSourceReader(protoReader)`. A custom reader with the same id or extension as a
 built-in one replaces it.
 
-For a real grammar, use tree-sitter as the built-in readers do. `loadGrammar` accepts
-the path of any tree-sitter `.wasm` grammar:
+For a real grammar, use tree-sitter as the built-in readers do. `parseWithGrammar(grammar, text)`
+returns the root node of the syntax tree, and `loadGrammar(grammar)` returns the
+grammar alone. `grammar` is the path of any tree-sitter `.wasm` file, or the id of a
+bundled grammar (`typescript`, `tsx`, `csharp` or `cpp`). Grammars are loaded once per
+process.
 
 ```ts
 import {

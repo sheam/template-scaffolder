@@ -6,17 +6,23 @@ few mechanical ways, and a converter makes those changes for you.
 
 ## The short version
 
+Use Node.js 22.12 or later, and commit your `scaffolding` folder first.
+
 ```sh
-git status                          # start from a clean working tree
-npx scaffolder@3 migrate --dryRun   # review the changes as a diff
-npx scaffolder@3 migrate            # apply them
-npx scaffolder --dryRun             # try a template; compare with the 2.x output
+npm install --save-dev template-scaffolder@3
+npx scaffolder migrate --dryRun     # review the changes as a diff
+npx scaffolder migrate              # apply them
+npx scaffolder --dryRun             # try a template
 git diff                            # review, then commit
 ```
 
-Then update `template-scaffolder` in your `package.json` to `^3`, make sure you are on
-Node.js 22.12 or later, and delete the `.template-scaffolder-ts-cache` folder (and its
-line in `.gitignore`).
+Then delete the `.template-scaffolder-ts-cache` folder and its line in `.gitignore`.
+The converter reminds you if they are there.
+
+To convert before upgrading the dependency, run the converter straight from npm with
+`npx template-scaffolder@3 migrate`. The package is `template-scaffolder`. Its command
+is `scaffolder`. Do not run `npx scaffolder@3`: it downloads a different package
+that happens to be called `scaffolder`.
 
 ## What the converter does
 
@@ -157,15 +163,18 @@ error (exit code 2) instead of being ignored.
 
 ## Checking the result
 
-The safest check is to generate with both versions and compare:
+The safest check is to generate with both versions and compare. Capture the 2.x
+output before you upgrade:
 
 ```sh
-npx scaffolder@2 --template=my-template --name=Test --dryRun > before.txt
-npx scaffolder@3 migrate
-npx scaffolder@3 --template=my-template --name=Test --dryRun > after.txt
+npx scaffolder --template=my-template --name=Test --dryRun > before.txt   # still on 2.x
+npm install --save-dev template-scaffolder@3
+npx scaffolder migrate
+npx scaffolder --template=my-template --name=Test --dryRun > after.txt
 ```
 
-Answer the questions the same way both times (or use `--rerun` for the second run) and
-compare the file contents in the two outputs. The 3.x dry-run output prints each file
+Answer the questions the same way both times and compare the file contents in the two
+outputs. v3 also reads the 2.x `.template-scaffolder-last-run` file, so for the second
+run you can use `--rerun --dryRun` instead. The 3.x dry-run output prints each file
 between the same `⌄⌄⌄ path ⌄⌄⌄` and `⌃⌃⌃` markers as 2.x, without the extra indentation
 and the configuration dump.

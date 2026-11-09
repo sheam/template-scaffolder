@@ -130,7 +130,7 @@ export function docComment(node: Node): string | undefined {
   );
 }
 
-/** Body text without the outer braces, de-indented. */
+/** Body text without the outer braces; indentation is kept. */
 export function blockBody(node: Node | null): string | undefined {
   if (!node) return undefined;
   const text = node.text;

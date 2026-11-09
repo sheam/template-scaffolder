@@ -42,7 +42,7 @@ export interface IFunctionDecl {
   access?: Access;
   attributes: string[];
   doc?: string;
-  /** Source text of the body, without the surrounding braces' indentation trimmed. */
+  /** Source text of the body, without the surrounding braces. */
   bodyText?: string;
   /** Full source text of the declaration. */
   text: string;
