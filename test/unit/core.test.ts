@@ -202,6 +202,45 @@ describe('parseCli', () => {
       expect.objectContaining({ code: 'INVALID_ARGS' })
     );
   });
+
+  it('parses --answer and --answers', () => {
+    expect(
+      parseCli([
+        '--answer',
+        'STYLE=css',
+        '--answer',
+        'TITLE=a=b',
+        '--answers',
+        'a.json',
+      ])
+    ).toMatchObject({
+      answers: { STYLE: 'css', TITLE: 'a=b' },
+      answersFile: 'a.json',
+    });
+    expect(() => parseCli(['--answer', 'STYLE'])).toThrow(/KEY=value/);
+  });
+
+  it('parses init and list', () => {
+    expect(parseCli(['init', '--dry-run'])).toMatchObject({
+      command: 'init',
+      dryRun: true,
+    });
+    expect(parseCli(['list', '--json', '--workDir', 'w'])).toMatchObject({
+      command: 'list',
+      json: true,
+      workDir: 'w',
+    });
+  });
+
+  it('rejects options that do not apply to the command', () => {
+    expect(() => parseCli(['list', '--overwrite'])).toThrow(
+      '--overwrite does not apply to `scaffolder list`.'
+    );
+    expect(() => parseCli(['--force'])).toThrow(
+      '--force does not apply to generating files.'
+    );
+    expect(() => parseCli(['init', 'extra'])).toThrow(/Unexpected arguments/);
+  });
 });
 
 describe('mapConcurrent', () => {

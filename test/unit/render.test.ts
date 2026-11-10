@@ -20,13 +20,14 @@ async function render(eol: string): Promise<string> {
     'tpl/file.txt': TEMPLATE.join(eol),
     'includes/header.txt': ['// header', ''].join(eol),
   });
-  return renderTemplateFile({
+  const { output } = await renderTemplateFile({
     sourcePath: path.join(root, 'tpl/file.txt'),
     includesDir: path.join(root, 'includes'),
     variables: { NAME: 'Tank' },
     macros: {},
     stripLines: ['// STRIP'],
   });
+  return output;
 }
 
 describe('renderTemplateFile', () => {

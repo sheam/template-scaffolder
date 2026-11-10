@@ -2,8 +2,10 @@
  * template-scaffolder: programmatic API and types for template authors.
  * Importing this module has no side effects.
  */
+import { createConfigLoader } from './core/configLoader.js';
 import { ScaffolderError } from './core/errors.js';
 import { type IRunResult, run } from './core/run.js';
+import { discoverTemplates } from './core/templates.js';
 import type { IRunOptions } from './core/options.js';
 import type { IPrompter, IReporter } from './core/ports.js';
 import type { Answers, Question } from './core/types.js';
@@ -31,11 +33,14 @@ export interface IScaffoldOptions extends IRunOptions {
  */
 export function scaffold(options: IScaffoldOptions): Promise<IRunResult> {
   const { projectRoot, prompter, reporter, ...runOptions } = options;
-  return run(runOptions, {
-    projectRoot: projectRoot ?? process.cwd(),
-    prompter: prompter ?? createAnswerPrompter(),
-    reporter: reporter ?? silentReporter,
-  });
+  return run(
+    { saveLastRun: false, ...runOptions },
+    {
+      projectRoot: projectRoot ?? process.cwd(),
+      prompter: prompter ?? createAnswerPrompter(),
+      reporter: reporter ?? silentReporter,
+    }
+  );
 }
 
 /** A prompter that never interacts: it answers from `answers`, then question defaults. */
@@ -54,6 +59,36 @@ export function createAnswerPrompter(answers: Answers = {}): IPrompter {
       );
     },
   };
+}
+
+export interface ITemplateInfo {
+  /** Folder name under `scaffolding/`. */
+  dir: string;
+  /** The config's `name`, or the folder name. */
+  name: string;
+  description?: string;
+  version: string;
+}
+
+/**
+ * Every template that loads, sorted by folder name. Templates whose config fails to
+ * load are left out, with a warning to `reporter`.
+ */
+export async function listTemplates(
+  options: { projectRoot?: string; reporter?: IReporter } = {}
+): Promise<ITemplateInfo[]> {
+  const templates = await discoverTemplates({
+    projectRoot: options.projectRoot ?? process.cwd(),
+    loader: createConfigLoader(),
+    reporter: options.reporter ?? silentReporter,
+    parallel: true,
+  });
+  return templates.map(({ dir, config }) => ({
+    dir,
+    name: config.name,
+    description: config.description,
+    version: config.version,
+  }));
 }
 
 const silentReporter: IReporter = {

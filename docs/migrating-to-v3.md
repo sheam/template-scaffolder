@@ -138,6 +138,20 @@ argument and `--destination` were documented in 2.x but rejected. They work now.
 commands. With `--parallel`, the commands for different files still run concurrently.
 Writing files is always sequential.
 
+**`--parallel` only affects hook commands.** Loading configs and rendering files is
+always concurrent now; it has no visible effect except speed.
+
+**Unknown variables are reported.** A template that uses a variable that does not
+exist still generates the same output (the `$NAME` as written), with a warning naming
+the variable. Converted 2.x templates often show a few. Fix the real ones, and
+escape intended `$` signs as `\$`.
+
+**A missing destination is offered for creation**, instead of stopping the run.
+
+**Replayed answers are checked.** If a `--rerun` answer is no longer one of a
+question's choices, the run stops and says so. Run once without `--rerun` to answer
+again.
+
 **Choosing "Other" in a destinations list asks for a path.** In 2.x it tried to use
 the literal value `__other__`.
 
@@ -149,7 +163,12 @@ error (exit code 2) instead of being ignored.
 ## New in 3.x
 
 - `hooks.beforeRun` and `hooks.afterRun`. `afterRun` gets every created path, so you
-  can run `prettier` or `git add` once instead of once per file.
+  can run `prettier` or `git add` once instead of once per file. Every hook gets the
+  name, answers, source readers and destination.
+- `strictVariables` and `keepLineBreaks` config options. See
+  [Configuration](configuration.md#strictvariables).
+- `--answer KEY=value` and `--answers file.json`, to run templates without prompts.
+- `scaffolder init` and `scaffolder list`.
 - `ignore` globs.
 - `checkbox` and `editor` questions (and `words`, added in 2.3.13).
 - `CURRENT_FILE_PATH` variable (added in 2.3.15).
@@ -159,7 +178,8 @@ error (exit code 2) instead of being ignored.
   expressions, [`examples/api-client-reader.ts`](examples/api-client-reader.ts) shows
   the same job done with a reader.
 - `defineConfig()` for type checking and completion in JS and TS configs.
-- A programmatic API: `scaffold({ template, name, destination, answers })`.
+- A programmatic API: `scaffold({ template, name, destination, answers })` and
+  `listTemplates()`.
 - Config files that import `template-scaffolder` always get the running version, even
   under `npx` without a local install.
 

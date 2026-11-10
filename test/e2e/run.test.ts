@@ -182,12 +182,12 @@ describe('run() with the in-repo fixtures', () => {
     expect(result.destination).toBe('elsewhere');
   });
 
-  it('fails clearly for a missing destination directory', async () => {
+  it('fails clearly when a missing destination is not created', async () => {
     const root = tempProject();
     await expect(
       run(
         { template: 'conversion', name: 'X', destination: 'nope' },
-        deps(root, { PromptedType: 'A' })
+        deps(root, { PromptedType: 'A', createDestination: false })
       )
     ).rejects.toMatchObject({ code: 'DESTINATION_INVALID' });
   });

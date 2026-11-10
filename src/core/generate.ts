@@ -9,6 +9,7 @@ import type {
   HookCommands,
   ICommandResult,
   IFileResult,
+  IHookContext,
   IHooks,
   MacroObject,
   PatternList,
@@ -21,8 +22,12 @@ export interface IGenerateInput {
   variables: TemplateVariables;
   macros: MacroObject;
   stripLines: PatternList;
+  strictVariables: boolean;
+  keepLineBreaks: boolean;
   hooks: IHooks;
-  dryRun: boolean;
+  /** Passed to afterFileCreated, with the file's path and the variables. */
+  hookContext: IHookContext;
+  /** Run afterFileCreated commands for different files concurrently. */
   parallel: boolean;
   runCommand: CommandRunner;
   reporter: IReporter;
@@ -30,8 +35,9 @@ export interface IGenerateInput {
 
 /**
  * Render every planned file, write them, and run afterFileCreated hooks.
- * Rendering and hook commands run concurrently with --parallel; writes are always
- * sequential. Results are reported in template order. A failing file does not stop the others.
+ * Rendering is concurrent; writes are always sequential; hook commands for different
+ * files run concurrently with `parallel`. Results are reported in template order.
+ * A failing file does not stop the others.
  */
 export async function generateFiles(
   plans: IFilePlan[],
@@ -40,17 +46,15 @@ export async function generateFiles(
   const report = orderedReporter<IFileResult>(plans.length, r =>
     input.reporter.file(r)
   );
+  const { dryRun } = input.hookContext;
 
+  // Rendering only reads files, so it is always safe to do concurrently.
   const rendered = await mapConcurrent(plans, plan => renderOne(plan, input), {
-    parallel: input.parallel,
+    parallel: true,
   });
 
   for (const [i, result] of rendered.entries()) {
-    if (
-      input.dryRun ||
-      result.status === 'skipped' ||
-      result.status === 'error'
-    )
+    if (dryRun || result.status === 'skipped' || result.status === 'error')
       continue;
     try {
       await mkdir(path.dirname(plans[i].absolutePath), { recursive: true });
@@ -83,7 +87,8 @@ async function renderOne(
   const base = {
     templateFile: plan.templateFile,
     path: plan.path,
-    dryRun: input.dryRun,
+    dryRun: input.hookContext.dryRun,
+    warnings: [],
     commands: [],
   };
   if (plan.action === 'skip') {
@@ -94,22 +99,35 @@ async function renderOne(
     };
   }
   try {
-    const content = await renderTemplateFile({
+    const { output, unresolved } = await renderTemplateFile({
       sourcePath: plan.sourcePath,
       includesDir: input.includesDir,
-
       variables: { ...input.variables, CURRENT_FILE_PATH: plan.path },
       macros: input.macros,
       stripLines: input.stripLines,
+      keepLineBreaks: input.keepLineBreaks,
     });
+    const unknown = unknownVariables([...plan.unresolved, ...unresolved]);
+    if (unknown && input.strictVariables) {
+      return { ...base, status: 'error', reason: unknown };
+    }
     return {
       ...base,
       status: plan.action === 'overwrite' ? 'overwritten' : 'created',
-      content,
+      content: output,
+      warnings: unknown ? [unknown] : [],
     };
   } catch (e) {
     return { ...base, status: 'error', reason: errorMessage(e) };
   }
+}
+
+/** "unknown variables $A, $B (escape a literal $ as \$)", or undefined if there are none. */
+function unknownVariables(references: string[]): string | undefined {
+  const unique = [...new Set(references)];
+  if (unique.length === 0) return undefined;
+  const noun = unique.length === 1 ? 'variable' : 'variables';
+  return `unknown ${noun} ${unique.join(', ')} (escape a literal $ as \\$)`;
 }
 
 async function runFileHook(
@@ -120,11 +138,15 @@ async function runFileHook(
   if (!hook) return;
   try {
     const commands = await hook({
+      ...input.hookContext,
       path: result.path,
-      dryRun: input.dryRun,
       variables: input.variables,
     });
-    result.commands = await runCommands(commands, input);
+    result.commands = await runCommands(commands, {
+      dryRun: input.hookContext.dryRun,
+      projectRoot: input.projectRoot,
+      runCommand: input.runCommand,
+    });
   } catch (e) {
     result.status = 'error';
     result.reason = `afterFileCreated hook failed: ${errorMessage(e)}`;
@@ -134,7 +156,7 @@ async function runFileHook(
 /** Run hook commands one after another (never in a dry run). */
 export async function runCommands(
   commands: HookCommands,
-  input: Pick<IGenerateInput, 'dryRun' | 'projectRoot' | 'runCommand'>
+  input: { dryRun: boolean; projectRoot: string; runCommand: CommandRunner }
 ): Promise<ICommandResult[]> {
   const results: ICommandResult[] = [];
   for (const command of Array.isArray(commands) ? commands : []) {

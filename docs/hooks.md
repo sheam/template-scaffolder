@@ -17,11 +17,22 @@ hooks: {
 },
 ```
 
-| Hook                                    | Runs                                                     | Receives                                                  | Returns         |
-| --------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------- | --------------- |
-| [`beforeRun`](#beforerun)               | Once, after the questions, before any file is generated. | `{ name, answers, builtins, source }`                     | nothing         |
-| [`afterFileCreated`](#afterfilecreated) | After each file is written, or rendered in a dry run.    | `{ path, dryRun, variables }`                             | commands to run |
-| [`afterRun`](#afterrun)                 | Once, after every file.                                  | `{ files, createdPaths, destination, dryRun, variables }` | commands to run |
+| Hook                                    | Runs                                                     | Also receives                        | Returns         |
+| --------------------------------------- | -------------------------------------------------------- | ------------------------------------ | --------------- |
+| [`beforeRun`](#beforerun)               | Once, after the questions, before any file is generated. |                                      | nothing         |
+| [`afterFileCreated`](#afterfilecreated) | After each file is written, or rendered in a dry run.    | `path`, `variables`                  | commands to run |
+| [`afterRun`](#afterrun)                 | Once, after every file.                                  | `files`, `createdPaths`, `variables` | commands to run |
+
+Every hook receives one context object with:
+
+| Property      | Value                                                                 |
+| ------------- | --------------------------------------------------------------------- |
+| `name`        | The name entered by the user.                                         |
+| `answers`     | The answers, by question name.                                        |
+| `builtins`    | `{ NAME, TEMPLATE_NAME, TEMPLATE_VERSION, USERNAME }`.                |
+| `source`      | Reads your source code. See [Reading source code](source-readers.md). |
+| `destination` | The destination folder, relative to the project root.                 |
+| `dryRun`      | Whether this is a dry run.                                            |
 
 Hooks may be async.
 
@@ -56,7 +67,13 @@ afterRun: ({ createdPaths }) => [
 ## beforeRun
 
 Runs once the questions are answered and the destination is chosen. Use it to check
-answers or prepare something. Throw to stop the run before anything is written.
+answers or prepare something. Throw to stop the run before anything is written: the
+error's message is shown, prefixed with the hook's name.
+
+```text
+$ npx scaffolder --template=page --name=Tank
+hooks.beforeRun: src/data/api/tanks.ts has no API client in it.
+```
 
 ```ts
 beforeRun: async ({ answers, source }) => {
@@ -96,13 +113,14 @@ afterRun: ({ createdPaths, dryRun }) =>
       ],
 ```
 
-| Property       | Value                                                                                                                             |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `createdPaths` | Paths of the files created or overwritten, relative to the project root.                                                          |
-| `files`        | Every file's result: `{ path, status, reason?, content?, commands }`. `status` is `created`, `overwritten`, `skipped` or `error`. |
-| `destination`  | The destination folder.                                                                                                           |
-| `dryRun`       | Whether this is a dry run.                                                                                                        |
-| `variables`    | Every variable the templates saw.                                                                                                 |
+| Property       | Value                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createdPaths` | Paths of the files created or overwritten, relative to the project root.                                                                    |
+| `files`        | Every file's result: `{ path, status, reason?, warnings, content?, commands }`. `status` is `created`, `overwritten`, `skipped` or `error`. |
+| `variables`    | Every variable the templates saw.                                                                                                           |
+
+An error thrown by `afterRun` is reported like one from `beforeRun`, after the files
+are written.
 
 `afterRun` also runs in a dry run (with `dryRun: true`), so it can print a summary.
 

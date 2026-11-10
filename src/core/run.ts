@@ -1,9 +1,10 @@
+import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { sourceRegistry } from '../source/api.js';
-import { collectAnswers } from './answers.js';
+import { collectAnswers, priorAnswer } from './answers.js';
 import { getBuiltIns } from './builtIns.js';
 import { createConfigLoader, type IConfigLoader } from './configLoader.js';
-import { ScaffolderError } from './errors.js';
+import { errorMessage, ScaffolderError } from './errors.js';
 import { runShellCommand } from './exec.js';
 import { generateFiles, runCommands } from './generate.js';
 import { loadLastRun, saveLastRun } from './lastRun.js';
@@ -14,6 +15,7 @@ import {
 } from './options.js';
 import {
   DEFAULT_SRC_ROOT,
+  exists,
   includesDir,
   isDirectory,
   toPosix,
@@ -33,6 +35,7 @@ import type {
   Answers,
   ICommandResult,
   IFileResult,
+  IHookContext,
   IPromptsContext,
   Question,
   TemplateVariables,
@@ -117,10 +120,16 @@ export async function run(
   const destination = await resolveDestination(opts, config, {
     projectRoot,
     prompter,
+    reporter,
   });
 
   const variablesCtx = { ...promptsCtx, answers };
-  await config.hooks.beforeRun?.(variablesCtx);
+  const hookContext: IHookContext = {
+    ...variablesCtx,
+    destination,
+    dryRun: opts.dryRun,
+  };
+  await callHook('beforeRun', () => config.hooks.beforeRun?.(hookContext));
   const variables: TemplateVariables = {
     ...builtins,
     ...answers,
@@ -146,8 +155,10 @@ export async function run(
     variables,
     macros,
     stripLines: config.stripLines,
+    strictVariables: config.strictVariables,
+    keepLineBreaks: config.keepLineBreaks,
     hooks: config.hooks,
-    dryRun: opts.dryRun,
+    hookContext,
     parallel: opts.parallel,
     runCommand,
     reporter,
@@ -155,14 +166,13 @@ export async function run(
 
   const afterRunCommands = await runAfterRun(files, {
     config,
-    destination,
+    hookContext,
     variables,
-    dryRun: opts.dryRun,
     projectRoot,
     runCommand,
   });
 
-  if (!options.rerun) {
+  if (options.saveLastRun !== false && !options.rerun) {
     const saved = await saveLastRun(projectRoot, {
       template: template.dir,
       name,
@@ -200,7 +210,8 @@ async function selectTemplate(
     projectRoot: deps.projectRoot,
     loader: deps.loader,
     reporter: deps.reporter,
-    parallel: opts.parallel,
+    // Loading configs has no shared state, so it is always concurrent.
+    parallel: true,
   };
   if (opts.template) return findTemplate(opts.template, templateDeps);
 
@@ -227,11 +238,14 @@ async function selectTemplate(
   return chosen;
 }
 
-/** CLI/rerun value, then the config's fixed destination, then ask. Always validated. */
+/**
+ * CLI/rerun value, then the config's fixed destination, then ask.
+ * A destination that does not exist is created if the user agrees (not in a dry run).
+ */
 async function resolveDestination(
   opts: IResolvedOptions,
   config: INormalizedConfig,
-  deps: { projectRoot: string; prompter: IPrompter }
+  deps: { projectRoot: string; prompter: IPrompter; reporter: IReporter }
 ): Promise<string> {
   let destination = opts.destination ?? config.destination;
   if (!destination) {
@@ -244,11 +258,35 @@ async function resolveDestination(
       )) as string;
     }
   }
-  if (!(await isDirectory(path.resolve(deps.projectRoot, destination)))) {
+  const absolute = path.resolve(deps.projectRoot, destination);
+  if (await isDirectory(absolute)) return toPosix(destination);
+  if (await exists(absolute)) {
     throw new ScaffolderError(
       'DESTINATION_INVALID',
-      `Destination '${destination}' is not an existing directory.`
+      `Destination '${destination}' is a file, not a directory.`
     );
+  }
+  const question: Question = {
+    type: 'confirm',
+    name: 'createDestination',
+    message: `'${destination}' does not exist. Create it?`,
+    default: true,
+  };
+  // Scripts answer it like any other question: --answer createDestination=yes.
+  const create = Object.hasOwn(opts.answers, question.name)
+    ? priorAnswer(question, opts.answers[question.name])
+    : await deps.prompter.ask(question);
+  if (!create) {
+    throw new ScaffolderError(
+      'DESTINATION_INVALID',
+      `Destination '${destination}' does not exist.`
+    );
+  }
+  if (opts.dryRun) {
+    deps.reporter.info(`would create ${toPosix(destination)}`);
+  } else {
+    await mkdir(absolute, { recursive: true });
+    deps.reporter.info(`created ${toPosix(destination)}`);
   }
   return toPosix(destination);
 }
@@ -260,8 +298,8 @@ async function destinationQuestion(
   if (config.destinations?.length) {
     const choices = [];
     for (const d of config.destinations) {
-      if (await isDirectory(path.resolve(projectRoot, d)))
-        choices.push({ value: d, name: d });
+      const found = await isDirectory(path.resolve(projectRoot, d));
+      choices.push({ value: d, name: found ? d : `${d} (new)` });
     }
     choices.push({ value: OTHER_DESTINATION, name: 'Other' });
     return {
@@ -303,25 +341,46 @@ async function runAfterRun(
   files: IFileResult[],
   input: {
     config: INormalizedConfig;
-    destination: string;
+    hookContext: IHookContext;
     variables: TemplateVariables;
-    dryRun: boolean;
     projectRoot: string;
     runCommand: CommandRunner;
   }
 ): Promise<ICommandResult[]> {
   const hook = input.config.hooks.afterRun;
   if (!hook) return [];
-  const commands = await hook({
-    files,
-    createdPaths: files
-      .filter(f => f.status === 'created' || f.status === 'overwritten')
-      .map(f => f.path),
-    destination: input.destination,
-    dryRun: input.dryRun,
-    variables: input.variables,
+  const commands = await callHook('afterRun', () =>
+    hook({
+      ...input.hookContext,
+      files,
+      createdPaths: files
+        .filter(f => f.status === 'created' || f.status === 'overwritten')
+        .map(f => f.path),
+      variables: input.variables,
+    })
+  );
+  return runCommands(commands, {
+    dryRun: input.hookContext.dryRun,
+    projectRoot: input.projectRoot,
+    runCommand: input.runCommand,
   });
-  return runCommands(commands, input);
+}
+
+/** Run a beforeRun/afterRun hook, naming the hook in any error it throws. */
+async function callHook<T>(
+  hook: 'beforeRun' | 'afterRun',
+  fn: () => T | Promise<T>
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    if (e instanceof ScaffolderError) throw e;
+    throw new ScaffolderError(
+      'HOOK_FAILED',
+      `hooks.${hook}: ${errorMessage(e)}`,
+      { cause: e }
+    );
+  }
 }
 
 function debugReplacer(_key: string, value: unknown): unknown {

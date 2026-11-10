@@ -4,6 +4,8 @@
 
 ```text
 scaffolder [destination] [options]     generate files from a template
+scaffolder init [options]              create a scaffolding folder with an example template
+scaffolder list [options]              list the templates
 scaffolder migrate [folder] [options]  convert 2.x template configs to 3.x
 ```
 
@@ -12,21 +14,29 @@ the command line is asked for.
 
 ## Options
 
-| Option                             | Meaning                                                                      |
-| ---------------------------------- | ---------------------------------------------------------------------------- |
-| `--template <name>`                | Template folder name, or the `name` in its config.                           |
-| `--name <name>`                    | The name, available to templates as `NAME`.                                  |
-| `--destination <dir>`              | Output folder, relative to the project root. Can also be the first argument. |
-| `--dryRun`                         | Print the generated files instead of writing them. Runs no commands.         |
-| `--overwrite`                      | Replace files that already exist. By default they are skipped.               |
-| `--parallel`                       | Load configs, render files and run per-file hook commands concurrently.      |
-| `--rerun`                          | Replay the previous run's template, name, destination and answers.           |
-| `--workDir <dir>`                  | Run as if started in `<dir>`.                                                |
-| `--debug`                          | Show variables, skipped questions and command output. `DEBUG=true` too.      |
-| `-h`, `--help` / `-v`, `--version` | Help and version.                                                            |
+| Option                  | Meaning                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `--template <name>`     | Template folder name, or the `name` in its config.                           |
+| `--name <name>`         | The name, available to templates as `NAME`.                                  |
+| `--destination <dir>`   | Output folder, relative to the project root. Can also be the first argument. |
+| `--answer <KEY=value>`  | Answer a question. Repeat for more answers.                                  |
+| `--answers <file.json>` | Answer questions from a JSON file.                                           |
+| `--dryRun`              | Print the generated files instead of writing them. Runs no commands.         |
+| `--overwrite`           | Replace files that already exist. By default they are skipped.               |
+| `--parallel`            | Run each file's `afterFileCreated` commands concurrently.                    |
+| `--rerun`               | Replay the previous run's template, name, destination and answers.           |
+
+These work with every command:
+
+| Option                             | Meaning                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| `--workDir <dir>`                  | Run as if started in `<dir>`.                                                         |
+| `--debug`                          | Show variables, skipped questions, command output and stack traces. `DEBUG=true` too. |
+| `-h`, `--help` / `-v`, `--version` | Help and version.                                                                     |
 
 Flags can also be written in kebab case (`--dry-run`) and, as in 2.x, as
-`--dryRun=true`. Unknown flags are an error.
+`--dryRun=true`. Unknown flags, and flags that do not apply to the command, are an
+error.
 
 ## How each value is chosen
 
@@ -40,16 +50,55 @@ fails to load is left out of the list with a warning.
 
 1. `--destination`, or the first argument.
 2. The config's `destination`. The user is not asked.
-3. The config's `destinations`, offered as a list. Only folders that exist are listed,
-   plus "Other", which opens a folder picker.
+3. The config's `destinations`, offered as a list. Folders that do not exist yet are
+   marked `(new)`. "Other" opens a folder picker.
 4. A folder picker starting at the config's `srcRoot`, or `./src` if it exists, or
    the project root.
 
-The destination must be an existing folder. Files go into a subfolder named after the
-name, unless the config sets `createNameDir: false`.
+If the destination does not exist, you are asked whether to create it
+(`--answer createDestination=yes` answers in advance). In a dry run it is not
+created. Files go into a subfolder named after the name, unless the config
+sets `createNameDir: false`.
 
 **Answers.** Each question in the config's `prompts` is asked, in order, unless its
-`when` returns false.
+`when` returns false or it already has an answer from `--answer`, `--answers` or
+`--rerun`.
+
+## Answering questions in advance
+
+To run a template without being asked anything, for example from a script, give the
+template, name and destination, and answer every question:
+
+```sh
+npx scaffolder src/pages --template=page --name=Tank \
+  --answer PLURAL_NAME=Tanks --answer WITH_TESTS=yes --answer FEATURES=list,edit
+```
+
+Answers are converted to the question's type:
+
+| Question type | Write                                                       |
+| ------------- | ----------------------------------------------------------- |
+| `confirm`     | `yes`, `no`, `true`, `false`, `y`, `n`, `1` or `0`          |
+| `number`      | a number, within `min` and `max`                            |
+| `words`       | words separated by spaces, or by the question's `separator` |
+| `checkbox`    | values separated by commas                                  |
+| `select`      | one of the choices' values                                  |
+| others        | the text as is                                              |
+
+An answer that does not fit, such as `maybe` for a `confirm` or a value that is not
+one of a `select`'s choices, stops the run with a message saying what was expected.
+
+For many answers, put them in a JSON file and pass `--answers answers.json`:
+
+```json
+{
+  "PLURAL_NAME": "Tanks",
+  "WITH_TESTS": true,
+  "FEATURES": ["list", "edit"]
+}
+```
+
+`--answer` wins over `--answers` for the same question.
 
 ## Existing files
 
@@ -61,6 +110,21 @@ Existing files are skipped and reported:
 ```
 
 `--overwrite` replaces them.
+
+## Warnings
+
+A file that uses a variable that does not exist is still generated, with a warning,
+because Velocity outputs an unknown `$NAME` as written:
+
+```text
+  created  src/pages/Tank/ListTanks.tsx
+    warning: unknown variable $PLURAL_NMAE (escape a literal $ as \$)
+```
+
+`${...}` inside backticks is not reported, because in JavaScript and TypeScript that
+is a template literal meant for the output. Set
+[`strictVariables`](configuration.md#strictvariables) to make unknown variables fail
+the file instead.
 
 ## Dry runs
 
@@ -107,24 +171,52 @@ are asked.
 
 ## Speed
 
-`--parallel` loads template configs, renders files, and runs each file's
-`afterFileCreated` commands concurrently, up to the number of CPU cores. Output is
-still reported in template order, and files are always written one at a time.
+Template configs are loaded, and files rendered, concurrently. Files are always
+written one at a time, and results are reported in template order.
 
-It helps most when an `afterFileCreated` hook runs a slow command for every file.
+`--parallel` also runs each file's `afterFileCreated` commands concurrently, up to the
+number of CPU cores. It helps when such a hook runs a slow command for every file,
+but commands that share state, like `git add`, can fail when run at the same time.
 Running one command for all files from [`afterRun`](hooks.md#afterrun) is usually
-faster still.
+faster still, and safe.
 
 ## Exit codes
 
-| Code  | Meaning                                                                                            |
-| ----- | -------------------------------------------------------------------------------------------------- |
-| `0`   | Success.                                                                                           |
-| `1`   | A file failed to render or write, a hook command failed, or the template or its config is invalid. |
-| `2`   | Bad command-line arguments.                                                                        |
-| `130` | Cancelled with Ctrl-C.                                                                             |
+| Code  | Meaning                                                                                                           |
+| ----- | ----------------------------------------------------------------------------------------------------------------- |
+| `0`   | Success.                                                                                                          |
+| `1`   | A file failed to render or write, a hook failed, an answer was invalid, or the template or its config is invalid. |
+| `2`   | Bad command-line arguments.                                                                                       |
+| `130` | Cancelled with Ctrl-C.                                                                                            |
 
-## Migrate
+## init
+
+`scaffolder init` creates a `scaffolding` folder with a working example template, a
+shared include and a `tsconfig.json` for editor support, and adds
+`.template-scaffolder-last-run` to `.gitignore` if there is one. It does nothing if
+`scaffolding` already has templates. `--dryRun` lists what it would create.
+
+```text
+$ npx scaffolder init
+  created  scaffolding/tsconfig.json
+  created  scaffolding/_includes/fileHeader.txt
+  created  scaffolding/example/scaffolding.config.ts
+  created  scaffolding/example/${NAME}.ts
+  updated  .gitignore (add .template-scaffolder-last-run)
+```
+
+## list
+
+`scaffolder list` prints each template's folder, name and description. `--json`
+prints them as JSON, for scripts:
+
+```text
+$ npx scaffolder list
+component  React component - A component with a test
+page       Page
+```
+
+## migrate
 
 `scaffolder migrate [folder]` converts 2.x configs to 3.x. `folder` defaults to
 `scaffolding`.
@@ -135,3 +227,6 @@ faster still.
 | `--force`  | Run even if the folder has uncommitted changes or is not in a git repository. |
 
 See [Migrating to v3](migrating-to-v3.md).
+
+The words `init`, `list` and `migrate` are commands, so to generate into a folder with
+one of those names, use `--destination`.

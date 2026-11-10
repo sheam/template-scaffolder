@@ -9,9 +9,12 @@ export type ErrorCode =
   | 'LAST_RUN_INVALID'
   | 'DESTINATION_INVALID'
   | 'MISSING_ANSWER'
+  | 'INVALID_ANSWER'
+  | 'HOOK_FAILED'
   | 'INVALID_ARGS'
   | 'SOURCE_READ_FAILED'
   | 'MIGRATE_REFUSED'
+  | 'INIT_REFUSED'
   | 'CANCELLED';
 
 /** Expected failures with a message meant for the user. Anything else is a bug. */

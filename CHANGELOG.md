@@ -10,9 +10,9 @@ A rewrite of the internals for maintainability, with new features. See
 - Node.js 22.12 or later.
 - `prompts`, `variables` and `macros` functions receive one context object
   (`{ name, answers, builtins, source, variables }`) instead of positional arguments.
-- `afterFileCreated` moves to `hooks.afterFileCreated` and receives
-  `{ path, dryRun, variables }`. It is awaited. The top-level form still works, with a
-  warning.
+- `afterFileCreated` moves to `hooks.afterFileCreated` and receives a context object
+  (`{ path, dryRun, variables, name, answers, ... }`). It is awaited. The top-level
+  form still works, with a warning.
 - A single fixed destination is `destination: 'dir'`. `destinations: 'dir'` still
   works, with a warning.
 - Question types `list` and `fuzzypath` are now `select` and `path`, and `maxDepth`
@@ -22,6 +22,12 @@ A rewrite of the internals for maintainability, with new features. See
 - Unknown command-line flags are an error.
 - `--rerun` no longer overrides options given on the command line.
 - Configs are no longer type-checked before running; type errors do not block a template.
+- `--parallel` only affects `afterFileCreated` commands. Configs are always loaded, and
+  files always rendered, concurrently.
+- A destination that does not exist is offered for creation instead of being an error.
+- Answers given in advance (from `--rerun`, or `scaffold({ answers })`) are checked
+  against their question: a `select` answer that is no longer one of the choices is an
+  error.
 
 ### New
 
@@ -29,13 +35,23 @@ A rewrite of the internals for maintainability, with new features. See
 - Source readers for TypeScript, C# and C++ (`ctx.source`, `template-scaffolder/source`),
   plus custom readers. See [Reading source code](docs/source-readers.md) and
   [Writing a source reader](docs/writing-a-source-reader.md).
-- `hooks.beforeRun` and `hooks.afterRun`.
+- `hooks.beforeRun` and `hooks.afterRun`. Every hook gets the name, answers,
+  built-ins, source readers, destination and `dryRun`. Errors from hooks name the hook.
+- Warnings for variables that do not exist (Velocity outputs them as written), and
+  `strictVariables` to fail the file instead.
+- `keepLineBreaks` keeps the line break after a directive or macro call that ends a
+  line of text.
+- `--answer KEY=value` and `--answers file.json` answer questions from the command
+  line, converted to each question's type.
+- `scaffolder init` creates a `scaffolding` folder with an example template.
+- `scaffolder list` (and `listTemplates()`) lists the templates; `--json` for scripts.
 - `ignore` globs for non-template files in a template folder.
 - `checkbox` and `editor` questions.
 - `defineConfig()` for typed configs.
 - Programmatic API: `scaffold()`, `createAnswerPrompter()`, `createConsolePrompter()`,
   `createConsoleReporter()`.
-- `--debug`, `--help`, `--version`; kebab-case flag aliases.
+- `--debug` (including stack traces), `--help`, `--version`; kebab-case flag aliases.
+- `scaffold()` writes no last-run file unless `saveLastRun: true`.
 - Configs that import `template-scaffolder` get the running version (works under `npx`).
 
 ### Fixed

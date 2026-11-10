@@ -66,6 +66,9 @@ export function createConsoleReporter(options: { debug: boolean }): IReporter {
             );
           }
       }
+      for (const warning of result.warnings) {
+        console.warn(styleText('yellow', `    warning: ${warning}`));
+      }
       printCommands(result.commands, options.debug);
     },
   };

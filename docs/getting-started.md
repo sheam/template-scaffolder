@@ -28,6 +28,13 @@ The scaffolder saves your last run's answers in `.template-scaffolder-last-run` 
 project root (see [re-running](command-line.md#re-running)). Each developer has their
 own, so add it to `.gitignore`.
 
+## The quick way
+
+`npx scaffolder init` creates a `scaffolding` folder with a working example template,
+and adds the last-run file to `.gitignore`. Run `npx scaffolder --dryRun` to try it,
+then copy `scaffolding/example` to start your own. The rest of this guide builds a
+template from scratch, explaining each part.
+
 ## Your first template
 
 A template is a folder inside `scaffolding/` at the root of your project. It holds a
@@ -47,7 +54,9 @@ export default defineConfig({
 });
 ```
 
-`name` and `description` are shown when choosing a template. `destinations` is the
+`name` and `description` are shown when choosing a template. For a new template,
+consider also setting [`strictVariables`](configuration.md#strictvariables) and
+[`keepLineBreaks`](configuration.md#keeplinebreaks) to `true`. `destinations` is the
 list of folders offered for the output. The config can also be `.js`, `.mjs`, `.cjs`,
 `.mts` or `.cts`. `defineConfig` only adds type checking and completion, so leave it
 out in plain JavaScript if you prefer.

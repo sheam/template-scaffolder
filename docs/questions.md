@@ -216,6 +216,9 @@ Opens the user's editor (`$VISUAL` or `$EDITOR`) for longer text.
 
 ## Answers in other places
 
+- **`--answer KEY=value`** and **`--answers file.json`** answer questions from the
+  command line. Text is converted to the question's type. See
+  [answering questions in advance](command-line.md#answering-questions-in-advance).
 - **`--rerun`** replays the previous answers without asking. Questions added since are
   asked.
 - **[Programmatic API](api.md)**: `scaffold({ answers: { STYLE: 'css' } })` answers

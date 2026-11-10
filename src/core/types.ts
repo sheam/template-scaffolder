@@ -50,22 +50,34 @@ export interface IMacrosContext<
   variables: TemplateVariables;
 }
 
+/** Passed to every hook. */
+export interface IHookContext<
+  TAnswers extends object = Answers,
+> extends IVariablesContext<TAnswers> {
+  /** The destination directory, relative to the project root. */
+  destination: string;
+  dryRun: boolean;
+}
+
 /** Passed to `hooks.afterFileCreated()`. */
-export interface IFileHookContext {
+export interface IFileHookContext<
+  TAnswers extends object = Answers,
+> extends IHookContext<TAnswers> {
   /** Path of the generated file, relative to the project root, using forward slashes. */
   path: string;
-  dryRun: boolean;
+  /** Every variable the templates saw. */
   variables: TemplateVariables;
 }
 
 /** Passed to `hooks.afterRun()`. */
-export interface IRunHookContext {
+export interface IRunHookContext<
+  TAnswers extends object = Answers,
+> extends IHookContext<TAnswers> {
   /** Every file the run produced, including skipped and failed ones. */
   files: IFileResult[];
   /** Paths of files that were created or overwritten (or would be, in a dry run). */
   createdPaths: string[];
-  destination: string;
-  dryRun: boolean;
+  /** Every variable the templates saw. */
   variables: TemplateVariables;
 }
 
@@ -73,14 +85,16 @@ export interface IRunHookContext {
 export type HookCommands = string[] | null | undefined | void;
 
 export interface IHooks<TAnswers extends object = Answers> {
-  /** Runs once after prompts are answered and before any file is generated. */
-  beforeRun?: (ctx: IVariablesContext<TAnswers>) => void | Promise<void>;
+  /** Runs once after prompts are answered and before any file is generated. Throw to stop the run. */
+  beforeRun?: (ctx: IHookContext<TAnswers>) => void | Promise<void>;
   /** Runs after each file is generated. Returned commands are run (not in a dry run). */
   afterFileCreated?: (
-    ctx: IFileHookContext
+    ctx: IFileHookContext<TAnswers>
   ) => HookCommands | Promise<HookCommands>;
   /** Runs once after all files are generated. Returned commands are run (not in a dry run). */
-  afterRun?: (ctx: IRunHookContext) => HookCommands | Promise<HookCommands>;
+  afterRun?: (
+    ctx: IRunHookContext<TAnswers>
+  ) => HookCommands | Promise<HookCommands>;
 }
 
 type ValueOrFactory<TValue, TContext> =
@@ -115,6 +129,16 @@ export interface IConfigFile<TAnswers extends object = Answers> {
   hooks?: IHooks<TAnswers>;
   /** Extra source readers, e.g. for languages without a built-in reader. */
   readers?: ISourceReader[];
+  /**
+   * Fail a file that uses a variable that does not exist, instead of warning.
+   * Velocity outputs an unknown `$NAME` as written. Default false.
+   */
+  strictVariables?: boolean;
+  /**
+   * Keep the line break after a directive or macro call that ends a line of text
+   * (`// #upperFirst($NAME)`). Velocity removes it by default. Default false.
+   */
+  keepLineBreaks?: boolean;
 }
 
 export interface IChoice {
@@ -267,6 +291,8 @@ export interface IFileResult {
   content?: string;
   /** Why the file was skipped or failed. */
   reason?: string;
+  /** Problems that did not stop the file, such as variables that do not exist. */
+  warnings: string[];
   commands: ICommandResult[];
 }
 

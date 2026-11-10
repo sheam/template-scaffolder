@@ -13,12 +13,14 @@ export interface IRunOptions {
   dryRun?: boolean;
   /** Replace existing files instead of skipping them. */
   overwrite?: boolean;
-  /** Load configs and render files concurrently. */
+  /** Run afterFileCreated commands for different files concurrently. */
   parallel?: boolean;
   /** Replay the previous run's template, name, destination and answers. */
   rerun?: boolean;
   /** Pre-supplied answers by question name; those questions are not asked. */
   answers?: Answers;
+  /** Save this run for `rerun`. Default true on the command line, false for `scaffold()`. */
+  saveLastRun?: boolean;
 }
 
 export interface IResolvedOptions {

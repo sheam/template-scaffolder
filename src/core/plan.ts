@@ -3,7 +3,7 @@ import path from 'node:path';
 import picomatch from 'picomatch';
 import { errorMessage, ScaffolderError } from './errors.js';
 import { CONFIG_FILE_BASENAME, exists, toPosix } from './paths.js';
-import { renderString } from './render.js';
+import { renderVelocity } from './render.js';
 import type { TemplateVariables } from './types.js';
 
 export interface IFilePlan {
@@ -16,6 +16,8 @@ export interface IFilePlan {
   /** Absolute output path. */
   absolutePath: string;
   action: 'create' | 'overwrite' | 'skip';
+  /** Variables in the file's path that do not exist, e.g. `${TYPO}`. */
+  unresolved: string[];
 }
 
 export interface IPlanInput {
@@ -45,8 +47,12 @@ export async function planFiles(input: IPlanInput): Promise<IFilePlan[]> {
   const plans: IFilePlan[] = [];
   for (const templateFile of templateFiles) {
     let relativeOutput: string;
+    let unresolved: string[];
     try {
-      relativeOutput = renderString(templateFile, input.variables);
+      ({ output: relativeOutput, unresolved } = renderVelocity(
+        templateFile,
+        input.variables
+      ));
     } catch (e) {
       throw new ScaffolderError(
         'CONFIG_INVALID',
@@ -69,6 +75,7 @@ export async function planFiles(input: IPlanInput): Promise<IFilePlan[]> {
         : input.overwrite
           ? 'overwrite'
           : 'skip',
+      unresolved,
     });
   }
   return plans;

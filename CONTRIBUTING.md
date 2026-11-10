@@ -60,19 +60,28 @@ The rules that keep it maintainable:
 2. `templates.ts` and `configLoader.ts`: find the template folders and load their
    configs with jiti. `config.ts` normalizes each config.
 3. Ask for the name, then build the built-in variables (`builtIns.ts`).
-4. `questions.ts` validates `prompts`, then `answers.ts` asks them, skipping any
-   that already have answers.
-5. Resolve the destination: fixed, chosen from `destinations`, or asked for.
+4. `questions.ts` validates `prompts`, then `answers.ts` asks them. Answers given in
+   advance are checked and converted to the question's type instead (`priorAnswer`).
+5. Resolve the destination: fixed, chosen from `destinations`, or asked for, and
+   offer to create it if it does not exist.
 6. Run `hooks.beforeRun`, then `variables` and `macros`.
 7. `plan.ts`: list the template files, apply `ignore`, substitute variables in paths,
    and decide which files to write, overwrite or skip.
-8. `generate.ts`: render (`render.ts`: `#include`, `stripLines`, Velocity), write files
-   one at a time, and run `afterFileCreated` commands.
+8. `generate.ts`: render (`render.ts`: `#include`, `stripLines`, `keepLineBreaks`,
+   Velocity, and unknown variables), write files one at a time, and run
+   `afterFileCreated` commands.
 9. Run `hooks.afterRun`, and save the answers to `.template-scaffolder-last-run`
-   (`lastRun.ts`).
+   (`lastRun.ts`) unless `saveLastRun` is false.
 
-`--parallel` only changes how `concurrency.ts` `mapConcurrent` runs work. Results
+Hooks get one shared `IHookContext`, built after the destination is chosen. Errors
+from `beforeRun` and `afterRun` are wrapped as `HOOK_FAILED` by `callHook`.
+
+Loading configs and rendering always use `concurrency.ts` `mapConcurrent` with
+`parallel: true`; `--parallel` only applies to `afterFileCreated` commands. Results
 always come back in template order, and files are always written one at a time.
+
+`scaffolder init` and `scaffolder list` are `core/init.ts` and `listTemplates()` in
+`src/index.ts`.
 
 ## Adding things
 

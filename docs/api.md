@@ -24,19 +24,20 @@ Importing `template-scaffolder` has no side effects.
 
 ## Options
 
-| Option        | Default                   | Description                                              |
-| ------------- | ------------------------- | -------------------------------------------------------- |
-| `projectRoot` | `process.cwd()`           | The folder containing `scaffolding/`.                    |
-| `template`    | asked                     | Template folder name, or the `name` in its config.       |
-| `name`        | asked                     | The `NAME` variable.                                     |
-| `destination` | from the config, or asked | Output folder, relative to `projectRoot`.                |
-| `answers`     | `{}`                      | Answers by question name. These questions are not asked. |
-| `dryRun`      | `false`                   | Render without writing files or running commands.        |
-| `overwrite`   | `false`                   | Replace existing files.                                  |
-| `parallel`    | `false`                   | As `--parallel`.                                         |
-| `rerun`       | `false`                   | Replay the last run saved in `projectRoot`.              |
-| `prompter`    | answers only              | How questions are asked. See below.                      |
-| `reporter`    | silent                    | Where progress goes. See below.                          |
+| Option        | Default                   | Description                                                        |
+| ------------- | ------------------------- | ------------------------------------------------------------------ |
+| `projectRoot` | `process.cwd()`           | The folder containing `scaffolding/`.                              |
+| `template`    | asked                     | Template folder name, or the `name` in its config.                 |
+| `name`        | asked                     | The `NAME` variable.                                               |
+| `destination` | from the config, or asked | Output folder, relative to `projectRoot`.                          |
+| `answers`     | `{}`                      | Answers by question name. These questions are not asked.           |
+| `dryRun`      | `false`                   | Render without writing files or running commands.                  |
+| `overwrite`   | `false`                   | Replace existing files.                                            |
+| `parallel`    | `false`                   | As `--parallel`.                                                   |
+| `rerun`       | `false`                   | Replay the last run saved in `projectRoot`.                        |
+| `saveLastRun` | `false`                   | Save this run to `.template-scaffolder-last-run`, as the CLI does. |
+| `prompter`    | answers only              | How questions are asked. See below.                                |
+| `reporter`    | silent                    | Where progress goes. See below.                                    |
 
 ## Answering questions
 
@@ -44,7 +45,13 @@ By default nothing is asked. Each question gets its answer from `answers`, or it
 `default`. A question with neither gets `false` (`confirm`), `[]` (`checkbox` and
 `words`) or `undefined` (the rest). `required` and `select` questions fail with a
 `MISSING_ANSWER` error instead. The template, name and destination must be given, or come
-from the config.
+from the config. A destination that does not exist is created, unless you answer
+`createDestination: false`.
+
+Answers in `answers` are checked and converted as on the
+[command line](command-line.md#answering-questions-in-advance): `'yes'` becomes `true`
+for a `confirm` question, and a value that is not one of a `select`'s choices fails
+with `INVALID_ANSWER`.
 
 To ask in the terminal, as the CLI does:
 
@@ -106,6 +113,7 @@ Each entry in `files`:
 | `templateFile` | The template file, relative to the template folder.                     |
 | `status`       | `created`, `overwritten`, `skipped` or `error`.                         |
 | `reason`       | Why it was skipped or failed.                                           |
+| `warnings`     | Problems that did not stop the file, such as unknown variables.         |
 | `content`      | The rendered content (also in a dry run).                               |
 | `commands`     | Commands from `afterFileCreated`, with `{ command, exitCode, output }`. |
 
@@ -115,20 +123,22 @@ Problems that stop a run, like a missing template or an invalid config, throw a
 `ScaffolderError`. Its `code` says what went wrong, and `details` lists individual
 problems (such as every invalid question in a config).
 
-| `code`                   | When                                                      |
-| ------------------------ | --------------------------------------------------------- |
-| `NO_SCAFFOLDING`         | There is no `scaffolding` folder, or it has no templates. |
-| `TEMPLATE_NOT_FOUND`     | No template matches `template`.                           |
-| `CONFIG_NOT_FOUND`       | The template folder has no config file.                   |
-| `CONFIG_LOAD_FAILED`     | The config file threw or could not be parsed.             |
-| `CONFIG_INVALID`         | The config or its questions are invalid.                  |
-| `CONFIG_FUNCTION_FAILED` | `prompts`, `variables` or `macros` threw.                 |
-| `DESTINATION_INVALID`    | The destination is not an existing folder.                |
-| `MISSING_ANSWER`         | A question has no answer (see above).                     |
-| `LAST_RUN_MISSING`       | `rerun` with no saved run.                                |
-| `LAST_RUN_INVALID`       | The saved run could not be read.                          |
-| `SOURCE_READ_FAILED`     | A source reader could not read a file.                    |
-| `CANCELLED`              | The user pressed Ctrl-C (a `UserCancelledError`).         |
+| `code`                   | When                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| `NO_SCAFFOLDING`         | There is no `scaffolding` folder, or it has no templates.                       |
+| `TEMPLATE_NOT_FOUND`     | No template matches `template`.                                                 |
+| `CONFIG_NOT_FOUND`       | The template folder has no config file.                                         |
+| `CONFIG_LOAD_FAILED`     | The config file threw or could not be parsed.                                   |
+| `CONFIG_INVALID`         | The config or its questions are invalid.                                        |
+| `CONFIG_FUNCTION_FAILED` | `prompts`, `variables` or `macros` threw.                                       |
+| `DESTINATION_INVALID`    | The destination is not an existing folder.                                      |
+| `MISSING_ANSWER`         | A question has no answer (see above).                                           |
+| `INVALID_ANSWER`         | An answer does not fit its question.                                            |
+| `HOOK_FAILED`            | `hooks.beforeRun` or `hooks.afterRun` threw. The original error is its `cause`. |
+| `LAST_RUN_MISSING`       | `rerun` with no saved run.                                                      |
+| `LAST_RUN_INVALID`       | The saved run could not be read.                                                |
+| `SOURCE_READ_FAILED`     | A source reader could not read a file.                                          |
+| `CANCELLED`              | The user pressed Ctrl-C (a `UserCancelledError`).                               |
 
 ```ts
 import { ScaffolderError, scaffold } from 'template-scaffolder';
@@ -143,9 +153,10 @@ try {
 }
 ```
 
-Errors thrown by your own hooks (`beforeRun` and `afterRun`) are passed through
-unchanged. A file that fails to render does not throw: it has `status: 'error'`, and
-`hasErrors` is true. So does a file whose `afterFileCreated` hook throws.
+An error thrown by `beforeRun` or `afterRun` becomes a `HOOK_FAILED` error, with the
+original as its `cause`; a `ScaffolderError` thrown by a hook is passed through as is.
+A file that fails to render does not throw: it has `status: 'error'`, and `hasErrors`
+is true. So does a file whose `afterFileCreated` hook throws.
 
 ## Testing your templates
 
@@ -172,5 +183,20 @@ it('generates a list page', async () => {
 });
 ```
 
-A dry run still saves the answers to `.template-scaffolder-last-run`, as on the
-command line.
+`scaffold()` does not write `.template-scaffolder-last-run` unless you pass
+`saveLastRun: true`, so tests leave nothing behind.
+
+## Listing templates
+
+`listTemplates()` returns every template that loads, as the `scaffolder list` command
+shows them:
+
+```ts
+import { listTemplates } from 'template-scaffolder';
+
+for (const t of await listTemplates({ projectRoot: '/path/to/project' })) {
+  console.log(t.dir, t.name, t.description, t.version);
+}
+```
+
+Templates whose config fails to load are left out. Pass a `reporter` to see why.

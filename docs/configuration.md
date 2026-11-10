@@ -59,22 +59,24 @@ errors do not stop a run, so check types with your editor or `tsc`.
 
 ## Fields
 
-| Field                       | Default                 | Description                                                                                   |
-| --------------------------- | ----------------------- | --------------------------------------------------------------------------------------------- |
-| `name`                      | folder name             | Shown in the template list. `--template` accepts it too.                                      |
-| `description`               |                         | Shown next to the name.                                                                       |
-| `version`                   | `'1.0'`                 | Available to templates as `TEMPLATE_VERSION`.                                                 |
-| `prompts`                   | `[]`                    | [Questions](questions.md) to ask.                                                             |
-| `variables`                 | `{}`                    | Extra variables for templates.                                                                |
-| `macros`                    | `{}`                    | Functions templates call as `#name(...)`. See [macros](templates.md#macros).                  |
-| `destination`               |                         | A fixed output folder. The user is not asked.                                                 |
-| `destinations`              |                         | Output folders offered in a list, with "Other".                                               |
-| `createNameDir`             | `true`                  | Put the files in a folder named after `NAME` inside the destination.                          |
-| `srcRoot`                   | `./src` or project root | Where the destination folder picker starts.                                                   |
-| [`stripLines`](#striplines) | `[]`                    | Lines to remove from template files before rendering.                                         |
-| [`ignore`](#ignore)         | `[]`                    | Files in the template folder that are not templates.                                          |
-| `hooks`                     | `{}`                    | Functions run before and after generating. See [Hooks](hooks.md).                             |
-| `readers`                   | `[]`                    | Source readers for more languages. See [Writing a source reader](writing-a-source-reader.md). |
+| Field                                 | Default                 | Description                                                                                   |
+| ------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------- |
+| `name`                                | folder name             | Shown in the template list. `--template` accepts it too.                                      |
+| `description`                         |                         | Shown next to the name.                                                                       |
+| `version`                             | `'1.0'`                 | Available to templates as `TEMPLATE_VERSION`.                                                 |
+| `prompts`                             | `[]`                    | [Questions](questions.md) to ask.                                                             |
+| `variables`                           | `{}`                    | Extra variables for templates.                                                                |
+| `macros`                              | `{}`                    | Functions templates call as `#name(...)`. See [macros](templates.md#macros).                  |
+| `destination`                         |                         | A fixed output folder. The user is not asked.                                                 |
+| `destinations`                        |                         | Output folders offered in a list, with "Other".                                               |
+| `createNameDir`                       | `true`                  | Put the files in a folder named after `NAME` inside the destination.                          |
+| `srcRoot`                             | `./src` or project root | Where the destination folder picker starts.                                                   |
+| [`stripLines`](#striplines)           | `[]`                    | Lines to remove from template files before rendering.                                         |
+| [`ignore`](#ignore)                   | `[]`                    | Files in the template folder that are not templates.                                          |
+| `hooks`                               | `{}`                    | Functions run before and after generating. See [Hooks](hooks.md).                             |
+| `readers`                             | `[]`                    | Source readers for more languages. See [Writing a source reader](writing-a-source-reader.md). |
+| [`strictVariables`](#strictvariables) | `false`                 | Fail a file that uses a variable that does not exist, instead of warning.                     |
+| [`keepLineBreaks`](#keeplinebreaks)   | `false`                 | Keep the line break after a directive or macro call that ends a line of text.                 |
 
 See [how the destination is chosen](command-line.md#how-each-value-is-chosen).
 
@@ -94,8 +96,10 @@ macros: ({ variables }) => ({...}),
 | `name`      | all                                      | The name entered by the user.                                         |
 | `builtins`  | all                                      | `{ NAME, TEMPLATE_NAME, TEMPLATE_VERSION, USERNAME }`.                |
 | `source`    | all                                      | Reads your source code. See [Reading source code](source-readers.md). |
-| `answers`   | `variables`, `macros`, `hooks.beforeRun` | The answers, by question name.                                        |
-| `variables` | `macros`                                 | Every variable templates will see.                                    |
+| `answers`   | `variables`, `macros`, hooks             | The answers, by question name.                                        |
+| `variables` | `macros`, `afterFileCreated`, `afterRun` | Every variable templates will see.                                    |
+
+[Hooks](hooks.md) get these too, plus `destination` and `dryRun`.
 
 They run in this order: `prompts`, the questions are asked, the destination is chosen,
 `hooks.beforeRun`, `variables`, `macros`. Then the files are generated.
@@ -119,6 +123,39 @@ Templates see three sets of variables. When names collide, later ones win:
 
 Variable values can be any type. Objects and arrays work with `#foreach` and property
 access (`$endpoint.name`) in templates.
+
+## strictVariables
+
+Velocity outputs a variable that does not exist as written: a misspelled `$PLURAL_NMAE`
+appears in the generated file as `$PLURAL_NMAE`. The scaffolder warns about each
+file that has one (in its contents or its file name). With `strictVariables: true`,
+the file fails instead, and is not written.
+
+```text
+  failed   src/pages/Tank/ListTanks.tsx: unknown variable $PLURAL_NMAE (escape a literal $ as \$)
+```
+
+A `$` that belongs in the output, such as jQuery's `$` or a shell variable in a
+script template, should be escaped as `\$`. `${...}` inside backticks is never
+reported, because in JavaScript and TypeScript that is a template literal. `$!NAME`
+outputs nothing for a variable that may not exist, without a warning, and
+`#if($NAME)` can test for one.
+
+## keepLineBreaks
+
+Velocity removes the line break at the end of a line whose last item is a directive,
+such as `#end`, a macro call or a `## comment`. That is useful on lines that are only
+a directive, but surprising in the middle of text:
+
+```text
+// Created by #upperFirst($USERNAME)
+// on $DATE
+```
+
+renders as `// Created by Shea// on 2026-11-10`. With `keepLineBreaks: true`, lines
+of text keep their line break; lines that are only a directive (`#if(...)`, `#end`,
+`#set(...)`) still produce no output. It is off by default so that templates written
+for 2.x generate the same output. Turn it on for new templates.
 
 ## stripLines
 

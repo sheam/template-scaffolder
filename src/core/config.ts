@@ -41,6 +41,8 @@ export interface INormalizedConfig {
   ignore: string[];
   hooks: IHooks;
   readers: ISourceReader[];
+  strictVariables: boolean;
+  keepLineBreaks: boolean;
 }
 
 export interface INormalizeResult {
@@ -63,6 +65,8 @@ const KNOWN_KEYS = new Set([
   'ignore',
   'hooks',
   'readers',
+  'strictVariables',
+  'keepLineBreaks',
   // 2.x, accepted with a warning:
   'afterFileCreated',
 ]);
@@ -118,8 +122,10 @@ export function normalizeConfig(
     }
   }
 
-  if (c.createNameDir !== undefined && typeof c.createNameDir !== 'boolean') {
-    errors.push(`'createNameDir' must be true or false.`);
+  for (const key of ['createNameDir', 'strictVariables', 'keepLineBreaks']) {
+    if (c[key] !== undefined && typeof c[key] !== 'boolean') {
+      errors.push(`'${key}' must be true or false.`);
+    }
   }
   if (
     c.stripLines !== undefined &&
@@ -183,6 +189,8 @@ export function normalizeConfig(
       ignore: (c.ignore as string[] | undefined) ?? [],
       hooks,
       readers,
+      strictVariables: c.strictVariables === true,
+      keepLineBreaks: c.keepLineBreaks === true,
     },
     warnings,
   };
