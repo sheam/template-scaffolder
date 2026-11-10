@@ -108,8 +108,10 @@ normalized config.
 4. Add a fixture to `test/fixtures/source` and tests to `test/source/readers.test.ts`.
    The tests check every reader's output with `checkSourceReader`.
 
-Document anything users see in `README.md`, or in `docs/source-readers.md` for
-readers, and add a line to `CHANGELOG.md`.
+Document anything users see in the matching page in `docs/` (the
+[docs index](docs/README.md) lists them), and add a line to `CHANGELOG.md`. Code
+examples in `docs/examples` are type-checked and tested, so keep longer examples
+there. `README.md` is an overview; keep details out of it.
 
 ## Tests
 

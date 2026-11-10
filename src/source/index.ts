@@ -16,6 +16,8 @@ export {
   withQueries,
 } from './api.js';
 export { loadGrammar, parse as parseWithGrammar } from './treeSitter.js';
+/** A tree-sitter syntax node, as returned by `parseWithGrammar`. For custom readers. */
+export type { Node as SyntaxNode } from './treeSitter.js';
 export * as tsTypes from './typeHelpers/typescript.js';
 export * as csharpTypes from './typeHelpers/csharp.js';
 export * as cppTypes from './typeHelpers/cpp.js';

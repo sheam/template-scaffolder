@@ -1,3 +1,5 @@
+[Docs](README.md) › Migrating to v3
+
 # Migrating from 2.x to 3.x
 
 Version 3 is a rewrite of the scaffolder's internals. Your templates (the files with

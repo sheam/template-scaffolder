@@ -1,4 +1,6 @@
-# Source readers
+[Docs](README.md) › Reading source code
+
+# Reading source code
 
 Templates often need facts about code that already exists: the methods of an API
 client, the members of an enum, the fields of a DTO, the actions of a controller.
@@ -162,101 +164,13 @@ section. Template parameters go in `typeParams`. Declarations inside `#if`/`#ifd
 blocks (include guards) are read. Macros are not expanded, so declarations produced by
 macros are not seen.
 
-## Writing a reader for another language
+## Other languages
 
-A reader is an object with an id, the extensions it handles, and a `read` function
-that returns the model without the query helpers:
-
-```ts
-// scaffolding/_helpers/protoReader.ts
-import { defineSourceReader } from 'template-scaffolder/source';
-
-export const protoReader = defineSourceReader({
-  id: 'proto',
-  extensions: ['.proto'],
-  async read({ path, text }) {
-    const types = [...text.matchAll(/message\s+(\w+)\s*{([^}]*)}/g)].map(
-      ([full, name, body]) => ({
-        name,
-        kind: 'class' as const,
-        exported: true,
-        bases: [],
-        typeParams: [],
-        members: [],
-        methods: [],
-        attributes: [],
-        text: full,
-        fields: [
-          ...body.matchAll(/(optional\s+)?([\w.]+)\s+(\w+)\s*=\s*\d+;/g),
-        ].map(m => ({
-          name: m[3],
-          type: m[2],
-          optional: !!m[1],
-          static: false,
-          readonly: false,
-          attributes: [],
-        })),
-      })
-    );
-    return {
-      path,
-      language: 'proto',
-      text,
-      types,
-      functions: [],
-      namespaces: [],
-      hasErrors: false,
-    };
-  },
-});
-```
-
-Register it in the configs that need it:
-
-```ts
-import { protoReader } from '../_helpers/protoReader';
-export default defineConfig({
-  readers: [protoReader],
-  variables: async ({ source }) => ({
-    MESSAGES: (await source.read('api/tanks.proto')).types,
-  }),
-});
-```
-
-or for everything, including `readSource` calls in helpers, with
-`registerSourceReader(protoReader)`. A custom reader with the same id or extension as a
-built-in one replaces it.
-
-For a real grammar, use tree-sitter as the built-in readers do. `parseWithGrammar(grammar, text)`
-returns the root node of the syntax tree, and `loadGrammar(grammar)` returns the
-grammar alone. `grammar` is the path of any tree-sitter `.wasm` file, or the id of a
-bundled grammar (`typescript`, `tsx`, `csharp` or `cpp`). Grammars are loaded once per
-process.
-
-```ts
-import {
-  defineSourceReader,
-  parseWithGrammar,
-} from 'template-scaffolder/source';
-
-export const goReader = defineSourceReader({
-  id: 'go',
-  extensions: ['.go'],
-  async read({ path, text }) {
-    const root = await parseWithGrammar('/path/to/tree-sitter-go.wasm', text);
-    // walk root.namedChildren and build the model...
-  },
-});
-```
-
-To check a reader's output against the model in a test:
-
-```ts
-import { checkSourceReader } from 'template-scaffolder/source';
-expect(await checkSourceReader(protoReader, { path: 'x.proto', text })).toEqual(
-  []
-);
-```
+Readers for other languages can be added from a config's `readers` field or with
+`registerSourceReader`. A simple one takes a few lines of regular expressions; a
+thorough one uses a tree-sitter grammar like the built-in readers. See
+[Writing a source reader](writing-a-source-reader.md), which builds a Python reader
+step by step.
 
 ## Examples
 
@@ -268,3 +182,5 @@ expect(await checkSourceReader(protoReader, { path: 'x.proto', text })).toEqual(
   controller actions with their HTTP verbs, routes and result types.
 - [`examples/cpp-header.ts`](examples/cpp-header.ts) turns a C++ header's public API
   into variables for generating bindings or tests.
+- [`examples/python-reader.ts`](examples/python-reader.ts) is a complete reader for
+  Python, built on tree-sitter.

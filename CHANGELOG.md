@@ -27,7 +27,8 @@ A rewrite of the internals for maintainability, with new features. See
 
 - `scaffolder migrate` converts 2.x configs and shared helpers.
 - Source readers for TypeScript, C# and C++ (`ctx.source`, `template-scaffolder/source`),
-  plus custom readers. See [Source readers](docs/source-readers.md).
+  plus custom readers. See [Reading source code](docs/source-readers.md) and
+  [Writing a source reader](docs/writing-a-source-reader.md).
 - `hooks.beforeRun` and `hooks.afterRun`.
 - `ignore` globs for non-template files in a template folder.
 - `checkbox` and `editor` questions.

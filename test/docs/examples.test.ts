@@ -8,9 +8,12 @@ import {
 } from '../../docs/examples/api-client-reader.js';
 import { getPublicApi } from '../../docs/examples/cpp-header.js';
 import { getControllerActions } from '../../docs/examples/csharp-controller.js';
+import { pythonReader } from '../../docs/examples/python-reader.js';
 import {
   checkSourceReader,
   defineSourceReader,
+  readSource,
+  registerSourceReader,
   sourceRegistry,
 } from '../../src/source/api.js';
 import { REPO_ROOT } from '../helpers.js';
@@ -99,9 +102,9 @@ describe('docs/examples', () => {
     });
   });
 
-  it('the custom reader in source-readers.md produces a valid model', async () => {
+  it('the custom reader in writing-a-source-reader.md produces a valid model', async () => {
     const doc = readFileSync(
-      path.join(REPO_ROOT, 'docs/source-readers.md'),
+      path.join(REPO_ROOT, 'docs/writing-a-source-reader.md'),
       'utf-8'
     );
     const code =
@@ -132,5 +135,71 @@ describe('docs/examples', () => {
       ['id', false],
       ['name', true],
     ]);
+  });
+
+  it('python-reader reads classes, enums and functions', async () => {
+    const file = `${F}/models.py`;
+    const text = readFileSync(path.join(REPO_ROOT, file), 'utf-8');
+    expect(await checkSourceReader(pythonReader, { path: file, text })).toEqual(
+      []
+    );
+
+    registerSourceReader(pythonReader);
+    const models = await readSource(file);
+    expect(models.hasErrors).toBe(false);
+    expect(models.enum('TankStatus').members).toEqual([
+      { name: 'EMPTY', value: '"empty"' },
+      { name: 'FERMENTING', value: '"fermenting"' },
+    ]);
+
+    const tank = models.class('Tank');
+    expect(tank).toMatchObject({
+      bases: ['BaseModel'],
+      attributes: ['dataclass(frozen=True)'],
+      doc: 'A brewing tank.',
+    });
+    expect(
+      tank.fields.map(f => [f.name, f.type, f.optional, f.static])
+    ).toEqual([
+      ['table', 'ClassVar[str]', true, true],
+      ['id', 'int', false, false],
+      ['name', 'str', false, false],
+      ['capacity', 'Optional[float]', true, false],
+    ]);
+    const [fill, parse, validate] = tank.methods;
+    expect(fill).toMatchObject({
+      name: 'fill',
+      async: true,
+      returnType: 'bool',
+      doc: 'Fill the tank.',
+      params: [
+        { name: 'litres', type: 'float', optional: true, default: '10' },
+        { name: 'force', type: 'bool', optional: true, default: 'False' },
+      ],
+    });
+    expect(parse).toMatchObject({
+      static: true,
+      params: [{ name: 'raw', type: 'dict' }],
+    });
+    expect(validate.access).toBe('private');
+
+    // A file mid-edit still yields what could be read.
+    const broken = await pythonReader.read({
+      path: 'broken.py',
+      text: 'class Tank:\n    id: int\n    def fill(self, litres:\n',
+    });
+    expect(broken.hasErrors).toBe(true);
+    expect(broken.types.map(t => t.name)).toEqual(['Tank']);
+
+    expect(models.functions[0]).toMatchObject({
+      name: 'list_tanks',
+      returnType: 'list[Tank]',
+      params: [
+        { name: 'session', optional: false },
+        { name: '*filters', optional: true },
+        { name: 'limit', type: 'int', default: '50' },
+        { name: '**options', optional: true },
+      ],
+    });
   });
 });
