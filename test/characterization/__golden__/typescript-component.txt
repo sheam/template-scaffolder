@@ -1,0 +1,10 @@
+===== Simple/Output.ts
+function aTestFunction(): string
+{
+    return 'Simple';  //value set from velocity template.
+}
+
+===== Simple/Simple.test.tsx
+// this is a test file for Simple
+
+// output of my macro is Well hello there Shea!!!// output of my macro is Well hello there Simple!!!

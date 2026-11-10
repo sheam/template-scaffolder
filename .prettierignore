@@ -8,3 +8,7 @@ node_modules
 scaffolding
 src/testdir
 .git/
+test/fixtures
+test/characterization/__golden__
+grammars
+dist

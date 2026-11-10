@@ -1,0 +1,55 @@
+===== MyWidget/__tests__/MyWidget.test.tsx
+import * as React from 'react';
+import {render} from '@testing-library/react';
+import '@testing-library/jest-dom';
+import {MyWidget} from '../index';
+
+describe('<MyWidget />', () => {
+    it('should render without blowing up', () => {
+        const result = render(<MyWidget/>);
+        expect(result.getByTestId('my-widget')).toBeInTheDocument();
+    });
+});
+
+===== MyWidget/index.tsx
+/**
+ * This is a file header.
+ * Scaffolded using the React Component template
+ *     version: 1.0
+ *     by: Test User
+ * The source is fileHeader.ts.
+ */
+/**
+ * This file was included.
+ * The source is subHeader.ts.
+ */
+
+
+import * as React from 'react';
+import {ReactElement} from 'react';
+import {useMyWidgetStyles} from './styles';
+
+interface IMyWidgetProps
+{
+}
+
+// Scaffolded using the "React Component" (version 1.0) template by Test User
+
+// test test test// MyWidget MyWidget MyWidget MyWidget// SOME_VAL is Three
+
+export const MyWidget = ({}: IMyWidgetProps): ReactElement => {
+
+    useMyWidgetStyles();
+
+    return (
+        <div data-testid="component">
+        </div>
+    );
+};
+
+===== MyWidget/styles.ts
+import {createUseStyles} from 'react-jss';
+
+export const useMyWidgetStyles = (createUseStyles((theme: any) => {
+    return ({});
+}));

@@ -1,0 +1,13 @@
+===== Converted/types.ts
+// this is a prompted value: Date
+
+
+    interface MyInterfaceOne {
+                   Name: string;
+                   Age: number;
+                   Something: Date;
+            }
+    interface MyInterfaceTwo {
+                   Colour: string;
+                   Hex: number;
+            }

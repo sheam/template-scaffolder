@@ -1,6 +1,4 @@
 export default {
-  '*.{ts,tsx}': ['npm run pre-commit:format', 'npm run pre-commit:lint'],
-  '*.json': ['npm run pre-commit:format'],
-  '*.js': ['npm run pre-commit:format'],
-  '*.md': ['npm run pre-commit:format'],
+  '*.{ts,mts,js,mjs}': ['prettier --write', 'eslint --fix --no-warn-ignored'],
+  '*.{json,md,yml}': ['prettier --write'],
 };

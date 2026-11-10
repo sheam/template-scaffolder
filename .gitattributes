@@ -1,0 +1,4 @@
+# Keep LF on every OS so tests compare the same bytes on Windows as on Linux.
+# CRLF templates are covered by test/unit/render.test.ts.
+* text=auto eol=lf
+*.wasm binary

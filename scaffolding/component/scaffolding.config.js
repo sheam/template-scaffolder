@@ -4,14 +4,14 @@ import os from "os";
 export default {
     name: 'React Component',
     description: 'Used for creating a react component',
-    variables: (name, inputs) => ({
+    variables: ({ name, answers: inputs }) => ({
         COMPONENT: name,
         HOME: os.homedir(),
         STORY_TITLE: camelCaseToTitleWords(name),
         TEST_ID: camelCaseToKebabCase(name),
         OTHER_VAL: inputs.SOME_VAL.toLowerCase(),
     }),
-    prompts: (_name) => ([
+    prompts: () => ([
         {
             name: 'SOME_VAL',
             message: 'Enter a value for SOME_VAL:',
@@ -29,14 +29,19 @@ export default {
     macros: {
         repeatString: (str, n) => `${str} `.repeat(n).trimEnd()
     },
-    afterFileCreated: (path, _dryRun, variables) => {
-        //console.log(`>>>>>>>>>>>> '${variables.NAME}' template created ${path}`);
+    hooks: {
+        afterFileCreated: ({ path: _path, dryRun: _dryRun, variables: _variables }) => {
+            //console.log(`>>>>>>>>>>>> '${variables.NAME}' template created ${path}`);
+        },
+        // Runs once with every generated path, e.g. to format or `git add` them in one command.
+        afterRun: ({ createdPaths, dryRun }) =>
+            dryRun ? [] : [`echo formatted ${createdPaths.length} files`],
     },
     stripLines: [
         '// TEMPLATE:', //template comments
         /\/\/.*\bSTRIP\b/,
     ],
     srcRoot: './src',
-    // destinations: './src/testdir',
+    // destination: './src/testdir',
     // destinations: ['src/testdir/dir1/subdir1'],
 }
