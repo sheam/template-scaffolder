@@ -310,7 +310,7 @@ Goal: a template author reads declarations from TS, C#, or C++ with the same cod
 - New `docs/source-readers.md`: the model, the three built-ins and their peer deps, `ctx.source` usage, and writing a custom reader.
 - New `docs/migrating-to-v3.md`: what changed and why, running `npx scaffolder migrate --dryRun` then without, a before/after of a BrewNinja-style config, the manual checklist for anything the converter reports, and how to replace regex helpers with `template-scaffolder/source`. Linked from the README's top section.
 - `CHANGELOG.md` with the v3 breaking list above, plus a 2.3.13–2.3.16 entry reconstructed from the npm diff.
-- `package.json#files` allowlist (`dist`, `README.md`, `LICENSE`, `docs`): the 2.3.16 tarball leaked `.claude/settings.local.json` and `.template-scaffolder-last-run`. Remove `.npmignore`.
+- `package.json#files` allowlist (`dist`, `README.md`, `LICENSE`, `docs`): the 2.3.16 tarball leaked a local editor settings file and `.template-scaffolder-last-run`. Remove `.npmignore`.
 - Delete step-2 subprocess snapshots once in-process e2e covers all three fixtures.
 - `npm version major` → 3.0.0. Publishing stays a manual step for you.
 
