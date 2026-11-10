@@ -9,7 +9,10 @@ const ENTER = '\r';
 const DOWN = '\x1b[B';
 const SPACE = ' ';
 
-/** Ask one question, typing `keys` one chunk at a time once the prompt is drawn. */
+/**
+ * Ask one question, typing `keys` one chunk at a time. Before each chunk, waits until
+ * the prompt has redrawn and gone quiet, so slow machines do not get keys too early.
+ */
 async function answer(
   question: Question,
   keys: string[]
@@ -17,14 +20,29 @@ async function answer(
   const input = new PassThrough();
   const output = new PassThrough();
   let screen = '';
-  output.on('data', chunk => (screen += chunk.toString()));
+  let lastOutput = 0;
+  output.on('data', chunk => {
+    screen += chunk.toString();
+    lastOutput = Date.now();
+  });
   Object.assign(input, { isTTY: true, setRawMode: () => input });
   const pending = createConsolePrompter({ input, output }).ask(question);
   for (const key of keys) {
-    await new Promise(r => setTimeout(r, 15));
+    await settled(() => lastOutput);
+    lastOutput = 0;
     input.write(key);
   }
   return { value: await pending, screen };
+}
+
+/** Wait until there has been output and none for 50ms (or 5s pass). */
+async function settled(lastOutput: () => number): Promise<void> {
+  const start = Date.now();
+  while (Date.now() - start < 5000) {
+    await new Promise(r => setTimeout(r, 10));
+    const last = lastOutput();
+    if (last > 0 && Date.now() - last >= 50) return;
+  }
 }
 
 describe('console prompter', () => {

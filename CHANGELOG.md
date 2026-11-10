@@ -46,6 +46,8 @@ A rewrite of the internals for maintainability, with new features. See
 - Choosing "Other" from a destinations list did not ask for a path.
 - Helper files in a template folder were copied into the generated output.
 - `#include` cycles recursed until the process crashed.
+- Templates with Windows (CRLF) line endings rendered with extra blank lines and stray
+  carriage returns. Output now keeps the template's line endings.
 - `search` questions with `choices` were modified in place.
 - `package.json#types` pointed at a file that did not exist.
 - The published package included local files (`.claude/`, the last-run file).

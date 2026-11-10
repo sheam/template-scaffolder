@@ -23,14 +23,25 @@ export interface IRenderInput {
   stripLines: PatternList;
 }
 
-/** Read a template, expand #include lines, strip lines, then render with Velocity. */
+/**
+ * Read a template, expand #include lines, strip lines, then render with Velocity.
+ * CRLF templates render like LF ones, and the output keeps the template's line endings.
+ */
 export async function renderTemplateFile(input: IRenderInput): Promise<string> {
   const chain: string[] = [];
-  let text: string;
   try {
-    const lines = await readLines(input.sourcePath, input, chain);
-    text = lines.join('\n');
-    return renderString(text, input.variables, input.macros);
+    const text = await readFile(input.sourcePath, 'utf-8');
+    const lines = await expandLines(
+      { path: input.sourcePath, text },
+      input,
+      chain
+    );
+    const output = renderString(
+      lines.join('\n'),
+      input.variables,
+      input.macros
+    );
+    return text.includes('\r\n') ? output.replace(/\r?\n/g, '\r\n') : output;
   } catch (e) {
     if (e instanceof ScaffolderError) throw e;
     const via =
@@ -47,20 +58,19 @@ function shouldStrip(line: string, patterns: PatternList): boolean {
   );
 }
 
-async function readLines(
-  filePath: string,
+async function expandLines(
+  file: { path: string; text: string },
   input: IRenderInput,
   chain: string[]
 ): Promise<string[]> {
-  if (chain.includes(filePath)) {
+  if (chain.includes(file.path)) {
     throw new Error(
-      `#include cycle: ${[...chain, filePath].map(c => path.basename(c)).join(' -> ')}`
+      `#include cycle: ${[...chain, file.path].map(c => path.basename(c)).join(' -> ')}`
     );
   }
-  chain.push(filePath);
-  const text = await readFile(filePath, 'utf-8');
+  chain.push(file.path);
   const result: string[] = [];
-  for (const line of text.split('\n')) {
+  for (const line of file.text.split(/\r?\n/)) {
     if (shouldStrip(line, input.stripLines)) continue;
     const includes = Array.from(line.matchAll(INCLUDE_RX));
     if (includes.length === 0) {
@@ -69,9 +79,10 @@ async function readLines(
     }
     // The whole line is replaced by the included file(s), as in 2.x.
     for (const match of includes) {
+      const includePath = path.join(input.includesDir, match[1]);
       result.push(
-        ...(await readLines(
-          path.join(input.includesDir, match[1]),
+        ...(await expandLines(
+          { path: includePath, text: await readFile(includePath, 'utf-8') },
           input,
           chain
         ))
